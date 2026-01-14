@@ -17,6 +17,9 @@ Item {
     // added to avoid qml warning.
     function setInitialFocusPosition() { }
 
+    height: implicitHeight
+    implicitHeight: view.height
+
     state: root.selectiveSync
 
     states: [
@@ -33,7 +36,15 @@ Item {
     StackViewBase {
         id: view
 
-        anchors.fill: parent
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: parent.top
+        }
+
+        height: implicitHeight
+        implicitHeight: currentItem.height
+
         onCurrentItemChanged: {
             currentItem.setInitialFocusPosition();
         }

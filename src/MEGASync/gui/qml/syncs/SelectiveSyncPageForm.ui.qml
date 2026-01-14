@@ -11,14 +11,23 @@ import components.texts 1.0
 import SyncInfo 1.0
 import ServiceUrls 1.0
 
-FooterButtonsPage {
+FocusScope {
     id: root
 
+    readonly property int textSpacings: 8
+
+    property alias footerButtons: footerButtonsItem
     property alias localFolderChooser: localFolder
     property alias remoteFolderChooser: remoteFolder
     property alias helpLink: helpLinkItem
 
-    readonly property int textSpacings: 8
+    height: column.height + 24 + footerButtonsItem.height
+
+    anchors {
+        top: parent.top
+        right: parent.right
+        left: parent.left
+    }
 
     footerButtons {
         rightPrimary {
@@ -36,11 +45,12 @@ FooterButtonsPage {
         id: column
 
         anchors {
-            top: parent.top
             left: parent.left
             right: parent.right
-            margins: 0
+            top: parent.top
         }
+
+        Layout.preferredHeight: textColumn.height + localFolder.height + remoteFolder.height + testItem.height
 
         spacing: Constants.defaultComponentSpacing
                  - (localFolder.folderField.hint.visible + remoteFolder.folderField.hint.visible)
@@ -48,10 +58,13 @@ FooterButtonsPage {
 
 
         ColumnLayout {
+            id: textColumn
+
             Layout.preferredWidth: parent.width
-            spacing: (localFolder.folderField.hint.visible && remoteFolder.folderField.hint.visible) ?
-                         textSpacings / 4
-                       : textSpacings
+            Layout.preferredHeight: textSpacings + header.height + helpLinkItem.height
+
+            spacing: textSpacings
+
             HeaderTexts {
                 id: header
 
@@ -98,6 +111,10 @@ FooterButtonsPage {
                 Layout.leftMargin: -4
             }
         }
+    }
+
+    FooterButtons {
+        id: footerButtonsItem
     }
 
 }

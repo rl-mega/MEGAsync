@@ -14,7 +14,7 @@ SyncsQmlDialog {
     visible: false
     modality: Qt.NonModal
     width: 640
-    height: 402
+    height: syncsContentItem.implicitHeight
     maximumHeight: height
     maximumWidth: width
     minimumHeight: height
@@ -26,8 +26,16 @@ SyncsQmlDialog {
     Rectangle {
         id: syncsContentItem
 
-        anchors.fill: parent
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: parent.top
+        }
+
         color: ColorTheme.surface1
+
+        height: implicitHeight
+        implicitHeight : stackView.implicitHeight
 
         readonly property string syncsFlow: "syncsFlow"
         readonly property string resume: "resume"
@@ -52,9 +60,12 @@ SyncsQmlDialog {
             id: stackView
 
             anchors {
-                fill: parent
-                margins: defaultWindowMargin
+                left: parent.left
+                right: parent.right
+                top: parent.top
             }
+            height: implicitHeight
+            implicitHeight: currentItem.height
 
             Component {
                 id: syncsFlowPage
@@ -77,5 +88,4 @@ SyncsQmlDialog {
             }
         }
     }
-
 }
