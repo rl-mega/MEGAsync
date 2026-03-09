@@ -2,6 +2,8 @@
 
 #include "megaapi.h"
 #include "Preferences.h"
+#include "UpsellController.h"
+#include "UpsellPlans.h"
 
 #include <QDateTime>
 #include <QObject>
@@ -23,8 +25,20 @@ public:
     void recordDismissed();
     void recordAccepted();
     QDateTime getDialogLastShownDateUtc() const;
-    std::shared_ptr<mega::MegaDiscountCodeInfo> getDiscountInfo();
     QDateTime getExpiryDateUtc() const;
+    QString getCurrencySymbol() const;
+    QString getCurrencyName() const;
+    QString getPlanName(bool shortName = true) const;
+    QString getStorage() const;
+    QString getTransfer() const;
+    QStringList getPlanFeatures() const;
+    QString getPrice() const;
+    QString getDiscountedPrice() const;
+    bool hasTax() const;
+    bool localCurrencyIsBillingCurrency() const;
+    QString getCode() const;
+    int getPercentage() const;
+    int getMonths() const;
 
 signals:
     void campaignActivated();
@@ -34,16 +48,25 @@ protected:
     bool load();
     void persist() const;
     void checkAndDeactivateExpiredCampaign();
-    bool isCampaignExpiredUtc(const QDateTime& expiryDateUtc);
     static bool isDiscountValid(const std::shared_ptr<mega::MegaDiscountCodeInfo>& discountInfo);
+    static bool isCampaignExpiredUtc(const QDateTime& expiryDateUtc);
+    std::shared_ptr<UpsellPlans::Data> findPlanByLevel(int level) const;
 
     // State
     bool mIsCampaignActive = false;
     bool mIsLoadingPersistedDataNeeded = true;
+    bool mIsNewCampaign = false;
+    bool mIsPlanPending = false;
     QDateTime mLastTimeShownUtc;
     QDateTime mCampaignExpiryDateUtc;
     QString mDiscountCode;
 
     std::shared_ptr<mega::MegaDiscountCodeInfo> mDiscountInfo;
     std::shared_ptr<Preferences> mPreferences;
+
+    QPointer<UpsellController> mUpsellController;
+    std::shared_ptr<UpsellPlans::Data> mDiscountedPlan = nullptr;
+
+protected slots:
+    void onPlansReady();
 };

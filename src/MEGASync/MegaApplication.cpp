@@ -894,13 +894,12 @@ void MegaApplication::updateTrayIcon()
     }
     else if (showPromoAnimation)
     {
-        auto discountInfo = mDiscountPolicy ? mDiscountPolicy->getDiscountInfo() : nullptr;
-        if (discountInfo)
+        auto hasDiscount = mDiscountPolicy && mDiscountPolicy->isCampaignActive();
+        if (hasDiscount)
         {
-            tooltipState =
-                QCoreApplication::translate("InfoDialog", "%1% off %2")
-                    .arg(discountInfo->getPercentageDiscount())
-                    .arg(Utilities::getReadablePlanFromId(discountInfo->getAccountLevel(), false));
+            tooltipState = QCoreApplication::translate("InfoDialog", "%1% off %2")
+                               .arg(mDiscountPolicy->getPercentage())
+                               .arg(mDiscountPolicy->getPlanName(false));
         }
         animation = TrayIconManager::Animation::Promo;
     }
@@ -1130,7 +1129,7 @@ void MegaApplication::start()
             [this]()
             {
                 auto dialog = QMLComponent::showDialog<OfferComponent>();
-                dialog->getDialog()->wrapper()->setDiscountInfo(mDiscountPolicy->getDiscountInfo());
+                dialog->getDialog()->wrapper()->setDiscountPolicy(mDiscountPolicy);
 
                 mDiscountPolicy->recordShown();
 
