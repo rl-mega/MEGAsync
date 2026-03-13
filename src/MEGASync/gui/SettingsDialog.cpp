@@ -2,7 +2,6 @@
 
 #include "AccountDetailsDialog.h"
 #include "AccountDetailsManager.h"
-#include "BandwidthSettings.h"
 #include "BugReportDialog.h"
 #include "ChangePasswordComponent.h"
 #include "CommonMessages.h"
@@ -10,6 +9,7 @@
 #include "FullName.h"
 #include "MegaApplication.h"
 #include "NodeSelectorSpecializations.h"
+#include "ParallelConnectionsValues.h"
 #include "Platform.h"
 #include "PowerOptions.h"
 #include "ProxySettings.h"
@@ -150,6 +150,8 @@ SettingsDialog::SettingsDialog(MegaApplication* app, bool proxyOnly, QWidget* pa
 
     connect(mUi->bLearnMore, &QPushButton::clicked, this, &SettingsDialog::onBLearnMore);
     connect(mUi->bAboutMega, &QPushButton::clicked, this, &SettingsDialog::onBAboutMega);
+
+    initNetworkTab();
 
     // React to AppState changes
     connect(AppState::instance().get(),
@@ -1614,46 +1616,6 @@ void SettingsDialog::on_bOpenProxySettings_clicked()
                                             });
 }
 
-void SettingsDialog::on_bOpenBandwidthSettings_clicked()
-{
-    QPointer<BandwidthSettings> bandwidthSettings(new BandwidthSettings(mApp, this));
-    DialogOpener::showDialog<BandwidthSettings>(
-        bandwidthSettings,
-        [bandwidthSettings, this]()
-        {
-            if (bandwidthSettings->result() == QDialog::Accepted)
-            {
-                if (bandwidthSettings->settingHasChanged(
-                        BandwidthSettings::SettingChanged::UPLOAD_LIMIT))
-                {
-                    mApp->setMaxUploadSpeed(mPreferences->uploadLimitKB());
-                }
-
-                if (bandwidthSettings->settingHasChanged(
-                        BandwidthSettings::SettingChanged::DOWNLOAD_LIMIT))
-                {
-                    mApp->setMaxDownloadSpeed(mPreferences->downloadLimitKB());
-                }
-
-                if (bandwidthSettings->settingHasChanged(
-                        BandwidthSettings::SettingChanged::UPLOAD_CONNECTIONS))
-                {
-                    mApp->setMaxConnections(MegaTransfer::TYPE_UPLOAD,
-                                            mPreferences->parallelUploadConnections());
-                }
-
-                if (bandwidthSettings->settingHasChanged(
-                        BandwidthSettings::SettingChanged::DOWNLOAD_CONNECTIONS))
-                {
-                    mApp->setMaxConnections(MegaTransfer::TYPE_DOWNLOAD,
-                                            mPreferences->parallelDownloadConnections());
-                }
-
-                updateNetworkTab();
-            }
-        });
-}
-
 void SettingsDialog::on_bNotifications_clicked()
 {
     MegaSyncApp->getStatsEventHandler()->sendTrackedEvent(
@@ -1669,33 +1631,87 @@ void SettingsDialog::on_bNotifications_clicked()
     mUi->wStack->setCurrentWidget(mUi->pNotifications);
 }
 
+void SettingsDialog::initNetworkTab()
+{
+    mUi->eUploadLimit->setValidator(new QIntValidator(0, 1000000000, this));
+    mUi->eDownloadLimit->setValidator(new QIntValidator(0, 1000000000, this));
+
+    auto* uploadButtonGroup = new QButtonGroup(this);
+    uploadButtonGroup->addButton(mUi->rUploadAutoLimit);
+    uploadButtonGroup->addButton(mUi->rUploadNoLimit);
+    uploadButtonGroup->addButton(mUi->rUploadLimit);
+
+    auto* downloadButtonGroup = new QButtonGroup(this);
+    downloadButtonGroup->addButton(mUi->rDownloadNoLimit);
+    downloadButtonGroup->addButton(mUi->rDownloadLimit);
+
+    mUi->eMaxDownloadConnections->setRange(ParallelConnectionsValues::getMinValue(),
+                                           ParallelConnectionsValues::getMaxValue());
+    mUi->eMaxUploadConnections->setRange(ParallelConnectionsValues::getMinValue(),
+                                         ParallelConnectionsValues::getMaxValue());
+
+    connect(mUi->rUploadAutoLimit,
+            &QRadioButton::toggled,
+            this,
+            &SettingsDialog::onUploadLimitOptionChanged);
+    connect(mUi->rUploadNoLimit,
+            &QRadioButton::toggled,
+            this,
+            &SettingsDialog::onUploadLimitOptionChanged);
+    connect(mUi->rUploadLimit,
+            &QRadioButton::toggled,
+            this,
+            &SettingsDialog::onUploadLimitOptionChanged);
+    connect(mUi->rDownloadNoLimit,
+            &QRadioButton::toggled,
+            this,
+            &SettingsDialog::onDownloadLimitOptionChanged);
+    connect(mUi->rDownloadLimit,
+            &QRadioButton::toggled,
+            this,
+            &SettingsDialog::onDownloadLimitOptionChanged);
+    connect(mUi->eUploadLimit,
+            &QLineEdit::editingFinished,
+            this,
+            &SettingsDialog::onUploadLimitValueChanged);
+    connect(mUi->eDownloadLimit,
+            &QLineEdit::editingFinished,
+            this,
+            &SettingsDialog::onDownloadLimitValueChanged);
+    connect(mUi->eMaxDownloadConnections,
+            QOverload<int>::of(&QSpinBox::valueChanged),
+            this,
+            &SettingsDialog::onMaxDownloadConnectionsChanged);
+    connect(mUi->eMaxUploadConnections,
+            QOverload<int>::of(&QSpinBox::valueChanged),
+            this,
+            &SettingsDialog::onMaxUploadConnectionsChanged);
+}
+
 void SettingsDialog::updateNetworkTab()
 {
+    // Upload rate limit
     int uploadLimitKB = mPreferences->uploadLimitKB();
-    if (uploadLimitKB < 0)
-    {
-        mUi->lUploadRateLimit->setText(
-            QCoreApplication::translate("SettingsDialog_Bandwith", "Auto"));
-    }
-    else if (uploadLimitKB > 0)
-    {
-        mUi->lUploadRateLimit->setText(QStringLiteral("%1 KB/s").arg(uploadLimitKB));
-    }
-    else
-    {
-        mUi->lUploadRateLimit->setText(tr("No limit"));
-    }
+    mUi->rUploadAutoLimit->setChecked(uploadLimitKB < 0);
+    mUi->rUploadNoLimit->setChecked(uploadLimitKB == 0);
+    mUi->rUploadLimit->setChecked(uploadLimitKB > 0);
+    mUi->eUploadLimit->setText(uploadLimitKB > 0 ? QString::number(uploadLimitKB) :
+                                                   QString::fromUtf8("0"));
+    mUi->eUploadLimit->setEnabled(uploadLimitKB > 0);
 
+    // Download rate limit
     int downloadLimitKB = mPreferences->downloadLimitKB();
-    if (downloadLimitKB > 0)
-    {
-        mUi->lDownloadRateLimit->setText(QStringLiteral("%1 KB/s").arg(downloadLimitKB));
-    }
-    else
-    {
-        mUi->lDownloadRateLimit->setText(tr("No limit"));
-    }
+    mUi->rDownloadNoLimit->setChecked(downloadLimitKB <= 0);
+    mUi->rDownloadLimit->setChecked(downloadLimitKB > 0);
+    mUi->eDownloadLimit->setText(downloadLimitKB > 0 ? QString::number(downloadLimitKB) :
+                                                       QString::fromUtf8("0"));
+    mUi->eDownloadLimit->setEnabled(downloadLimitKB > 0);
 
+    // Connections
+    mUi->eMaxDownloadConnections->setValue(mPreferences->parallelDownloadConnections());
+    mUi->eMaxUploadConnections->setValue(mPreferences->parallelUploadConnections());
+
+    // Proxy
     switch (mPreferences->proxyType())
     {
         case Preferences::PROXY_TYPE_NONE:
@@ -1709,6 +1725,102 @@ void SettingsDialog::updateNetworkTab()
             mUi->lProxySettings->setText(tr("Manual"));
             break;
     }
+}
+
+void SettingsDialog::onUploadLimitOptionChanged()
+{
+    if (mLoadingSettings)
+        return;
+
+    if (mUi->rUploadAutoLimit->isChecked())
+    {
+        mPreferences->setUploadLimitKB(-1);
+        mApp->setMaxUploadSpeed(-1);
+        mUi->eUploadLimit->setEnabled(false);
+    }
+    else if (mUi->rUploadNoLimit->isChecked())
+    {
+        mPreferences->setUploadLimitKB(0);
+        mApp->setMaxUploadSpeed(0);
+        mUi->eUploadLimit->setEnabled(false);
+    }
+    else if (mUi->rUploadLimit->isChecked())
+    {
+        mUi->eUploadLimit->setEnabled(true);
+        int limit = mUi->eUploadLimit->text().toInt();
+        if (limit > 0)
+        {
+            mPreferences->setUploadLimitKB(limit);
+            mApp->setMaxUploadSpeed(limit);
+        }
+    }
+}
+
+void SettingsDialog::onUploadLimitValueChanged()
+{
+    if (mLoadingSettings || !mUi->rUploadLimit->isChecked())
+        return;
+
+    int limit = mUi->eUploadLimit->text().toInt();
+    if (limit > 0)
+    {
+        mPreferences->setUploadLimitKB(limit);
+        mApp->setMaxUploadSpeed(limit);
+    }
+}
+
+void SettingsDialog::onDownloadLimitOptionChanged()
+{
+    if (mLoadingSettings)
+        return;
+
+    if (mUi->rDownloadNoLimit->isChecked())
+    {
+        mPreferences->setDownloadLimitKB(0);
+        mApp->setMaxDownloadSpeed(0);
+        mUi->eDownloadLimit->setEnabled(false);
+    }
+    else if (mUi->rDownloadLimit->isChecked())
+    {
+        mUi->eDownloadLimit->setEnabled(true);
+        int limit = mUi->eDownloadLimit->text().toInt();
+        if (limit > 0)
+        {
+            mPreferences->setDownloadLimitKB(limit);
+            mApp->setMaxDownloadSpeed(limit);
+        }
+    }
+}
+
+void SettingsDialog::onDownloadLimitValueChanged()
+{
+    if (mLoadingSettings || !mUi->rDownloadLimit->isChecked())
+        return;
+
+    int limit = mUi->eDownloadLimit->text().toInt();
+    if (limit > 0)
+    {
+        mPreferences->setDownloadLimitKB(limit);
+        mApp->setMaxDownloadSpeed(limit);
+    }
+}
+
+void SettingsDialog::onMaxDownloadConnectionsChanged(int value)
+{
+    if (mLoadingSettings)
+        return;
+
+    mPreferences->setParallelDownloadConnections(value);
+    mApp->setMaxConnections(MegaTransfer::TYPE_DOWNLOAD, value);
+}
+
+void SettingsDialog::onMaxUploadConnectionsChanged(int value)
+{
+    if (mLoadingSettings)
+        return;
+
+    mPreferences->setParallelUploadConnections(value);
+    mApp->setMaxConnections(MegaTransfer::TYPE_UPLOAD, value);
 }
 
 void SettingsDialog::setShortCutsForToolBarItems()

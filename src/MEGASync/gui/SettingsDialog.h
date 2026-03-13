@@ -129,7 +129,6 @@ private slots:
     // Network
     void on_bNetwork_clicked();
     void on_bOpenProxySettings_clicked();
-    void on_bOpenBandwidthSettings_clicked();
 
     //Notifications
     void on_bNotifications_clicked();
@@ -144,11 +143,18 @@ private slots:
     void onRequestTaskbarPinningTimeout();
     void onBLearnMore();
     void onBAboutMega();
+    void onUploadLimitOptionChanged();
+    void onUploadLimitValueChanged();
+    void onDownloadLimitOptionChanged();
+    void onDownloadLimitValueChanged();
+    void onMaxDownloadConnectionsChanged(int value);
+    void onMaxUploadConnectionsChanged(int value);
 
 private:
     void loadSettings();
     void onCacheSizeAvailable();
     void saveExcludeSyncNames();
+    void initNetworkTab();
     void updateNetworkTab();
     void setShortCutsForToolBarItems();
     void updateCacheSchedulerDaysLabel();
