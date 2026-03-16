@@ -1766,53 +1766,67 @@ border: none
      </widget>
      <widget class="QWidget" name="pSecurity">
       <layout class="QVBoxLayout" name="verticalLayout_24">
+       <property name="spacing">
+        <number>36</number>
+       </property>
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>24</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
+       <property name="bottomMargin">
+        <number>12</number>
+       </property>
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_15">
+         <property name="spacing">
+          <number>12</number>
+         </property>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_25">
+          <layout class="QVBoxLayout" name="vRecoveryKeyTitleLine">
+           <property name="spacing">
+            <number>4</number>
+           </property>
            <item>
             <widget class="QLabel" name="label">
              <property name="text">
               <string>Recovery Key</string>
              </property>
+             <property name="font-size" stdset="0">
+              <string notr="true">caption</string>
+             </property>
+             <property name="semibold" stdset="0">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
            <item>
-            <spacer name="horizontalSpacer_17">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
+            <widget class="QFrame" name="frame">
+             <property name="minimumSize">
               <size>
-               <width>40</width>
-               <height>20</height>
+               <width>0</width>
+               <height>1</height>
               </size>
              </property>
-            </spacer>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>1</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+            </widget>
            </item>
           </layout>
-         </item>
-         <item>
-          <widget class="QFrame" name="frame">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>1</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>1</height>
-            </size>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
-          </widget>
          </item>
          <item>
           <widget class="QLabel" name="lRecoveryKey">
@@ -1826,6 +1840,12 @@ border: none
             <string>Your password is not stored by MEGA and we cannot recover it for you. To avoid losing access to your account, save your Recovery Key in a safe place.</string>
            </property>
            <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+           <property name="font-size" stdset="0">
+            <string notr="true">body-2</string>
+           </property>
+           <property name="regular" stdset="0">
             <bool>true</bool>
            </property>
           </widget>
@@ -1891,51 +1911,50 @@ border: none
        </item>
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_27">
+         <property name="spacing">
+          <number>12</number>
+         </property>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_27">
+          <layout class="QVBoxLayout" name="vChangePasswordTitleLine">
+           <property name="spacing">
+            <number>4</number>
+           </property>
            <item>
             <widget class="QLabel" name="label_3">
              <property name="text">
               <string>Change Password</string>
              </property>
+             <property name="font-size" stdset="0">
+              <string notr="true">caption</string>
+             </property>
+             <property name="semibold" stdset="0">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
            <item>
-            <spacer name="horizontalSpacer_23">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
+            <widget class="QFrame" name="frame_3">
+             <property name="minimumSize">
               <size>
-               <width>40</width>
-               <height>20</height>
+               <width>0</width>
+               <height>1</height>
               </size>
              </property>
-            </spacer>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>1</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+            </widget>
            </item>
           </layout>
-         </item>
-         <item>
-          <widget class="QFrame" name="frame_3">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>1</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>1</height>
-            </size>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
-          </widget>
          </item>
          <item>
           <widget class="QLabel" name="lRecoveryKey_3">
@@ -1949,6 +1968,12 @@ border: none
             <string>Your account security depends on the strength of your password. Passwords should be unique and impossible to guess. We recommend using a password manager.</string>
            </property>
            <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+           <property name="font-size" stdset="0">
+            <string notr="true">body-2</string>
+           </property>
+           <property name="regular" stdset="0">
             <bool>true</bool>
            </property>
           </widget>
@@ -2873,13 +2898,13 @@ margin-top: 0px;
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_10" stretch="0,0,0,1">
        <property name="spacing">
-        <number>24</number>
+        <number>36</number>
        </property>
        <property name="leftMargin">
         <number>0</number>
        </property>
        <property name="topMargin">
-        <number>10</number>
+        <number>12</number>
        </property>
        <property name="rightMargin">
         <number>0</number>
@@ -4020,7 +4045,7 @@ margin-top: 0px;
              <bool>false</bool>
             </property>
             <property name="type" stdset="0">
-             <string notr="true">primary</string>
+             <string notr="true">secondary</string>
             </property>
             <property name="dimension" stdset="0">
              <string notr="true">small</string>
