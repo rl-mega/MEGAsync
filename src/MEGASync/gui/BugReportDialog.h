@@ -34,6 +34,8 @@ private slots:
     void onReportUpdated(int value);
 
 private:
+    bool isDescriptionValid() const;
+    void updateDescriptionValidation(bool forceErrorMessage = false);
     void closeProgressDialog();
     void openProgressDialog();
 
@@ -41,7 +43,8 @@ private:
     QPointer<ProgressIndicatorDialog> mProgressIndicatorDialog;
     std::unique_ptr<BugReportController> mController;
 
-    const static auto mMaxDescriptionLength = 3000;
+    static constexpr int mMinDescriptionLength = 30;
+    static constexpr int mMaxDescriptionLength = 3000;
 
 private slots:
     void onSubmitClicked();

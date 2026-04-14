@@ -41,6 +41,11 @@ font-weight: 600;
 font-size: 14px;
 }
 
+#lDescriptionError
+{
+color: #E31B57;  /*colorToken.support-error*/
+}
+
 #teDescribeBug
 {
 padding-top: 6px;
@@ -193,6 +198,19 @@ padding-right: 0px;
         </property>
         <property name="type" stdset="0">
          <string notr="true">mega</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lDescriptionError">
+        <property name="text">
+         <string>Description must be at least 30 characters.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+        <property name="visible">
+         <bool>false</bool>
         </property>
        </widget>
       </item>

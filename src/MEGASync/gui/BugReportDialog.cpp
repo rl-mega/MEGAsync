@@ -24,7 +24,7 @@ BugReportDialog::BugReportDialog(QWidget* parent, MegaSyncLogger& logger):
         ui->lDescribeBug->text() +
         QString::fromUtf8("<span style=\"color:red; text-decoration:none;\">*</span>"));
     ui->bSubmit->setDefault(true);
-    ui->bSubmit->setEnabled(false);
+    updateDescriptionValidation();
 
     mController->attachLogToReport(ui->cbAttachLogs->isChecked());
 
@@ -206,6 +206,13 @@ void BugReportDialog::onReportFailed()
 
 void BugReportDialog::onSubmitClicked()
 {
+    if (!isDescriptionValid())
+    {
+        updateDescriptionValidation(true);
+        ui->teDescribeBug->setFocus();
+        return;
+    }
+
     mController->submitReport();
 }
 
@@ -249,13 +256,28 @@ void BugReportDialog::cancelSendReport()
 void BugReportDialog::onDescriptionChanged()
 {
     auto description(ui->teDescribeBug->toPlainText());
-    ui->bSubmit->setEnabled(!description.isEmpty());
     mController->setReportDescription(description);
+    updateDescriptionValidation();
 }
 
 void BugReportDialog::onTitleChanged()
 {
     mController->setReportTitle(ui->leTitleBug->text());
+}
+
+bool BugReportDialog::isDescriptionValid() const
+{
+    return ui->teDescribeBug->toPlainText().trimmed().length() >= mMinDescriptionLength;
+}
+
+void BugReportDialog::updateDescriptionValidation(bool forceErrorMessage)
+{
+    const auto description = ui->teDescribeBug->toPlainText();
+    const auto hasUserInput = !description.isEmpty();
+    const auto descriptionValid = isDescriptionValid();
+
+    ui->bSubmit->setEnabled(descriptionValid);
+    ui->lDescriptionError->setVisible(!descriptionValid && (forceErrorMessage || hasUserInput));
 }
 
 void BugReportDialog::onDescribeBugTextChanged()
