@@ -10,6 +10,7 @@
 
 #include <QCloseEvent>
 #include <QRegularExpression>
+#include <QStyle>
 
 using namespace mega;
 
@@ -275,9 +276,14 @@ void BugReportDialog::updateDescriptionValidation(bool forceErrorMessage)
     const auto description = ui->teDescribeBug->toPlainText();
     const auto hasUserInput = !description.isEmpty();
     const auto descriptionValid = isDescriptionValid();
+    const auto showValidationError = !descriptionValid && (forceErrorMessage || hasUserInput);
 
     ui->bSubmit->setEnabled(descriptionValid);
-    ui->lDescriptionError->setVisible(!descriptionValid && (forceErrorMessage || hasUserInput));
+    ui->wDescriptionError->setVisible(showValidationError);
+    ui->teDescribeBug->setProperty("error", showValidationError);
+    ui->teDescribeBug->style()->unpolish(ui->teDescribeBug);
+    ui->teDescribeBug->style()->polish(ui->teDescribeBug);
+    ui->teDescribeBug->update();
 }
 
 void BugReportDialog::onDescribeBugTextChanged()

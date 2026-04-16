@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>558</width>
-    <height>459</height>
+    <width>473</width>
+    <height>566</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -202,16 +202,63 @@ padding-right: 0px;
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="lDescriptionError">
-        <property name="text">
-         <string>Description must be at least 30 characters.</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-        <property name="visible">
-         <bool>false</bool>
-        </property>
+       <widget class="QWidget" name="wDescriptionError" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <property name="spacing">
+          <number>8</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="IconLabel" name="toolButton">
+           <property name="minimumSize">
+            <size>
+             <width>16</width>
+             <height>16</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16</width>
+             <height>16</height>
+            </size>
+           </property>
+           <property name="text">
+            <string notr="true"/>
+           </property>
+           <property name="icon">
+            <iconset resource="../Resources_light.qrc">
+             <normaloff>:/alert-triangle.svg</normaloff>:/alert-triangle.svg</iconset>
+           </property>
+           <property name="normal_off" stdset="0">
+            <string notr="true">text-error</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="lDescriptionError">
+           <property name="visible">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string>Please describe your issue in detail. Must be at least 30 characters.</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
@@ -361,6 +408,15 @@ padding-right: 0px;
    </item>
   </layout>
  </widget>
- <resources/>
+ <customwidgets>
+  <customwidget>
+   <class>IconLabel</class>
+   <extends>QToolButton</extends>
+   <header>TokenizableItems/IconLabel.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../Resources_light.qrc"/>
+ </resources>
  <connections/>
 </ui>

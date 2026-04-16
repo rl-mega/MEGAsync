@@ -651,7 +651,7 @@
         <translation>Your issue has been submitted, a confirmation email will be sent to you.</translation>
     </message>
     <message>
-        <source>Description must be at least 30 characters.</source>
+        <source>Please describe your issue in detail. Must be at least 30 characters.</source>
         <translatorcomment>Validation error shown when the reported issue description does not reach the minimum required length. SNC-6268</translatorcomment>
         <translation type="unfinished"></translation>
     </message>
