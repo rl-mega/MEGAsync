@@ -272,6 +272,8 @@ private:
     void checkAutoSolvedIssues(StalledIssuesVariantList& receivedIssues);
     void checkFailedAutoSolvedIssues(StalledIssuesVariantList& receivedIssues);
     void prepareTrackedIssuesForUpdate();
+    StalledIssuesVariantList failedStalledIssuesSnapshot() const;
+    StalledIssuesVariantList solvedStalledIssuesSnapshot() const;
 
     void needsUpdate();
     void setIssuesRequested(bool state);

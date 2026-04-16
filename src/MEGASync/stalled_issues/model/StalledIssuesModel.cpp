@@ -83,6 +83,7 @@ StalledIssuesModel::StalledIssuesModel():
 {
     mStalledIssuesThread = new QThread();
     mStalledIssuesReceiver = new StalledIssuesReceiver();
+    mStalledIssuesReceiver->setHashDiscardTracker(mHashDiscardTracker);
 
     mRequestListener =
         std::make_unique<mega::QTMegaRequestListener>(mMegaApi, mStalledIssuesReceiver);
@@ -249,6 +250,7 @@ void StalledIssuesModel::onProcessStalledIssues(ReceivedStalledIssues issuesRece
                                                 UpdateType updateType)
 {
     bool trackedFailedIssuesChanged(false);
+    const auto trackedFailedIssuesSnapshot(failedStalledIssuesSnapshot());
 
     if(!issuesReceived.isEmpty() && !mEventTimer.isActive())
     {
@@ -280,13 +282,13 @@ void StalledIssuesModel::onProcessStalledIssues(ReceivedStalledIssues issuesRece
         });
     };
 
-    if (!mFailedStalledIssues.isEmpty())
+    if (!trackedFailedIssuesSnapshot.isEmpty())
     {
-        auto trackedFailedIssues(mFailedStalledIssues);
+        auto trackedFailedIssues(trackedFailedIssuesSnapshot);
 
         // Re-insert tracked failed issues
         mHashDiscardTracker->keepTrackIssues(trackedFailedIssues);
-        trackedFailedIssuesChanged = trackedFailedIssues != mFailedStalledIssues;
+        trackedFailedIssuesChanged = trackedFailedIssues != trackedFailedIssuesSnapshot;
         mHashDiscardTracker->purgeExpired();
         issuesReceived.failedAutoSolvedStalledIssues().append(trackedFailedIssues);
     }
@@ -575,12 +577,24 @@ void StalledIssuesModel::updateStalledIssuesForAutoSolve()
 
 void StalledIssuesModel::prepareTrackedIssuesForUpdate()
 {
-    if (!mFailedStalledIssues.isEmpty())
-    {
-        mHashDiscardTracker->prepareForNewRequest(mFailedStalledIssues);
-    }
+    const auto trackedFailedIssues(failedStalledIssuesSnapshot());
 
-    mStalledIssuesReceiver->setHashDiscardTracker(mHashDiscardTracker);
+    if (!trackedFailedIssues.isEmpty())
+    {
+        mHashDiscardTracker->prepareForNewRequest(trackedFailedIssues);
+    }
+}
+
+StalledIssuesVariantList StalledIssuesModel::failedStalledIssuesSnapshot() const
+{
+    QReadLocker lock(&mModelMutex);
+    return mFailedStalledIssues;
+}
+
+StalledIssuesVariantList StalledIssuesModel::solvedStalledIssuesSnapshot() const
+{
+    QReadLocker lock(&mModelMutex);
+    return mSolvedStalledIssues;
 }
 
 void StalledIssuesModel::onNodesUpdate(mega::MegaApi*, mega::MegaNodeList* nodes)
@@ -768,7 +782,11 @@ Qt::ItemFlags StalledIssuesModel::flags(const QModelIndex& index) const
 
 void StalledIssuesModel::fullReset()
 {
-    mSolvedStalledIssues.clear();
+    {
+        QWriteLocker lock(&mModelMutex);
+        mSolvedStalledIssues.clear();
+    }
+
     reset();
 }
 
@@ -970,16 +988,19 @@ void StalledIssuesModel::UiItemUpdate(const QModelIndex& oldIndex, const QModelI
 
 void StalledIssuesModel::reset()
 {
-    auto solvedIssues(mSolvedStalledIssues);
+    auto solvedIssues(solvedStalledIssuesSnapshot());
 
     beginResetModel();
 
-    mStalledIssues.clear();
-    mFailedStalledIssues.clear();
-    mStalledIssuesByOrder.clear();
-    mCountByFilterCriterion.clear();
-    mStalledIssueRowByHash.clear();
-    mSolvedStalledIssues.clear();
+    {
+        QWriteLocker lock(&mModelMutex);
+        mStalledIssues.clear();
+        mFailedStalledIssues.clear();
+        mStalledIssuesByOrder.clear();
+        mCountByFilterCriterion.clear();
+        mStalledIssueRowByHash.clear();
+        mSolvedStalledIssues.clear();
+    }
 
     endResetModel();
 
@@ -1122,6 +1143,7 @@ void StalledIssuesModel::solveListOfIssues(const SolveListInfo &info)
             {
                 if (issue.getData()->isFailed())
                 {
+                    QWriteLocker lock(&mModelMutex);
                     mFailedStalledIssues.removeOne(issue);
                     mCountByFilterCriterion[static_cast<int>(
                         StalledIssueFilterCriterion::FAILED_CONFLICTS)]--;
@@ -1264,6 +1286,7 @@ bool StalledIssuesModel::issueSolved(const StalledIssue* issue)
         auto issueVariant(getIssueVariantByIssue(issue));
         if(issueVariant.isValid())
         {
+            QWriteLocker lock(&mModelMutex);
             mSolvedStalledIssues.append(issueVariant);
             mCountByFilterCriterion[static_cast<int>(StalledIssueFilterCriterion::SOLVED_CONFLICTS)]++;
             auto& counter = mCountByFilterCriterion[static_cast<int>(
@@ -1290,6 +1313,7 @@ bool StalledIssuesModel::issueFailed(const StalledIssue* issue)
         auto issueVariant(getIssueVariantByIssue(issue));
         if(issueVariant.isValid())
         {
+            QWriteLocker lock(&mModelMutex);
             mFailedStalledIssues.append(issueVariant);
             mCountByFilterCriterion[static_cast<int>(StalledIssueFilterCriterion::FAILED_CONFLICTS)]++;
 
