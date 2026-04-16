@@ -1149,7 +1149,7 @@ void StalledIssuesModel::solveListOfIssues(const SolveListInfo &info)
                         StalledIssueFilterCriterion::FAILED_CONFLICTS)]--;
                 }
 
-                if (issue.getData()->checkForExternalChanges(this))
+                if (issue.getData()->checkForExternalChanges(mStalledIssuesReceiver))
                 {
                     issuesExternallyChanged++;
                     count.issuesFailed++;
@@ -1758,7 +1758,8 @@ void StalledIssuesModel::semiAutoSolveNameConflictIssues(const QModelIndexList& 
     {
         auto result(false);
         auto item(getStalledIssueByRow(row));
-        if (!item.getData()->checkForExternalChanges(this))
+        // This logic is run in mStalledIssuesReceiver thread, so we pass this object as the context
+        if (!item.getData()->checkForExternalChanges(mStalledIssuesReceiver))
         {
             if(item.consultData()->getReason() == mega::MegaSyncStall::SyncStallReason::NamesWouldClashWhenSynced)
             {
