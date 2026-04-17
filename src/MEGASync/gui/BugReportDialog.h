@@ -50,6 +50,7 @@ private slots:
     void onSubmitClicked();
     void onCancelClicked();
     void cancelSendReport();
+    void onClearDescriptionClicked();
     void onDescriptionChanged();
     void onTitleChanged();
     void onDescribeBugTextChanged();

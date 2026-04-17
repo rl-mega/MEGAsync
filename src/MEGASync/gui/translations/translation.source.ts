@@ -586,11 +586,6 @@
         <translation>Continue</translation>
     </message>
     <message>
-        <source>Describe the problem</source>
-        <translatorcomment>Label to indicate the description input field of form bug report. The user will fill it with a description of the bug and any specific detail that wants to be included.</translatorcomment>
-        <translation>Describe the issue</translation>
-    </message>
-    <message>
         <source>Error on submitting bug report</source>
         <translatorcomment>Error message shown when some error occurs during uploading a bug report.</translatorcomment>
         <translation>Error while uploading reported issue.</translation>
@@ -653,6 +648,11 @@
     <message>
         <source>Please describe your issue in detail. Must be at least 30 characters.</source>
         <translatorcomment>Validation error shown when the reported issue description does not reach the minimum required length. SNC-6268</translatorcomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Describe the problem *</source>
+        <translatorcomment>Label to indicate the description input field of form bug report. The user will fill it with a description of the bug and any specific detail that wants to be included.</translatorcomment>
         <translation type="unfinished"></translation>
     </message>
 </context>

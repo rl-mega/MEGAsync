@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>473</width>
-    <height>566</height>
+    <width>480</width>
+    <height>554</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -48,9 +48,9 @@ color: #E31B57;  /*colorToken.support-error*/
 
 #teDescribeBug
 {
-padding-top: 6px;
+padding-top: 14px;
 padding-bottom: 6px;
-padding-right: 0px;
+padding-right: 32px;
 }
 
 
@@ -61,16 +61,16 @@ padding-right: 0px;
     <number>24</number>
    </property>
    <property name="leftMargin">
-    <number>48</number>
+    <number>24</number>
    </property>
    <property name="topMargin">
-    <number>48</number>
+    <number>24</number>
    </property>
    <property name="rightMargin">
-    <number>48</number>
+    <number>24</number>
    </property>
    <property name="bottomMargin">
-    <number>48</number>
+    <number>24</number>
    </property>
    <item>
     <widget class="QWidget" name="wHeaderBug" native="true">
@@ -187,18 +187,114 @@ padding-right: 0px;
          <string notr="true"/>
         </property>
         <property name="text">
-         <string>Describe the problem</string>
+         <string>Describe the problem *</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QTextEdit" name="teDescribeBug">
-        <property name="cursor" stdset="0">
-         <cursorShape>IBeamCursor</cursorShape>
-        </property>
-        <property name="type" stdset="0">
-         <string notr="true">mega</string>
-        </property>
+      <item alignment="Qt::AlignTop">
+       <widget class="QWidget" name="wDescribeBugEditor" native="true">
+        <layout class="QGridLayout" name="gridLayout">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QTextEdit" name="teDescribeBug">
+           <property name="cursor" stdset="0">
+            <cursorShape>IBeamCursor</cursorShape>
+           </property>
+           <property name="type" stdset="0">
+            <string notr="true">mega</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" alignment="Qt::AlignRight|Qt::AlignTop">
+          <widget class="QWidget" name="wClearDescriptionOverlay" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>14</number>
+            </property>
+            <property name="rightMargin">
+             <number>12</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="TokenizableToolButton" name="bClearDescription">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
+                </property>
+                <property name="layoutDirection">
+                 <enum>Qt::LeftToRight</enum>
+                </property>
+                <property name="text">
+                 <string notr="true"/>
+                </property>
+                <property name="icon">
+                 <iconset resource="../Resources_common.qrc">
+                  <normaloff>:/cross_small_thin_outline</normaloff>:/cross_small_thin_outline</iconset>
+                </property>
+                <property name="type" stdset="0">
+                 <string notr="true">ghost</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
@@ -414,8 +510,14 @@ padding-right: 0px;
    <extends>QToolButton</extends>
    <header>TokenizableItems/IconLabel.h</header>
   </customwidget>
+  <customwidget>
+   <class>TokenizableToolButton</class>
+   <extends>QToolButton</extends>
+   <header>TokenizableItems/TokenizableButtons.h</header>
+  </customwidget>
  </customwidgets>
  <resources>
+  <include location="../Resources_common.qrc"/>
   <include location="../Resources_light.qrc"/>
  </resources>
  <connections/>

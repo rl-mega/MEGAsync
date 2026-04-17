@@ -21,10 +21,13 @@ BugReportDialog::BugReportDialog(QWidget* parent, MegaSyncLogger& logger):
 {
     ui->setupUi(this);
 
-    ui->lDescribeBug->setText(
-        ui->lDescribeBug->text() +
-        QString::fromUtf8("<span style=\"color:red; text-decoration:none;\">*</span>"));
     ui->bSubmit->setDefault(true);
+
+    // Description error is always there, even hidden
+    auto sizeP(ui->wDescriptionError->sizePolicy());
+    sizeP.setRetainSizeWhenHidden(true);
+    ui->wDescriptionError->setSizePolicy(sizeP);
+
     updateDescriptionValidation();
 
     mController->attachLogToReport(ui->cbAttachLogs->isChecked());
@@ -70,6 +73,10 @@ BugReportDialog::BugReportDialog(QWidget* parent, MegaSyncLogger& logger):
 
     connect(ui->bCancel, &QPushButton::clicked, this, &BugReportDialog::onCancelClicked);
     connect(ui->bSubmit, &QPushButton::clicked, this, &BugReportDialog::onSubmitClicked);
+    connect(ui->bClearDescription,
+            &QPushButton::clicked,
+            this,
+            &BugReportDialog::onClearDescriptionClicked);
     connect(ui->teDescribeBug,
             &QTextEdit::textChanged,
             this,
@@ -266,6 +273,12 @@ void BugReportDialog::onTitleChanged()
     mController->setReportTitle(ui->leTitleBug->text());
 }
 
+void BugReportDialog::onClearDescriptionClicked()
+{
+    ui->teDescribeBug->clear();
+    ui->teDescribeBug->setFocus();
+}
+
 bool BugReportDialog::isDescriptionValid() const
 {
     return ui->teDescribeBug->toPlainText().trimmed().length() >= mMinDescriptionLength;
@@ -277,6 +290,9 @@ void BugReportDialog::updateDescriptionValidation(bool forceErrorMessage)
     const auto hasUserInput = !description.isEmpty();
     const auto descriptionValid = isDescriptionValid();
     const auto showValidationError = !descriptionValid && (forceErrorMessage || hasUserInput);
+
+    // Clear button is hidden when text edit is empty
+    ui->bClearDescription->setVisible(hasUserInput);
 
     ui->bSubmit->setEnabled(descriptionValid);
     ui->wDescriptionError->setVisible(showValidationError);
