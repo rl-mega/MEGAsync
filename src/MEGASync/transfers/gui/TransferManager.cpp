@@ -552,11 +552,9 @@ void TransferManager::refreshStateStats()
         {
             mUi->bScanning->setState(StatusInfo::TRANSFERS_STATES::STATE_INDEXING);
         }
-        else if (!MegaSyncApp->getStalledIssuesModel()->isEmpty())
+        else if (failedNumber != 0 || !MegaSyncApp->getStalledIssuesModel()->isEmpty())
         {
             mUi->bScanning->setState(StatusInfo::TRANSFERS_STATES::STATE_FAILED);
-            // Don´t show any message
-            leftFooterWidget = nullptr;
         }
         else
         {
