@@ -15,13 +15,10 @@ FocusScope {
     id: root
 
     readonly property int textSpacings: 8
-
-    property alias footerButtons: footerButtonsItem
+    //property alias footerButtons: footerButtonsItem
     property alias localFolderChooser: localFolder
     property alias remoteFolderChooser: remoteFolder
     property alias helpLink: helpLinkItem
-
-    height: column.height + 24 + footerButtonsItem.height
 
     anchors {
         top: parent.top
@@ -29,6 +26,11 @@ FocusScope {
         left: parent.left
     }
 
+    // Make this Item's implicit size = layout's implicit size
+    implicitWidth:  layoutItem.implicitWidth
+    implicitHeight: layoutItem.implicitHeight + Constants.defaultComponentSpacing
+
+    /*
     footerButtons {
         rightPrimary {
             text: SyncsStrings.sync
@@ -40,9 +42,10 @@ FocusScope {
             visible : true
         }
     }
+    */
 
     ColumnLayout {
-        id: column
+        id: layoutItem
 
         anchors {
             left: parent.left
@@ -50,12 +53,9 @@ FocusScope {
             top: parent.top
         }
 
-        //Layout.preferredHeight: textColumn.height + localFolder.height + remoteFolder.height
+        Layout.preferredHeight: textColumn.height + localFolder.height + remoteFolder.height
 
         spacing: Constants.defaultComponentSpacing
-                 - (localFolder.folderField.hint.visible + remoteFolder.folderField.hint.visible)
-                    * Constants.defaultComponentSpacing / 3
-
 
         ColumnLayout {
             id: textColumn
@@ -111,10 +111,14 @@ FocusScope {
                 Layout.leftMargin: -4
             }
         }
-    }
 
-    FooterButtons {
-        id: footerButtonsItem
+        /*
+        FooterButtons {
+            id: footerButtonsItem
+
+            anchors.bottom: root.bottom
+        }
+        */
     }
 
 }

@@ -17,8 +17,8 @@ Item {
     // added to avoid qml warning.
     function setInitialFocusPosition() { }
 
+    implicitHeight: view.currentItem.implicitHeight
     height: implicitHeight
-    implicitHeight: view.height
 
     state: root.selectiveSync
 
