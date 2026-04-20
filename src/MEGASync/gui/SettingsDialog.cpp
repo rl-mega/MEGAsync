@@ -858,7 +858,7 @@ void SettingsDialog::on_bSendBug_clicked()
     MegaSyncApp->getStatsEventHandler()->sendTrackedEvent(
         AppStatsEvents::EventType::SETTINGS_REPORT_ISSUE_CLICKED);
 
-    QPointer<BugReportDialog> dialog = new BugReportDialog(this, mApp->getLogger());
+    QPointer<BugReportDialog> dialog = new BugReportDialog(nullptr, mApp->getLogger());
     DialogOpener::showDialog(dialog);
 }
 
