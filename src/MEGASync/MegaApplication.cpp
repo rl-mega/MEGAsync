@@ -1521,6 +1521,7 @@ void MegaApplication::onFetchNodesFinished()
 void MegaApplication::onLogout()
 {
     mPendingGetUserDataRequests = 0;
+    const auto logoutSessionSnapshot = preferences ? preferences->getSession() : QString();
 
     MegaApi::log(
         MegaApi::LOG_LEVEL_INFO,
@@ -1551,73 +1552,93 @@ void MegaApplication::onLogout()
     // Eg: transfers added to data model after a logout
     MegaApi::log(MegaApi::LOG_LEVEL_INFO,
                  "Logout diagnostics: onLogout() scheduling deferred cleanup.");
-    mThreadPool->push([this]()
-    {
-        Utilities::queueFunctionInAppThread([this]()
+    mThreadPool->push(
+        [this, logoutSessionSnapshot]()
         {
-            if (preferences)
-            {
-                MegaApi::log(MegaApi::LOG_LEVEL_INFO,
-                             QString::fromUtf8("Logout diagnostics: deferred logout cleanup "
-                                               "running. logged=%1 sessionEmpty=%2")
-                                 .arg(preferences->logged())
-                                 .arg(preferences->getSession().isEmpty())
-                                 .toUtf8()
-                                 .constData());
-
-                if (preferences->logged())
+            Utilities::queueFunctionInAppThread(
+                [this, logoutSessionSnapshot]()
                 {
-                    MegaApi::log(
-                        MegaApi::LOG_LEVEL_INFO,
-                        "Logout diagnostics: deferred cleanup branch -> preferences->unlink().");
-                    clearUserAttributes();
-                    preferences->unlink();
-                    preferences->setFirstStartDone();
-                }
-                else
-                {
-                    MegaApi::log(
-                        MegaApi::LOG_LEVEL_INFO,
-                        "Logout diagnostics: deferred cleanup branch -> resetGlobalSettings().");
-                    preferences->resetGlobalSettings();
-                }
+                    if (preferences)
+                    {
+                        const auto currentSession = preferences->getSession();
+                        if (!currentSession.isEmpty() && currentSession != logoutSessionSnapshot)
+                        {
+                            MegaApi::log(
+                                MegaApi::LOG_LEVEL_WARNING,
+                                QString::fromUtf8(
+                                    "Logout diagnostics: skipping deferred cleanup because "
+                                    "a different session is already active. "
+                                    "previousLen=%1 currentLen=%2")
+                                    .arg(logoutSessionSnapshot.size())
+                                    .arg(currentSession.size())
+                                    .toUtf8()
+                                    .constData());
+                            return;
+                        }
 
-                MegaApi::log(MegaApi::LOG_LEVEL_INFO,
-                             QString::fromUtf8("Logout diagnostics: preferences cleanup finished. "
-                                               "logged=%1 sessionEmpty=%2")
-                                 .arg(preferences->logged())
-                                 .arg(preferences->getSession().isEmpty())
-                                 .toUtf8()
-                                 .constData());
+                        MegaApi::log(
+                            MegaApi::LOG_LEVEL_INFO,
+                            QString::fromUtf8("Logout diagnostics: deferred logout cleanup "
+                                              "running. logged=%1 sessionEmpty=%2")
+                                .arg(preferences->logged())
+                                .arg(preferences->getSession().isEmpty())
+                                .toUtf8()
+                                .constData());
 
-                mLoginController->deleteLater();
-                mLoginController = nullptr;
-                DialogOpener::closeAllDialogs();
-                mGfxProvider.reset();
-                mUserMessageController.reset();
-                createUserMessageController();
-                infoDialog->deleteLater();
-                infoDialog = nullptr;
-                removeSyncsAndBackupsMenus();
-                if (mDiscountStateMachine)
-                {
-                    mDiscountStateMachine->deleteLater();
-                    mDiscountStateMachine = nullptr;
-                }
-                if (mDiscountPolicy)
-                {
-                    mDiscountPolicy->deleteLater();
-                    mDiscountPolicy = nullptr;
-                }
+                        if (preferences->logged())
+                        {
+                            MegaApi::log(MegaApi::LOG_LEVEL_INFO,
+                                         "Logout diagnostics: deferred cleanup branch -> "
+                                         "preferences->unlink().");
+                            clearUserAttributes();
+                            preferences->unlink();
+                            preferences->setFirstStartDone();
+                        }
+                        else
+                        {
+                            MegaApi::log(MegaApi::LOG_LEVEL_INFO,
+                                         "Logout diagnostics: deferred cleanup branch -> "
+                                         "resetGlobalSettings().");
+                            preferences->resetGlobalSettings();
+                        }
 
-                emit requestAppState(AppState::INIT);
+                        MegaApi::log(
+                            MegaApi::LOG_LEVEL_INFO,
+                            QString::fromUtf8("Logout diagnostics: preferences cleanup finished. "
+                                              "logged=%1 sessionEmpty=%2")
+                                .arg(preferences->logged())
+                                .arg(preferences->getSession().isEmpty())
+                                .toUtf8()
+                                .constData());
 
-                start();
-                periodicTasks();
-                ThemeManager::instance()->init();
-            }
+                        mLoginController->deleteLater();
+                        mLoginController = nullptr;
+                        DialogOpener::closeAllDialogs();
+                        mGfxProvider.reset();
+                        mUserMessageController.reset();
+                        createUserMessageController();
+                        infoDialog->deleteLater();
+                        infoDialog = nullptr;
+                        removeSyncsAndBackupsMenus();
+                        if (mDiscountStateMachine)
+                        {
+                            mDiscountStateMachine->deleteLater();
+                            mDiscountStateMachine = nullptr;
+                        }
+                        if (mDiscountPolicy)
+                        {
+                            mDiscountPolicy->deleteLater();
+                            mDiscountPolicy = nullptr;
+                        }
+
+                        emit requestAppState(AppState::INIT);
+
+                        start();
+                        periodicTasks();
+                        ThemeManager::instance()->init();
+                    }
+                });
         });
-    });
 }
 
 StatsEventHandler* MegaApplication::getStatsEventHandler() const

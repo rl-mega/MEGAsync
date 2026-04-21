@@ -606,6 +606,7 @@ protected:
     QRecursiveMutex mutex;
     void login(QString account);
     void logout();
+    bool syncSettingsLocked(const char* reason);
 
     // sync related:
     void readFolders(); //read sync stored configuration

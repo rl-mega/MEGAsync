@@ -91,7 +91,17 @@ void EncryptedSettings::sync()
 {
     QSettings::sync();
 }
- 
+
+QSettings::Status EncryptedSettings::status() const
+{
+    return QSettings::status();
+}
+
+QString EncryptedSettings::settingsFileName() const
+{
+    return QSettings::fileName();
+}
+
 //Simplified XOR fun
 QByteArray EncryptedSettings::XOR(const QByteArray& key, const QByteArray& data) const
 {
