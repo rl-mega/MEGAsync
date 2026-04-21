@@ -531,7 +531,8 @@ void SyncInfo::checkUnattendedDisabledSyncsForErrors()
     }
     else if (!syncsUnattended.isEmpty() || !backupsUnattended.isEmpty())
     {
-        QString megaSyncError(QCoreApplication::translate("MegaSyncError", MegaSync::getMegaSyncErrorCode(mLastError)));
+        std::unique_ptr<const char[]> syncErrorText(MegaSync::getMegaSyncErrorCode(mLastError));
+        QString megaSyncError(QCoreApplication::translate("MegaSyncError", syncErrorText.get()));
 
         if (!syncsUnattended.isEmpty() &&
             !backupsUnattended.isEmpty())
@@ -739,8 +740,13 @@ void SyncInfo::showSingleSyncDisabledNotification(std::shared_ptr<SyncSettings> 
                 case MegaSync::Error::PUT_NODES_ERROR:
                 default:
                 {
-                    MegaSyncApp->showErrorMessage(tr("Your sync \"%1\" has been disabled. Reason: %2").arg(syncName,
-                        QCoreApplication::translate("MegaSyncError", MegaSync::getMegaSyncErrorCode(errorCode))));
+                    std::unique_ptr<const char[]> syncErrorText(
+                        MegaSync::getMegaSyncErrorCode(errorCode));
+                    MegaSyncApp->showErrorMessage(
+                        tr("Your sync \"%1\" has been disabled. Reason: %2")
+                            .arg(
+                                syncName,
+                                QCoreApplication::translate("MegaSyncError", syncErrorText.get())));
                     break;
                 }
                 }
@@ -754,8 +760,12 @@ void SyncInfo::showSingleSyncDisabledNotification(std::shared_ptr<SyncSettings> 
             if (!syncSetting->isActive()
                 && errorCode != MegaSync::Error::LOGGED_OUT)
             {
-                QString errMsg(tr("Your backup \"%1\" has been temporarily disabled: %2")
-                    .arg(syncName, QCoreApplication::translate("MegaSyncError", MegaSync::getMegaSyncErrorCode(errorCode))));
+                std::unique_ptr<const char[]> syncErrorText(
+                    MegaSync::getMegaSyncErrorCode(errorCode));
+                QString errMsg(
+                    tr("Your backup \"%1\" has been temporarily disabled: %2")
+                        .arg(syncName,
+                             QCoreApplication::translate("MegaSyncError", syncErrorText.get())));
                 MegaSyncApp->showErrorMessage(errMsg);
             }
 			else if (errorCode != MegaSync::NO_SYNC_ERROR
@@ -813,18 +823,23 @@ void SyncInfo::showSingleSyncDisabledNotification(std::shared_ptr<SyncSettings> 
 				case MegaSync::Error::PUT_NODES_ERROR:
 				default:
 				{
-					MegaSyncApp->showErrorMessage(tr("Your backup \"%1\" has been disabled. Reason: %2").arg(syncName,
-						QCoreApplication::translate("MegaSyncError", MegaSync::getMegaSyncErrorCode(errorCode))));
-					break;
-				}
-				}
-			}
-		}
-		else
-		{
-			MegaApi::log(MegaApi::LOG_LEVEL_ERROR,
-				QString::fromLatin1("Unknown type of sync: %1")
-				.arg(syncType).toUtf8().constData());
-		}
-	}
+                    std::unique_ptr<const char[]> syncErrorText(
+                        MegaSync::getMegaSyncErrorCode(errorCode));
+                    MegaSyncApp->showErrorMessage(
+                        tr("Your backup \"%1\" has been disabled. Reason: %2")
+                            .arg(
+                                syncName,
+                                QCoreApplication::translate("MegaSyncError", syncErrorText.get())));
+                    break;
+                }
+                }
+            }
+        }
+        else
+        {
+            MegaApi::log(
+                MegaApi::LOG_LEVEL_ERROR,
+                QString::fromLatin1("Unknown type of sync: %1").arg(syncType).toUtf8().constData());
+        }
+    }
 }

@@ -10,6 +10,8 @@
 #include "SyncsComponent.h"
 #include "SyncTableView.h"
 
+#include <memory>
+
 SyncSettingsUI::SyncSettingsUI(QWidget* parent):
     SyncSettingsUIBase(parent)
 {
@@ -76,10 +78,10 @@ QString SyncSettingsUI::getOperationFailTitle() const
 
 QString SyncSettingsUI::getOperationFailText(std::shared_ptr<SyncSettings> sync)
 {
+    std::unique_ptr<const char[]> syncErrorText(
+        mega::MegaSync::getMegaSyncErrorCode(sync->getError()));
     return tr("Operation on sync '%1' failed. Reason: %2")
-        .arg(sync->name(),
-             QCoreApplication::translate("MegaSyncError",
-                                         mega::MegaSync::getMegaSyncErrorCode(sync->getError())));
+        .arg(sync->name(), QCoreApplication::translate("MegaSyncError", syncErrorText.get()));
 }
 
 QString SyncSettingsUI::getErrorAddingTitle() const

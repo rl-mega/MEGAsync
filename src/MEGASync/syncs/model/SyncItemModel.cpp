@@ -12,6 +12,8 @@
 #include <QFileInfo>
 #include <QIcon>
 
+#include <memory>
+
 const int SyncItemModel::ICON_SIZE = 24;
 const int SyncItemModel::STATES_ICON_SIZE = 16;
 
@@ -168,10 +170,10 @@ QVariant SyncItemModel::data(const QModelIndex& index, int role) const
             }
             else if (role == ErrorTooltipRole)
             {
-                QString toolTip;
-                toolTip += QCoreApplication::translate(
-                    "MegaSyncError",
+                std::unique_ptr<const char[]> syncErrorText(
                     mega::MegaSync::getMegaSyncErrorCode(sync->getError()));
+                QString toolTip;
+                toolTip += QCoreApplication::translate("MegaSyncError", syncErrorText.get());
                 return toolTip;
             }
             break;

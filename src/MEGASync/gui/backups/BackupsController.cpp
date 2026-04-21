@@ -3,6 +3,8 @@
 #include "MegaApplication.h"
 #include "Utilities.h"
 
+#include <memory>
+
 BackupsController::BackupsController(QObject* parent):
     SyncController(parent)
 {
@@ -100,8 +102,9 @@ QString BackupsController::getErrorString(int errorCode, int syncErrorCode) cons
 
     if (syncErrorCode != mega::MegaSync::NO_SYNC_ERROR)
     {
-        errorMsg = QCoreApplication::translate("MegaSyncError",
-                                               mega::MegaSync::getMegaSyncErrorCode(syncErrorCode));
+        std::unique_ptr<const char[]> syncErrorText(
+            mega::MegaSync::getMegaSyncErrorCode(syncErrorCode));
+        errorMsg = QCoreApplication::translate("MegaSyncError", syncErrorText.get());
     }
     else if (errorCode != mega::MegaError::API_OK)
     {

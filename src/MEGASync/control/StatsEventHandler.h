@@ -7,6 +7,8 @@
 
 #include <QEvent>
 
+#include <memory>
+
 class StatsEventHandler : public QObject
 {
     Q_OBJECT
@@ -34,7 +36,7 @@ public:
 
 protected:
     mega::MegaApi* mMegaApi;
-    const char* mViewID;
+    std::unique_ptr<const char[]> mViewID;
     QObject* mCurrentView;
     bool mInfoDialogVisible;
     bool mUpdateViewID;
