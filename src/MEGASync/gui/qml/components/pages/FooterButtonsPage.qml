@@ -13,8 +13,6 @@ Item {
 
     FooterButtons {
         id: footerButtonsItem
-
-        anchors.bottom: root.bottom
     }
 
 }

@@ -25,6 +25,13 @@ SyncsQmlDialog {
 
     readonly property int defaultWindowMargin: 24
 
+    Behavior on height {
+        NumberAnimation {
+            duration: 200
+            easing.type: Easing.InOutQuad
+        }
+    }
+
     Rectangle {
         id: syncsContentItem
 
