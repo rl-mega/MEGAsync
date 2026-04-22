@@ -6,6 +6,8 @@
 
 #include <cmath>
 
+constexpr double DOUBLE_COMPARISON_EPSILON = 1e-5;
+
 DiscountPolicy::DiscountPolicy(QObject* parent):
     QObject(parent),
     mPreferences(Preferences::instance())
@@ -72,19 +74,25 @@ void DiscountPolicy::activateCampaign(std::shared_ptr<mega::MegaDiscountCodeInfo
     // Activate if needed
     if (activateCampaign)
     {
-        if (isNewCampaign)
-        {
-            MegaSyncApp->getStatsEventHandler()->sendTrackedEvent(
-                AppStatsEvents::EventType::TARGETED_DISCOUNT_CAMPAIGN_STARTED);
-            mDiscountCode = newCode;
-        }
-        // Update in case it has changed (not very probable)
-        mCampaignExpiryDateUtc = newExpiryDateUtc;
-        persist();
-        mDiscountInfo = discountInfo;
-        mIsCampaignActive = true;
+        mPendingCampaignExpiryDateUtc = newExpiryDateUtc;
+        mPendingDiscountInfo = discountInfo;
+        mPendingDiscountCode = newCode;
+        mPendingIsNewCampaign = isNewCampaign;
 
-        emit campaignActivated();
+        // Get pricing
+        if (!mUpsellController)
+        {
+            mUpsellController = new UpsellController(false, this);
+            connect(mUpsellController,
+                    &UpsellController::pricingRequestFinished,
+                    this,
+                    &DiscountPolicy::onPricingRequestFinished);
+        }
+        if (!mIsPlanPending)
+        {
+            mIsPlanPending = true;
+            mUpsellController->requestPricingData();
+        }
     }
 }
 
@@ -94,14 +102,30 @@ void DiscountPolicy::deactivateCampaign()
     // re-activation
     auto wasCampaignActive = mIsCampaignActive || (!mIsLoadingPersistedDataNeeded &&
                                                    !mIsCampaignActive && !mDiscountCode.isEmpty());
+    const bool hadPendingCampaign =
+        mIsPlanPending || mPendingDiscountInfo || !mPendingDiscountCode.isEmpty();
+    const bool hadCommittedCampaign =
+        mIsCampaignActive || mDiscountInfo || mDiscountedPlan || !mDiscountCode.isEmpty();
 
-    mIsCampaignActive = false;
-    mDiscountInfo.reset();
+    clearPendingCampaign();
 
-    mDiscountCode.clear();
-    mCampaignExpiryDateUtc = QDateTime();
-    mLastTimeShownUtc = QDateTime();
-    persist();
+    if (hadCommittedCampaign)
+    {
+        mIsCampaignActive = false;
+        mDiscountInfo.reset();
+        mDiscountedPlan.reset();
+
+        mDiscountCode.clear();
+        mCampaignExpiryDateUtc = QDateTime();
+        mLastTimeShownUtc = QDateTime();
+        persist();
+    }
+
+    if ((hadCommittedCampaign || hadPendingCampaign) && mUpsellController)
+    {
+        mUpsellController->deleteLater();
+        mUpsellController = nullptr;
+    }
 
     if (wasCampaignActive)
     {
@@ -145,14 +169,221 @@ QDateTime DiscountPolicy::getDialogLastShownDateUtc() const
     return mLastTimeShownUtc;
 }
 
-std::shared_ptr<mega::MegaDiscountCodeInfo> DiscountPolicy::getDiscountInfo()
-{
-    return mDiscountInfo;
-}
-
 QDateTime DiscountPolicy::getExpiryDateUtc() const
 {
     return mCampaignExpiryDateUtc;
+}
+
+QString DiscountPolicy::getCurrencySymbol() const
+{
+    auto plans = mUpsellController ? mUpsellController->getPlans() : nullptr;
+    return plans ? plans->getCurrencySymbol() : QString();
+}
+
+QString DiscountPolicy::getCurrencyName() const
+{
+    const char* code = mDiscountInfo ? mDiscountInfo->getLocalCurrencyCode() : nullptr;
+    return (code && *code) ? QString::fromUtf8(code) : QStringLiteral("EUR");
+}
+
+QString DiscountPolicy::getPlanName(bool shortName) const
+{
+    return mDiscountInfo ?
+               Utilities::getReadablePlanFromId(mDiscountInfo->getAccountLevel(), shortName) :
+               QString();
+}
+
+QString DiscountPolicy::getStorage() const
+{
+    if (mDiscountedPlan)
+    {
+        auto gbStorage = mDiscountedPlan->monthlyData().gBStorage();
+        if (gbStorage < 0)
+        {
+            gbStorage = mDiscountedPlan->yearlyData().gBStorage();
+        }
+        return Utilities::getSizeString(gbStorage);
+    }
+    return {};
+}
+
+QString DiscountPolicy::getTransfer() const
+{
+    if (mDiscountedPlan)
+    {
+        auto gbTransfer = mDiscountedPlan->monthlyData().gBTransfer() * getMonths();
+        if (gbTransfer < 0)
+        {
+            gbTransfer = mDiscountedPlan->yearlyData().gBTransfer();
+        }
+        return Utilities::getSizeString(gbTransfer);
+    }
+    return {};
+}
+
+QStringList DiscountPolicy::getPlanFeatures() const
+{
+    return QStringList() << QCoreApplication::translate("OfferStrings", "MEGA VPN")
+                         << QCoreApplication::translate("OfferStrings", "MEGA Pass")
+                         << QCoreApplication::translate("OfferStrings", "Object storage");
+}
+
+QString DiscountPolicy::getPrice() const
+{
+    if (mDiscountInfo)
+    {
+        const auto plans = mUpsellController ? mUpsellController->getPlans() : nullptr;
+        QString currency;
+        if (plans)
+        {
+            currency = plans->getCurrencySymbol();
+        }
+        const auto localByteSymbol = Utilities::decodeUnicodeEscapes(
+            QString::fromUtf8(mDiscountInfo->getLocalCurrencySymbol()));
+
+        if (localByteSymbol.isEmpty())
+        {
+            return Utilities::toPrice(mDiscountInfo->getEuroTotalPriceNet(), currency, true);
+        }
+        else
+        {
+            auto price = mDiscountInfo->getLocalTotalPriceNet();
+            if (std::abs(price) < DOUBLE_COMPARISON_EPSILON)
+            {
+                price = mDiscountInfo->getLocalTotalPrice();
+            }
+            return Utilities::toPrice(price, localByteSymbol, true);
+        }
+    }
+    return {};
+}
+
+QString DiscountPolicy::getDiscountedPrice() const
+{
+    if (mDiscountInfo)
+    {
+        const auto plans = mUpsellController ? mUpsellController->getPlans() : nullptr;
+        QString currency;
+        if (plans)
+        {
+            currency = plans->getCurrencySymbol();
+        }
+
+        const auto localByteSymbol = Utilities::decodeUnicodeEscapes(
+            QString::fromUtf8(mDiscountInfo->getLocalCurrencySymbol()));
+
+        if (localByteSymbol.isEmpty())
+        {
+            return Utilities::toPrice(mDiscountInfo->getEuroDiscountedTotalPriceNet(),
+                                      currency,
+                                      true);
+        }
+        else
+        {
+            auto price = mDiscountInfo->getLocalDiscountedTotalPriceNet();
+            if (std::abs(price) < DOUBLE_COMPARISON_EPSILON)
+            {
+                price = mDiscountInfo->getLocalDiscountedTotalPrice();
+            }
+            return Utilities::toPrice(price, localByteSymbol, true);
+        }
+    }
+    return {};
+}
+
+bool DiscountPolicy::hasTax() const
+{
+    return mDiscountInfo ? mDiscountInfo->getTaxRate() != -1 : true;
+}
+
+bool DiscountPolicy::localCurrencyIsBillingCurrency() const
+{
+    auto localCurrencyIsBillingCurrency = true; // Default to true
+    if (mDiscountInfo)
+    {
+        // Local currency is billing currency if the API doesn't give us a local currency symbol.
+        localCurrencyIsBillingCurrency =
+            QString::fromUtf8(mDiscountInfo->getLocalCurrencySymbol()).isEmpty();
+    }
+    return localCurrencyIsBillingCurrency;
+}
+
+QString DiscountPolicy::getCode() const
+{
+    return mDiscountCode;
+}
+
+int DiscountPolicy::getPercentage() const
+{
+    return mDiscountInfo ? mDiscountInfo->getPercentageDiscount() : 0;
+}
+
+int DiscountPolicy::getMonths() const
+{
+    return mDiscountInfo ? mDiscountInfo->getMonths() : 0;
+}
+
+void DiscountPolicy::onPricingRequestFinished(bool success)
+{
+    if (!mIsPlanPending)
+    {
+        return;
+    }
+
+    if (!success)
+    {
+        clearPendingCampaign();
+        if (!mIsCampaignActive && mUpsellController)
+        {
+            mUpsellController->deleteLater();
+            mUpsellController = nullptr;
+        }
+        return;
+    }
+
+    const auto plans = mUpsellController ? mUpsellController->getPlans() : nullptr;
+    mDiscountedPlan.reset();
+
+    if (mPendingDiscountInfo && plans && plans->size() > 0)
+    {
+        mDiscountedPlan = findPlanByLevel(mPendingDiscountInfo->getAccountLevel());
+
+        if (mDiscountedPlan)
+        {
+            if (mPendingIsNewCampaign)
+            {
+                MegaSyncApp->getStatsEventHandler()->sendTrackedEvent(
+                    AppStatsEvents::EventType::TARGETED_DISCOUNT_CAMPAIGN_STARTED);
+            }
+
+            mCampaignExpiryDateUtc = mPendingCampaignExpiryDateUtc;
+            mDiscountInfo = std::move(mPendingDiscountInfo);
+            mDiscountCode = mPendingDiscountCode;
+            persist();
+            mIsCampaignActive = true;
+            clearPendingCampaign();
+
+            emit campaignActivated();
+            return;
+        }
+    }
+
+    mega::MegaApi::log(mega::MegaApi::LOG_LEVEL_INFO, "Targeted discount: No matching plan");
+
+    const bool hasPersistedCampaign = !mDiscountCode.isEmpty();
+    if (hasPersistedCampaign)
+    {
+        deactivateCampaign();
+    }
+    else
+    {
+        clearPendingCampaign();
+        if (!mIsCampaignActive && mUpsellController)
+        {
+            mUpsellController->deleteLater();
+            mUpsellController = nullptr;
+        }
+    }
 }
 
 bool DiscountPolicy::load()
@@ -198,4 +429,32 @@ bool DiscountPolicy::isDiscountValid(
            std::lround(discountInfo->getEuroTotalPriceNet()) != 0 ||
            std::lround(discountInfo->getEuroDiscountedTotalPrice()) != 0 ||
            std::lround(discountInfo->getEuroDiscountAmount()) != 0;
+}
+
+std::shared_ptr<UpsellPlans::Data> DiscountPolicy::findPlanByLevel(int level) const
+{
+    if (mUpsellController)
+    {
+        if (auto plans = mUpsellController->getPlans())
+        {
+            for (int i = 0; i < plans->size(); ++i)
+            {
+                auto plan = plans->getPlan(i);
+                if (plan->proLevel() == level)
+                {
+                    return plan;
+                }
+            }
+        }
+    }
+    return {};
+}
+
+void DiscountPolicy::clearPendingCampaign()
+{
+    mIsPlanPending = false;
+    mPendingIsNewCampaign = false;
+    mPendingCampaignExpiryDateUtc = QDateTime();
+    mPendingDiscountCode.clear();
+    mPendingDiscountInfo.reset();
 }

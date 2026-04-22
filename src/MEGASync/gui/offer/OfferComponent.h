@@ -1,9 +1,12 @@
 #include "QmlDialogWrapper.h"
+#include "state_machines/DiscountPolicy.h"
 
-#include <memory>
-
-class UpsellController;
-class UpsellPlans;
+#include <QDateTime>
+#include <QPointer>
+#include <QString>
+#include <QStringList>
+#include <QTimer>
+#include <QUrl>
 
 class OfferComponent: public QMLComponent
 {
@@ -40,12 +43,11 @@ public:
     int getMinutes() const;
     bool hasTax() const;
     qint64 getSeconds() const;
-    void setOfferExpirationDate(const QDateTime& date);
+    void setOfferExpirationDateUtc(const QDateTime& date);
     Q_INVOKABLE QStringList getPlanFeatures() const;
     int getPercentage() const;
     int getMonths() const;
-    void setDiscountInfo(std::shared_ptr<mega::MegaDiscountCodeInfo> discount);
-    std::shared_ptr<UpsellPlans::Data> findPlanByLevel(int level) const;
+    void setDiscountPolicy(QPointer<DiscountPolicy> discountPolicy);
     Q_INVOKABLE void onGrabDeal();
     Q_INVOKABLE bool localCurrencyIsBillingCurrency() const;
 
@@ -54,7 +56,6 @@ protected:
     long long msToNextCountdownMinuteTick() const;
 
 protected slots:
-    void onPlansReady();
     void onTimerFired();
 
 signals:
@@ -62,9 +63,8 @@ signals:
     void countdownChanged();
 
 private:
-    std::shared_ptr<UpsellController> mUpsellController;
-    std::shared_ptr<UpsellPlans::Data> mDiscountedPlan = nullptr;
+    QPointer<DiscountPolicy> mDiscountPolicy = nullptr;
     QTimer mCountDownTimer;
-    QDateTime mOfferEndTime;
-    std::shared_ptr<mega::MegaDiscountCodeInfo> mDiscountInfo{nullptr};
+    QDateTime mOfferEndTimeUtc;
+    QString mDiscountCode;
 };

@@ -2,8 +2,6 @@
 
 #include "QmlManager.h"
 #include "ServiceUrls.h"
-#include "UpsellController.h"
-#include "UpsellPlans.h"
 
 namespace
 {
@@ -11,20 +9,11 @@ static bool qmlRegistrationDone = false;
 constexpr int MS_IN_ONE_MIN = 1000 * 60; // 1 minute
 constexpr int COUNT_DOWN_UPDATE_INTERVAL_MS = MS_IN_ONE_MIN; // 1 minute
 constexpr long long COUNT_DOWN_TOLERANCE_MS = 1500; // 1.5 seconds
-constexpr double DOUBLE_COMPARISON_EPSILON = 1e-5;
 }
 
 OfferComponent::OfferComponent(QObject* parent):
-    QMLComponent(parent),
-    mUpsellController(std::make_shared<UpsellController>(false, nullptr))
+    QMLComponent(parent)
 {
-    mUpsellController->setBilledPeriod(true);
-    mUpsellController->requestPricingData();
-    connect(mUpsellController.get(),
-            &UpsellController::dataReady,
-            this,
-            &OfferComponent::onPlansReady);
-
     registerQmlModules();
 
     QmlManager::instance()->setRootContextProperty(QString::fromLatin1("offerComponentAccess"),
@@ -39,7 +28,7 @@ OfferComponent::~OfferComponent() {}
 
 QUrl OfferComponent::getQmlUrl()
 {
-    return QUrl(QString::fromUtf8("qrc:/offer/OfferDialog.qml"));
+    return QUrl(QLatin1String("qrc:/offer/OfferDialog.qml"));
 }
 
 void OfferComponent::registerQmlModules()
@@ -54,131 +43,47 @@ void OfferComponent::registerQmlModules()
 
 QString OfferComponent::getCurrencySymbol() const
 {
-    auto plans = mUpsellController->getPlans();
-    if (!plans)
-    {
-        return {};
-    }
-    return plans->getCurrencySymbol();
+    return mDiscountPolicy ? mDiscountPolicy->getCurrencySymbol() : QString();
 }
 
 QString OfferComponent::getCurrencyName() const
 {
-    const char* code = mDiscountInfo ? mDiscountInfo->getLocalCurrencyCode() : nullptr;
-
-    return (code && *code) ? QString::fromUtf8(code) : QStringLiteral("EUR");
+    return mDiscountPolicy ? mDiscountPolicy->getCurrencyName() : QString();
 }
 
 QString OfferComponent::getPlanName() const
 {
-    return mDiscountInfo ?
-               Utilities::getReadablePlanFromId(mDiscountInfo->getAccountLevel(), true) :
-               QLatin1String{};
+    return mDiscountPolicy ? mDiscountPolicy->getPlanName() : QString();
 }
 
 QString OfferComponent::getStorage() const
 {
-    if (mDiscountedPlan)
-    {
-        auto gbStorage = mDiscountedPlan->monthlyData().gBStorage();
-        if (gbStorage < 0)
-        {
-            gbStorage = mDiscountedPlan->yearlyData().gBStorage();
-        }
-        return Utilities::getSizeString(gbStorage);
-    }
-    return {};
+    return mDiscountPolicy ? mDiscountPolicy->getStorage() : QString();
 }
 
 QString OfferComponent::getTransfer() const
 {
-    if (mDiscountedPlan)
-    {
-        auto gbTransfer = mDiscountedPlan->monthlyData().gBTransfer() * getMonths();
-        if (gbTransfer < 0)
-        {
-            gbTransfer = mDiscountedPlan->yearlyData().gBTransfer();
-        }
-        return Utilities::getSizeString(gbTransfer);
-    }
-    return {};
+    return mDiscountPolicy ? mDiscountPolicy->getTransfer() : QString();
 }
 
 QStringList OfferComponent::getPlanFeatures() const
 {
-    QStringList features;
-    features << QCoreApplication::translate("OfferStrings", "MEGA VPN");
-    features << QCoreApplication::translate("OfferStrings", "MEGA Pass");
-    features << QCoreApplication::translate("OfferStrings", "Object storage");
-    return features;
+    return mDiscountPolicy ? mDiscountPolicy->getPlanFeatures() : QStringList();
 }
 
 QString OfferComponent::getPrice() const
 {
-    if (mDiscountInfo)
-    {
-        const auto plans = mUpsellController->getPlans();
-        QString currency;
-        if (plans)
-        {
-            currency = plans->getCurrencySymbol();
-        }
-        const auto localByteSymbol = Utilities::decodeUnicodeEscapes(
-            QString::fromUtf8(mDiscountInfo->getLocalCurrencySymbol()));
-
-        if (localByteSymbol.isEmpty())
-        {
-            return Utilities::toPrice(mDiscountInfo->getEuroTotalPriceNet(), currency, true);
-        }
-        else
-        {
-            auto price = mDiscountInfo->getLocalTotalPriceNet();
-            if (std::abs(price) < DOUBLE_COMPARISON_EPSILON)
-            {
-                price = mDiscountInfo->getLocalTotalPrice();
-            }
-            return Utilities::toPrice(price, localByteSymbol, true);
-        }
-    }
-    return {};
+    return mDiscountPolicy ? mDiscountPolicy->getPrice() : QString();
 }
 
 QString OfferComponent::getDiscountedPrice() const
 {
-    if (mDiscountInfo)
-    {
-        const auto plans = mUpsellController->getPlans();
-        QString currency;
-        if (plans)
-        {
-            currency = plans->getCurrencySymbol();
-        }
-
-        const auto localByteSymbol = Utilities::decodeUnicodeEscapes(
-            QString::fromUtf8(mDiscountInfo->getLocalCurrencySymbol()));
-
-        if (localByteSymbol.isEmpty())
-        {
-            return Utilities::toPrice(mDiscountInfo->getEuroDiscountedTotalPriceNet(),
-                                      currency,
-                                      true);
-        }
-        else
-        {
-            auto price = mDiscountInfo->getLocalDiscountedTotalPriceNet();
-            if (std::abs(price) < DOUBLE_COMPARISON_EPSILON)
-            {
-                price = mDiscountInfo->getLocalDiscountedTotalPrice();
-            }
-            return Utilities::toPrice(price, localByteSymbol, true);
-        }
-    }
-    return {};
+    return mDiscountPolicy ? mDiscountPolicy->getDiscountedPrice() : QString();
 }
 
 int OfferComponent::getDays() const
 {
-    qint64 secsRemaining = QDateTime::currentDateTime().secsTo(mOfferEndTime);
+    qint64 secsRemaining = QDateTime::currentDateTime().secsTo(mOfferEndTimeUtc);
     if (secsRemaining <= 0)
     {
         return 0;
@@ -188,7 +93,7 @@ int OfferComponent::getDays() const
 
 int OfferComponent::getHours() const
 {
-    qint64 secsRemaining = QDateTime::currentDateTime().secsTo(mOfferEndTime);
+    qint64 secsRemaining = QDateTime::currentDateTime().secsTo(mOfferEndTimeUtc);
     if (secsRemaining <= 0)
     {
         return 0;
@@ -198,7 +103,7 @@ int OfferComponent::getHours() const
 
 int OfferComponent::getMinutes() const
 {
-    qint64 secsRemaining = QDateTime::currentDateTime().secsTo(mOfferEndTime);
+    qint64 secsRemaining = QDateTime::currentDateTime().secsTo(mOfferEndTimeUtc);
     if (secsRemaining <= 0)
     {
         return 0;
@@ -208,12 +113,12 @@ int OfferComponent::getMinutes() const
 
 bool OfferComponent::hasTax() const
 {
-    return mDiscountInfo ? mDiscountInfo->getTaxRate() != -1 : true;
+    return mDiscountPolicy ? mDiscountPolicy->hasTax() : true;
 }
 
 qint64 OfferComponent::getSeconds() const
 {
-    qint64 secsRemaining = QDateTime::currentDateTime().secsTo(mOfferEndTime);
+    qint64 secsRemaining = QDateTime::currentDateTime().secsTo(mOfferEndTimeUtc);
     if (secsRemaining <= 0)
     {
         return 0;
@@ -221,9 +126,9 @@ qint64 OfferComponent::getSeconds() const
     return secsRemaining;
 }
 
-void OfferComponent::setOfferExpirationDate(const QDateTime& date)
+void OfferComponent::setOfferExpirationDateUtc(const QDateTime& date)
 {
-    mOfferEndTime = date;
+    mOfferEndTimeUtc = date;
 
     // Set single shot timer to next minute (relative to end date)
     QTimer::singleShot(msToNextCountdownMinuteTick(), this, &OfferComponent::onTimerFired);
@@ -233,64 +138,33 @@ void OfferComponent::setOfferExpirationDate(const QDateTime& date)
 
 int OfferComponent::getPercentage() const
 {
-    return mDiscountInfo ? mDiscountInfo->getPercentageDiscount() : 0;
+    return mDiscountPolicy ? mDiscountPolicy->getPercentage() : 0;
 }
 
 int OfferComponent::getMonths() const
 {
-    return mDiscountInfo ? mDiscountInfo->getMonths() : 0;
+    return mDiscountPolicy ? mDiscountPolicy->getMonths() : 0;
 }
 
-void OfferComponent::setDiscountInfo(std::shared_ptr<mega::MegaDiscountCodeInfo> discount)
+void OfferComponent::setDiscountPolicy(QPointer<DiscountPolicy> discountPolicy)
 {
-    if (discount)
+    if (discountPolicy)
     {
-        mDiscountInfo = std::move(discount);
-        mDiscountedPlan = findPlanByLevel(mDiscountInfo->getAccountLevel());
-        setOfferExpirationDate(QDateTime::fromSecsSinceEpoch(mDiscountInfo->getExpiry(), Qt::UTC));
+        mDiscountPolicy = discountPolicy;
+        mDiscountCode = mDiscountPolicy->getCode();
+        setOfferExpirationDateUtc(mDiscountPolicy->getExpiryDateUtc());
         emit dataUpdated();
     }
 }
 
-std::shared_ptr<UpsellPlans::Data> OfferComponent::findPlanByLevel(int level) const
-{
-    auto plans = mUpsellController->getPlans();
-    if (!plans)
-    {
-        return nullptr;
-    }
-
-    for (int i = 0; i < plans->size(); ++i)
-    {
-        auto plan = plans->getPlan(i);
-        if (plan->proLevel() == level)
-        {
-            return plan;
-        }
-    }
-
-    return nullptr;
-}
-
 void OfferComponent::onGrabDeal()
 {
-    if (mDiscountInfo)
-    {
-        Utilities::openUrl(
-            ServiceUrls::instance()->getDiscountUrl(QString::fromUtf8(mDiscountInfo->getCode())));
-    }
+    Utilities::openUrl(ServiceUrls::instance()->getDiscountUrl(mDiscountCode));
 }
 
 bool OfferComponent::localCurrencyIsBillingCurrency() const
 {
-    auto localCurrencyIsBillingCurrency = true; // Default to true
-    if (mDiscountInfo)
-    {
-        // Local currency is billing currency if the API doesn't give us a local currency symbol.
-        localCurrencyIsBillingCurrency =
-            QString::fromUtf8(mDiscountInfo->getLocalCurrencySymbol()).isEmpty();
-    }
-    return localCurrencyIsBillingCurrency;
+    return mDiscountPolicy ? mDiscountPolicy->localCurrencyIsBillingCurrency() : true;
 }
 
 bool OfferComponent::eventFilter(QObject* obj, QEvent* event)
@@ -300,19 +174,6 @@ bool OfferComponent::eventFilter(QObject* obj, QEvent* event)
         emit dataUpdated();
     }
     return QMLComponent::eventFilter(obj, event);
-}
-
-void OfferComponent::onPlansReady()
-{
-    auto plans = mUpsellController->getPlans();
-
-    if (mDiscountInfo && plans && plans->size() > 0)
-    {
-        mDiscountedPlan =
-            findPlanByLevel(mDiscountInfo->getAccountLevel()); // For now, use the first plan
-    }
-
-    emit dataUpdated();
 }
 
 void OfferComponent::onTimerFired()
@@ -325,7 +186,6 @@ void OfferComponent::onTimerFired()
     if (msToMinTick <= 0)
     {
         mCountDownTimer.stop();
-        // Grey out button
         return;
     }
 
@@ -346,7 +206,7 @@ void OfferComponent::onTimerFired()
 
 long long OfferComponent::msToNextCountdownMinuteTick() const
 {
-    auto msLeft = QDateTime::currentDateTimeUtc().msecsTo(mOfferEndTime);
+    auto msLeft = QDateTime::currentDateTimeUtc().msecsTo(mOfferEndTimeUtc);
 
     // Return 0 if end has been reached
     if (msLeft < 0)

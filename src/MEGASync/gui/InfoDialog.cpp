@@ -1106,9 +1106,9 @@ void InfoDialog::on_bSettings_clicked()
 
 void InfoDialog::on_bUpgrade_clicked()
 {
-    auto discountInfo = mDiscountPolicy ? mDiscountPolicy->getDiscountInfo() : nullptr;
+    auto hasOffer = mDiscountPolicy && mDiscountPolicy->isCampaignActive();
 
-    if (!discountInfo)
+    if (!hasOffer)
     {
         MegaSyncApp->getStatsEventHandler()->sendTrackedEvent(
             AppStatsEvents::EventType::UPGRADE_CLICKED_INFO_DIALOG,
@@ -1863,10 +1863,8 @@ void InfoDialog::updateUpgradeButtonState()
     if (hasOffer)
     {
         ui->bUpgrade->setText(tr("%1% off %2")
-                                  .arg(mDiscountPolicy->getDiscountInfo()->getPercentageDiscount())
-                                  .arg(Utilities::getReadablePlanFromId(
-                                      mDiscountPolicy->getDiscountInfo()->getAccountLevel(),
-                                      false)));
+                                  .arg(mDiscountPolicy->getPercentage())
+                                  .arg(mDiscountPolicy->getPlanName(false)));
     }
     else
     {
