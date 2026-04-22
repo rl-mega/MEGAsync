@@ -22,6 +22,7 @@ SyncsQmlDialog {
     maximumWidth: width
     minimumWidth: width
     closeOnEscapePressed: true
+    color: ColorTheme.surface1
 
     readonly property int defaultWindowMargin: 24
 

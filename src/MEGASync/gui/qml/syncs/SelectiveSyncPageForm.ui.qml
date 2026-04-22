@@ -15,6 +15,9 @@ Item {
     id: root
 
     readonly property int textSpacings: 8
+    readonly property int foldersFolderSpacing: 12
+    readonly property int localFolderChooserMinHeight: 82
+    readonly property int remoteFolderChooserMinHeight: 98
     property alias footerButtons: footerButtonsItem
     property alias localFolderChooser: localFolder
     property alias remoteFolderChooser: remoteFolder
@@ -34,7 +37,7 @@ Item {
         ColumnLayout {
             id: textColumn
 
-            spacing: textSpacings
+            spacing: root.textSpacings
 
             HeaderTexts {
                 id: header
@@ -56,7 +59,7 @@ Item {
         }
 
         Item {
-            Layout.preferredHeight: Constants.defaultComponentSpacing
+            Layout.preferredHeight: root.foldersFolderSpacing
         }
 
         ColumnLayout {
@@ -72,7 +75,7 @@ Item {
                 chosenPath: syncsDataAccess.defaultLocalFolder
                 Layout.fillWidth: true
                 Layout.leftMargin: -Constants.focusBorderWidth
-                Layout.preferredHeight: Math.max(82, folderField.height)
+                Layout.preferredHeight: Math.max(root.localFolderChooserMinHeight, folderField.height)
             }
 
             ChooseSyncFolder {
@@ -83,12 +86,8 @@ Item {
                 chosenPath: syncsDataAccess.defaultRemoteFolder
                 Layout.fillWidth: true
                 Layout.leftMargin: -Constants.focusBorderWidth
-                Layout.preferredHeight: Math.max(90, folderField.height)
+                Layout.preferredHeight: Math.max(root.remoteFolderChooserMinHeight, folderField.height)
             }
-        }
-
-        Item {
-            Layout.preferredHeight: 8
         }
 
         Item { // trick: wrapper to avoid the anchoring colision (inside the footerbuttons) with the layout manager. that's the only purpose.
@@ -97,6 +96,8 @@ Item {
 
             FooterButtons {
                 id: footerButtonsItem
+
+                anchors.bottomMargin: 0
 
                 rightPrimary {
                     text: SyncsStrings.sync
