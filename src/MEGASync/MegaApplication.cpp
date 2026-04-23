@@ -1214,6 +1214,8 @@ void MegaApplication::start()
             createTrayIcon();
         }
 
+        updateTrayIcon();
+
         mLoginController = new LoginController(QmlManager::instance()->getEngine());
         if (!preferences->isFirstStartDone())
         {
