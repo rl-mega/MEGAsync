@@ -36,14 +36,22 @@ void NodeNameSetterDialog::init()
     mUi->lineEdit->setText(mOriginalName);
     mUi->lineEdit->setSelection(lineEditSelection().start, lineEditSelection().length);
 
+    auto updateOkButtonState = [this]()
+    {
+        const auto trimmedName = mUi->lineEdit->text().trimmed();
+        const bool hasText = !trimmedName.isEmpty();
+        const bool hasChanged = trimmedName != mOriginalName.trimmed();
+        mUi->okButton->setEnabled(hasText && hasChanged);
+    };
+
     connect(mUi->lineEdit,
             &QLineEdit::textChanged,
             this,
-            [this]()
+            [updateOkButtonState]()
             {
-                bool hasText = !mUi->lineEdit->text().trimmed().isEmpty();
-                mUi->okButton->setEnabled(hasText);
+                updateOkButtonState();
             });
+    updateOkButtonState();
 
     mUi->textLabel->setText(dialogText());
 
