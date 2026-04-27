@@ -47,15 +47,6 @@
         <file alias="fonts/Poppins-Thin.ttf">fonts/Poppins-Thin.ttf</file>
         <file alias="fonts/Poppins-ThinItalic.ttf">fonts/Poppins-ThinItalic.ttf</file>
         <file alias="fonts/SourceSansPro-Semibold.ttf">fonts/SourceSansPro-Semibold.ttf</file>
-        <file alias="fonts/GoogleSansFlex_9pt-Black.ttf">fonts/GoogleSansFlex_9pt-Black.ttf</file>
-        <file alias="fonts/GoogleSansFlex_9pt-Bold.ttf">fonts/GoogleSansFlex_9pt-Bold.ttf</file>
-        <file alias="fonts/GoogleSansFlex_9pt-ExtraBold.ttf">fonts/GoogleSansFlex_9pt-ExtraBold.ttf</file>
-        <file alias="fonts/GoogleSansFlex_9pt-ExtraLight.ttf">fonts/GoogleSansFlex_9pt-ExtraLight.ttf</file>
-        <file alias="fonts/GoogleSansFlex_9pt-Light.ttf">fonts/GoogleSansFlex_9pt-Light.ttf</file>
-        <file alias="fonts/GoogleSansFlex_9pt-Medium.ttf">fonts/GoogleSansFlex_9pt-Medium.ttf</file>
-        <file alias="fonts/GoogleSansFlex_9pt-Regular.ttf">fonts/GoogleSansFlex_9pt-Regular.ttf</file>
-        <file alias="fonts/GoogleSansFlex_9pt-SemiBold.ttf">fonts/GoogleSansFlex_9pt-SemiBold.ttf</file>
-        <file alias="fonts/GoogleSansFlex_9pt-Thin.ttf">fonts/GoogleSansFlex_9pt-Thin.ttf</file>
         <file alias="images/Backups_24_ico.png">images/Backups_24_ico.png</file>
         <file alias="images/Backups_24_ico@2x.png">images/Backups_24_ico@2x.png</file>
         <file alias="images/Backups_24_ico@3x.png">images/Backups_24_ico@3x.png</file>

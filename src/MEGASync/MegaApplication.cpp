@@ -437,7 +437,7 @@ void MegaApplication::addFonts()
     addFont(QString::fromUtf8("://fonts/OpenSans-Semibold.ttf"));
 
     QFont font(QString::fromUtf8("Open Sans"), 8);
-    theapp->setFont(font);
+    qApp->setFont(font);
 #endif
 
     addFont(QString::fromUtf8("://fonts/SourceSansPro-Semibold.ttf"));
@@ -474,16 +474,6 @@ void MegaApplication::addFonts()
     addFont(QString::fromUtf8("://fonts/Inter-Regular.ttf"));
     addFont(QString::fromUtf8("://fonts/Inter-SemiBold.ttf"));
     addFont(QString::fromUtf8("://fonts/Inter-Thin.ttf"));
-
-    addFont(QString::fromUtf8("://fonts/GoogleSansFlex_9pt-Black.ttf"));
-    addFont(QString::fromUtf8("://fonts/GoogleSansFlex_9pt-Bold.ttf"));
-    addFont(QString::fromUtf8("://fonts/GoogleSansFlex_9pt-ExtraBold.ttf"));
-    addFont(QString::fromUtf8("://fonts/GoogleSansFlex_9pt-ExtraLight.ttf"));
-    addFont(QString::fromUtf8("://fonts/GoogleSansFlex_9pt-Light.ttf"));
-    addFont(QString::fromUtf8("://fonts/GoogleSansFlex_9pt-Medium.ttf"));
-    addFont(QString::fromUtf8("://fonts/GoogleSansFlex_9pt-Regular.ttf"));
-    addFont(QString::fromUtf8("://fonts/GoogleSansFlex_9pt-SemiBold.ttf"));
-    addFont(QString::fromUtf8("://fonts/GoogleSansFlex_9pt-Thin.ttf"));
 }
 
 void MegaApplication::initStyleAndResources()
