@@ -33,19 +33,26 @@ void NodeSelectorDelegate::paint(QPainter* painter,
         // Text color
         if (!index.flags().testFlag(Qt::ItemIsEnabled))
         {
-            auxOpt.palette.setBrush(
-                QPalette::ColorRole::Text,
-                TokenParserWidgetManager::instance()->getColor(QLatin1String("text-disabled")));
+            const auto isTakenDown(
+                index.data(toInt(NodeSelectorModelRoles::IS_TAKEN_DOWN_ROLE)).toBool());
+
+            QColor color;
+            if (isTakenDown)
+            {
+                color = TokenParserWidgetManager::instance()->getColor(QLatin1String("text-error"));
+                color.setAlphaF(color.alphaF() * 0.5);
+            }
+            else
+            {
+                color =
+                    TokenParserWidgetManager::instance()->getColor(QLatin1String("text-disabled"));
+            }
+
+            auxOpt.palette.setBrush(QPalette::ColorRole::Text, color);
         }
         else
         {
-            const auto isTakenDown(
-                index.data(toInt(NodeSelectorModelRoles::IS_TAKEN_DOWN_ROLE)).toBool());
             auto textToken = QLatin1String("text-primary");
-            if (isTakenDown && index.column() == NodeSelectorModel::Column::NODE)
-            {
-                textToken = QLatin1String("text-error");
-            }
             auxOpt.palette.setBrush(QPalette::ColorRole::Text,
                                     TokenParserWidgetManager::instance()->getColor(textToken));
             auxOpt.palette.setBrush(QPalette::ColorRole::HighlightedText,

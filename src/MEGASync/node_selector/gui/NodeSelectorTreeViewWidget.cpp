@@ -237,8 +237,6 @@ bool NodeSelectorTreeViewWidget::eventFilter(QObject* watched, QEvent* event)
     {
         if (auto moveEvent = static_cast<QDragMoveEvent*>(event))
         {
-            auto proxyIndex = ui->tMegaFolders->indexAt(moveEvent->pos());
-            auto sourceIndex = mProxyModel->mapToSource(proxyIndex);
             if (!moveEvent->mimeData()->urls().isEmpty())
             {
                 ui->tMegaFolders->dragMoveEvent(moveEvent);
