@@ -4,7 +4,7 @@
 #include "megaapi.h"
 
 #include <QString>
-#include <QtConcurrent/QtConcurrent>
+#include <QThreadPool>
 #include <winrt/Windows.ApplicationModel.Activation.h>
 #include <winrt/Windows.ApplicationModel.Core.h>
 #include <winrt/Windows.ApplicationModel.h>
@@ -75,7 +75,7 @@ bool DesktopManager::TryUnlockPinningLaf()
 
 void DesktopManager::requestPinToTaskBarAsync()
 {
-    QtConcurrent::run(
+    QThreadPool::globalInstance()->start(
         []()
         {
             winrt::uninit_apartment();

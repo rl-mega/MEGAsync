@@ -26,7 +26,7 @@ UserMessageWidget* UserMessageCacheManager::createOrGetWidget(qsizetype row,
     }
 
     UserMessageWidget* widget(nullptr);
-    auto cacheIndex(row % mUserMessageItems.maxCost());
+    qsizetype cacheIndex(row % mUserMessageItems.maxCost());
 
     switch (data->getType())
     {
