@@ -1741,7 +1741,7 @@ const QString Utilities::getPlatformProps(const QString sourceStyleSheet)
                             "* { font-family: Inter; font-size: 36px;}\n");
 #elif defined(Q_OS_WIN)
     prefix = QStringLiteral("/* Windows */\n"
-                            "* { font-family: Arial; }\n");
+                            "* { font-family: Lato; }\n");
 #else
     prefix = QStringLiteral("/* Linux */\n"
                             "* { font-family: Inter; }\n");
