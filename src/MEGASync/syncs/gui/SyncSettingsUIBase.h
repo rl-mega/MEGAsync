@@ -214,9 +214,6 @@ public:
 
 public slots:
     virtual void addButtonClicked(mega::MegaHandle = mega::INVALID_HANDLE) = 0;
-#ifndef Q_OS_WINDOWS
-    void onPermissionsClicked();
-#endif
 
 signals:
     void disableParentDialog(bool state);

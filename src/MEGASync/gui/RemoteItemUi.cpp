@@ -8,12 +8,6 @@ RemoteItemUi::RemoteItemUi(QWidget* parent):
 {
     ui->setupUi(this);
 
-#ifdef Q_OS_WIN
-    setUsePermissions(false);
-#else
-    connect(ui->bPermissions, &QPushButton::clicked, this, &RemoteItemUi::permissionsClicked);
-#endif
-
     connect(ui->bAdd,
             &QPushButton::clicked,
             this,
@@ -50,16 +44,6 @@ void RemoteItemUi::initView(QTableView* newView)
 #ifdef Q_OS_MACOS
     ui->tableView->horizontalHeader()->setStretchLastSection(true);
 #endif
-}
-
-void RemoteItemUi::setUsePermissions(const bool use)
-{
-    ui->bPermissions->setVisible(use);
-
-    if (ui->bPermissions->isHidden() && ui->bAdd->isHidden())
-    {
-        ui->wControlButtons->hide();
-    }
 }
 
 QTableView* RemoteItemUi::getView()

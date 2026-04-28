@@ -21,7 +21,6 @@ public:
 
     void setTitle(const QString& title);
     void initView(QTableView* newView);
-    void setUsePermissions(const bool use);
 
     QTableView* getView();
 
@@ -29,10 +28,6 @@ public:
 
 signals:
     void addClicked(mega::MegaHandle = mega::INVALID_HANDLE);
-
-#ifndef Q_OS_WIN
-    void permissionsClicked();
-#endif
 
 protected:
     bool event(QEvent* event) override;
