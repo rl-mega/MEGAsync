@@ -47,6 +47,7 @@ private:
     bool mCloseOnEscapePressed = false;
     bool mCenterAndRaiseAfterFirstHeightChangeEvent = false;
     QSize mTrackedSize;
+    qreal mPreviousOpacity;
     QPointer<QmlInstancesManager> mInstancesManager;
 };
 
