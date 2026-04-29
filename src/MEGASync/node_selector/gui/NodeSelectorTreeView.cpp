@@ -11,6 +11,7 @@
 #include "NodeSelectorModelItem.h"
 #include "NodeSelectorProxyModel.h"
 #include "Platform.h"
+#include "ServiceUrls.h"
 #include "ThemeManager.h"
 #include "Utilities.h"
 
@@ -646,7 +647,7 @@ void NodeSelectorTreeView::addDisputeTakedownMenuAction(QMap<int, QAction*>& act
             &QAction::triggered,
             []()
             {
-                Utilities::openUrl(QUrl(QStringLiteral("https://mega.io/dispute")));
+                Utilities::openUrl(ServiceUrls::getDisputeTakenDownLink());
             });
     actions.insert(ActionsOrder::DISPUTE_TAKEDOWN, disputeAction);
 }
