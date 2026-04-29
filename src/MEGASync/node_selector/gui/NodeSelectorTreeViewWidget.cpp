@@ -15,6 +15,8 @@
 #include "TokenizableItems/TokenPropertySetter.h"
 #include "ui_NodeSelectorTreeViewWidget.h"
 
+#include <QKeyEvent>
+
 const int CHECK_UPDATED_NODES_INTERVAL = 1000;
 const int IMMEDIATE_CHECK_UPDATES_NODES_THRESHOLD = 200;
 
@@ -81,6 +83,8 @@ NodeSelectorTreeViewWidget::NodeSelectorTreeViewWidget(SelectTypeSPtr mode, QWid
     // Empty pages
     ui->emptyPage->installEventFilter(this);
     ui->emptyFolderPage->installEventFilter(this);
+    ui->emptyPage->setFocusPolicy(Qt::StrongFocus);
+    ui->emptyFolderPage->setFocusPolicy(Qt::StrongFocus);
     // By default, the empty pages don´t allow drag and drop.
     // emptyFolderPage can accept drops if "enableDragAndDrop" is called with true
     ui->emptyFolderPage->setAcceptDrops(false);
@@ -244,6 +248,26 @@ bool NodeSelectorTreeViewWidget::eventFilter(QObject* watched, QEvent* event)
         if (watched == ui->tMegaFolders->viewport())
         {
             updateColumnsWidth(false);
+        }
+    }
+    // Propagate key events to the view
+    else if ((watched == ui->emptyPage || watched == ui->emptyFolderPage) &&
+             (event->type() == QEvent::ShortcutOverride || event->type() == QEvent::KeyPress))
+    {
+        if (auto keyEvent = static_cast<QKeyEvent*>(event); keyEvent->matches(QKeySequence::Paste))
+        {
+            if (event->type() == QEvent::ShortcutOverride)
+            {
+                event->accept();
+            }
+            else
+            {
+                QMetaObject::invokeMethod(ui->tMegaFolders,
+                                          "onPasteShortcutActivated",
+                                          Qt::DirectConnection);
+            }
+
+            return true;
         }
     }
     else if (watched == ui->emptyFolderPage && event->type() == QEvent::ContextMenu)
@@ -1689,6 +1713,11 @@ void NodeSelectorTreeViewWidget::setEmptyFolderPage()
     else
     {
         setViewPage();
+    }
+
+    if (ui->stackedWidget->currentWidget() != ui->treeViewPage)
+    {
+        ui->stackedWidget->currentWidget()->setFocus(Qt::OtherFocusReason);
     }
 }
 
