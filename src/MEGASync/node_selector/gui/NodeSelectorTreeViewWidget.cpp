@@ -1098,7 +1098,8 @@ bool NodeSelectorTreeViewWidget::onNodesUpdate(mega::MegaApi*, mega::MegaNodeLis
                     mUpdatedButInvisibleNodes.append(UpdateNodesInfo(node, index));
                 }
             }
-            else if (node->getChanges() & MegaNode::CHANGE_TYPE_ATTRIBUTES)
+            else if (node->getChanges() &
+                     (MegaNode::CHANGE_TYPE_ATTRIBUTES | MegaNode::CHANGE_TYPE_PUBLIC_LINK))
             {
                 if (existenceType == NodeState::EXISTS)
                 {
