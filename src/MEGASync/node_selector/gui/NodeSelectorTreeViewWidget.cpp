@@ -1709,6 +1709,16 @@ void NodeSelectorTreeViewWidget::setEmptyFolderPage()
     if (currentRootIndex != topRootIndex && mProxyModel->rowCount(currentRootIndex) == 0)
     {
         ui->stackedWidget->setCurrentWidget(ui->emptyFolderPage);
+        auto emptyFolderInfo = mSelectType->getEmptyFolderPageInfo();
+        if (emptyFolderInfo.isValid())
+        {
+            // By default, it is hidden
+            ui->titleEmptyFolderLabel->setVisible(true);
+            ui->titleEmptyFolderLabel->setText(emptyFolderInfo.title);
+            ui->descriptionEmptyFolderLabel->setText(emptyFolderInfo.description);
+            ui->emptyFolderIcon->setIcon(emptyFolderInfo.icon);
+            ui->emptyFolderIcon->setIsTokenized(emptyFolderInfo.iconTokenized);
+        }
     }
     else
     {
@@ -1908,6 +1918,17 @@ NodeSelectorModelItemSearch::Types SyncType::allowedTypes()
 {
     return NodeSelectorModelItemSearch::Type::CLOUD_DRIVE |
            NodeSelectorModelItemSearch::Type::INCOMING_SHARE;
+}
+
+SelectType::EmptyFolderPageInfo SyncType::getEmptyFolderPageInfo()
+{
+    EmptyFolderPageInfo info;
+    info.title = NodeSelectorTreeViewWidget::tr("No folders to select");
+    info.description = NodeSelectorTreeViewWidget::tr("Only folders can be synced");
+    info.icon = Utilities::getIcon(QLatin1String("synced-folder"), Utilities::AttributeType::NONE);
+    info.descriptionLabelFontSize = QLatin1String("body-1");
+    info.iconTokenized = false;
+    return info;
 }
 
 bool SyncType::isAllowedToNavigateInside(const QModelIndex& index)

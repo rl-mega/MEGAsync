@@ -323,9 +323,9 @@
         <file alias="images/icons/folder/folder-mono_24.png">images/icons/folder/folder-mono_24.png</file>
         <file alias="images/icons/folder/folder-mono_24@2x.png">images/icons/folder/folder-mono_24@2x.png</file>
         <file alias="images/icons/folder/folder-mono_24@3x.png">images/icons/folder/folder-mono_24@3x.png</file>
-        <file alias="images/icons/folder/synced-folder.png">images/icons/folder/synced-folder.png</file>
-        <file alias="images/icons/folder/synced-folder@2x.png">images/icons/folder/synced-folder@2x.png</file>
-        <file alias="images/icons/folder/synced-folder@3x.png">images/icons/folder/synced-folder@3x.png</file>
+        <file alias="synced-folder">images/icons/folder/synced-folder.png</file>
+        <file alias="synced-folder@2x">images/icons/folder/synced-folder@2x.png</file>
+        <file alias="synced-folder@3x">images/icons/folder/synced-folder@3x.png</file>
         <file alias="images/icons/ico_add_sync.png">images/icons/ico_add_sync.png</file>
         <file alias="images/icons/ico_add_sync@2x.png">images/icons/ico_add_sync@2x.png</file>
         <file alias="images/icons/ico_add_sync@3x.png">images/icons/ico_add_sync@3x.png</file>
@@ -1649,5 +1649,6 @@
         <file alias="reddish/tray_icon_logging_frame_3.svg">images/system_tray/reddish/tray_icon_logging_frame_3.svg</file>
         <file alias="reddish/tray_icon_logging_frame_2.svg">images/system_tray/reddish/tray_icon_logging_frame_2.svg</file>
         <file alias="reddish/tray_icon_logging_frame_1.svg">images/system_tray/reddish/tray_icon_logging_frame_1.svg</file>
+        <file alias="folder-sync_small_thin_outline">images/themed/tokenizable/folder-sync_small_thin_outline.svg</file>
     </qresource>
 </RCC>

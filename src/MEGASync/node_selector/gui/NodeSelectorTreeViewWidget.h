@@ -355,6 +355,26 @@ public:
 
     virtual void makeViewCustomConnections(NodeSelectorTreeView*, NodeSelectorTreeViewWidget*) {}
 
+    struct EmptyFolderPageInfo
+    {
+        QString title;
+        QString description;
+        QIcon icon;
+        bool iconTokenized = true;
+        QString descriptionLabelFontSize;
+
+        bool isValid()
+        {
+            return !title.isEmpty() && !description.isEmpty() && !icon.isNull() &&
+                   !descriptionLabelFontSize.isEmpty();
+        }
+    };
+
+    virtual EmptyFolderPageInfo getEmptyFolderPageInfo()
+    {
+        return EmptyFolderPageInfo();
+    }
+
 protected:
     bool cloudDriveIsCurrentRootIndex(NodeSelectorTreeViewWidget* wdg);
 
@@ -381,6 +401,7 @@ public:
     void init(NodeSelectorTreeViewWidget* wdg) override;
     bool okButtonEnabled(NodeSelectorTreeViewWidget* wdg, const QModelIndexList& selected) override;
     NodeSelectorModelItemSearch::Types allowedTypes() override;
+    EmptyFolderPageInfo getEmptyFolderPageInfo() override;
 };
 
 class StreamType: public SelectType

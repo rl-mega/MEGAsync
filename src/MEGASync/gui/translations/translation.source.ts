@@ -5027,11 +5027,6 @@ Enter a different name.</translation>
         <translatorcomment>Button text to empty the rubbish bin. SAT-426</translatorcomment>
         <translation>Empty Rubbish bin</translation>
     </message>
-    <message>
-        <source>Folder is empty</source>
-        <translatorcomment>Message on the view when there are no items in a folder. SNC-5804</translatorcomment>
-        <translation>Folder is empty</translation>
-    </message>
     <message numerus="yes">
         <source>If you leave the folder, you will not be able to see it again.</source>
         <translatorcomment>Body of the confirmation messagebox to leave an inshared folder. CON-1255</translatorcomment>
@@ -5109,6 +5104,21 @@ Enter a different name.</translation>
         <source>You cannot undo this action</source>
         <translatorcomment>Second part of the messagebox text when the user is about to remove permanently a node. SAT-426</translatorcomment>
         <translation>You cannot undo this action</translation>
+    </message>
+    <message>
+        <source>No folders to select</source>
+        <translatorcomment>Title on the view when there are no syncable folders in a folder. SNC-6358</translatorcomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only folders can be synced</source>
+        <translatorcomment>Message on the view when there are no syncable folders in a folder. SNC-6358</translatorcomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Folder is empty</source>
+        <translatorcomment>Message on the view when there are no items in a folder. SNC-5804</translatorcomment>
+        <translation>Folder is empty</translation>
     </message>
 </context>
 <context>
