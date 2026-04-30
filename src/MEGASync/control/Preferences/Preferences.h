@@ -170,6 +170,7 @@ public:
         CONTACT_ESTABLISHED,
         INFO_MESSAGES,
         COMPLETED_UPLOADS_DOWNLOADS,
+        SYNC_ISSUES,
         LAST
     };
     Q_ENUM(NotificationsTypes)

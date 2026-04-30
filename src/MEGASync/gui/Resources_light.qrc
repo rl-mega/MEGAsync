@@ -15,9 +15,6 @@
         <file alias="switch_off_pressed">images/themed/light/switch_off_pressed.svg</file>
         <file alias="switch_off_hover">images/themed/light/switch_off_hover.svg</file>
         <file alias="switch_off">images/themed/light/switch_off.svg</file>
-        <file alias="images/Small_Free.png">images/Small_Free.png</file>
-        <file alias="images/Small_Free@2x.png">images/Small_Free@2x.png</file>
-        <file alias="images/Small_Free@3x.png">images/Small_Free@3x.png</file>
         <file alias="images/help-icon.svg">images/help-icon.svg</file>
         <file alias="radio_checked">images/themed/light/radio_checked.svg</file>
         <file alias="radio_checked_pressed">images/themed/light/radio_checked_pressed.svg</file>

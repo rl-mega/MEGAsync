@@ -36,7 +36,6 @@ private:
     std::shared_ptr<Preferences> mPreferences;
     ConnectivityChecker* mConnectivityChecker;
     QPointer<MegaProgressCustomDialog> mProgressDialog;
-    QRadioButton* mProxyAuto;
 };
 
 #endif // PROXYSETTINGS_H

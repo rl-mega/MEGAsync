@@ -19,8 +19,7 @@ PasswordLineEdit::PasswordLineEdit(QWidget* parent):
     addAction(mHideAction, QLineEdit::TrailingPosition);
 
     mHideAction->setVisible(false);
-    mHideAction->setEnabled(false);
-    mShowAction->setEnabled(false);
+    mShowAction->setVisible(false);
 
     auto toolButtons = findChildren<QToolButton*>();
     foreach(QToolButton* toolButton, toolButtons)
@@ -48,18 +47,15 @@ void PasswordLineEdit::hidePassword()
 
 void PasswordLineEdit::focusInEvent(QFocusEvent* e)
 {
-    mHideAction->setEnabled(true);
-    mShowAction->setEnabled(true);
+    mShowAction->setVisible(echoMode() == QLineEdit::Password);
+    mHideAction->setVisible(echoMode() == QLineEdit::Normal);
     QLineEdit::focusInEvent(e);
 }
 
 void PasswordLineEdit::focusOutEvent(QFocusEvent* e)
 {
-    if (text().isEmpty())
-    {
-        mHideAction->setEnabled(false);
-        mShowAction->setEnabled(false);
-    }
+    mHideAction->setVisible(false);
+    mShowAction->setVisible(false);
     QLineEdit::focusOutEvent(e);
 }
 

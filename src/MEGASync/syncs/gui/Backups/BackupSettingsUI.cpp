@@ -27,7 +27,6 @@ BackupSettingsUI::BackupSettingsUI(QWidget* parent):
             });
 
     mElements.initElements(this);
-    ui->gSyncs->setUsePermissions(false);
 
     if (auto dialog = DialogOpener::findDialog<QmlDialogWrapper<Onboarding>>())
     {

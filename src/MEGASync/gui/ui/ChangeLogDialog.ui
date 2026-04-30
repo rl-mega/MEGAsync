@@ -26,8 +26,20 @@
    <string notr="true">MEGA</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">#wHeader{
-background-color: #FFFFFF; /*colorToken.surface-1*/
+   <string notr="true">#wHeader {
+background-color: #000000;
+background-image: url(:/images/mega_info_background.png);
+background-repeat: no-repeat;
+background-position: center;
+border-image: url(:/images/mega_info_background.png) 0 0 0 0 stretch stretch;
+}
+
+#wVersionOverlay {
+background-color: #b3000000; /*colorToken.surface-transparent*/
+}
+
+#wVersionOverlay QLabel {
+color: #FAFAFA; /*colorToken.text-on-color*/
 }
 
  #wBottom {
@@ -40,7 +52,10 @@ height: 200px;
 font-size: 12px;
 color: #333333; /*colorToken.text-secondary*/
 border: none;
-border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
+}
+
+#fHorizontalSeparator {
+color: #ff252626; /*colorToken.border-subtle*/
 }
 
 #bPolicy, #bTerms, #bAck
@@ -137,14 +152,14 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
             <widget class="IconLabel" name="bMEGAlogo">
              <property name="minimumSize">
               <size>
-               <width>80</width>
-               <height>80</height>
+               <width>64</width>
+               <height>64</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>80</width>
-               <height>80</height>
+               <width>64</width>
+               <height>64</height>
               </size>
              </property>
              <property name="styleSheet">
@@ -154,8 +169,8 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../Resources_light.qrc">
-               <normaloff>:/app-icon</normaloff>:/app-icon</iconset>
+              <iconset resource="../Resources_common.qrc">
+               <normaloff>:/images/mega_rec_icon.svg</normaloff>:/images/mega_rec_icon.svg</iconset>
              </property>
              <property name="iconSize">
               <size>
@@ -183,51 +198,38 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
            </item>
           </layout>
          </item>
-         <item>
-          <widget class="QLabel" name="lMEGA">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="focusPolicy">
-            <enum>Qt::StrongFocus</enum>
-           </property>
-           <property name="text">
-            <string notr="true">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600;&quot;&gt;MEGA&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
         </layout>
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="wVersionSDK" native="true">
+       <widget class="QWidget" name="wVersionOverlay" native="true">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>48</height>
+         </size>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayoutOverlay">
          <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="leftMargin">
           <number>0</number>
          </property>
          <property name="topMargin">
           <number>0</number>
          </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
          <property name="bottomMargin">
-          <number>16</number>
+          <number>0</number>
          </property>
          <item>
           <spacer name="horizontalSpacer_3">
@@ -236,11 +238,18 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
            </property>
            <property name="sizeHint" stdset="0">
             <size>
-             <width>176</width>
+             <width>40</width>
              <height>20</height>
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="lMegaPrefix">
+           <property name="text">
+            <string notr="true">MEGA</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QLabel" name="lVersion">
@@ -252,9 +261,6 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
            </property>
            <property name="text">
             <string notr="true">4.3.4</string>
-           </property>
-           <property name="type" stdset="0">
-            <string notr="true">secondary</string>
            </property>
           </widget>
          </item>
@@ -269,9 +275,6 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
            <property name="text">
             <string notr="true">-x86</string>
            </property>
-           <property name="type" stdset="0">
-            <string notr="true">secondary</string>
-           </property>
           </widget>
          </item>
          <item>
@@ -285,9 +288,6 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
            <property name="text">
             <string notr="true">(SDK)</string>
            </property>
-           <property name="type" stdset="0">
-            <string notr="true">secondary</string>
-           </property>
           </widget>
          </item>
          <item>
@@ -297,7 +297,7 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
            </property>
            <property name="sizeHint" stdset="0">
             <size>
-             <width>176</width>
+             <width>40</width>
              <height>20</height>
             </size>
            </property>
@@ -374,6 +374,35 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
        <number>10</number>
       </property>
       <item>
+       <layout class="QHBoxLayout" name="horizontalLayoutSeparator">
+        <property name="leftMargin">
+         <number>24</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>24</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QFrame" name="fHorizontalSeparator">
+          <property name="frameShape">
+           <enum>QFrame::HLine</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Plain</enum>
+          </property>
+          <property name="lineWidth">
+           <number>1</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
        <widget class="QWidget" name="wLinks" native="true">
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item alignment="Qt::AlignHCenter">
@@ -383,6 +412,12 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+             <underline>true</underline>
+            </font>
            </property>
            <property name="cursor">
             <cursorShape>PointingHandCursor</cursorShape>
@@ -402,6 +437,12 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
            <property name="wordWrap">
             <bool>false</bool>
            </property>
+           <property name="font-size" stdset="0">
+            <string notr="true">body-2</string>
+           </property>
+           <property name="semibold" stdset="0">
+            <bool>true</bool>
+           </property>
           </widget>
          </item>
          <item alignment="Qt::AlignHCenter">
@@ -418,6 +459,12 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
              <height>0</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+             <underline>true</underline>
+            </font>
+           </property>
            <property name="cursor">
             <cursorShape>PointingHandCursor</cursorShape>
            </property>
@@ -432,6 +479,12 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
            </property>
            <property name="wordWrap">
             <bool>false</bool>
+           </property>
+           <property name="semibold" stdset="0">
+            <bool>true</bool>
+           </property>
+           <property name="font-size" stdset="0">
+            <string notr="true">body-2</string>
            </property>
           </widget>
          </item>
@@ -449,6 +502,12 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
              <height>0</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+             <underline>true</underline>
+            </font>
+           </property>
            <property name="cursor">
             <cursorShape>PointingHandCursor</cursorShape>
            </property>
@@ -460,6 +519,12 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
            </property>
            <property name="wordWrap">
             <bool>false</bool>
+           </property>
+           <property name="semibold" stdset="0">
+            <bool>true</bool>
+           </property>
+           <property name="font-size" stdset="0">
+            <string notr="true">body-2</string>
            </property>
           </widget>
          </item>
@@ -498,6 +563,11 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
          </property>
          <item>
           <widget class="QLabel" name="lLGPL">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
            <property name="styleSheet">
             <string notr="true"/>
            </property>
@@ -515,6 +585,12 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
            </property>
            <property name="type" stdset="0">
             <string notr="true">secondary</string>
+           </property>
+           <property name="font-size" stdset="0">
+            <string notr="true">caption</string>
+           </property>
+           <property name="regular" stdset="0">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -559,6 +635,11 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
            <property name="focusPolicy">
             <enum>Qt::StrongFocus</enum>
            </property>
@@ -571,15 +652,32 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
            <property name="alignment">
             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
            </property>
+           <property name="semibold" stdset="0">
+            <bool>true</bool>
+           </property>
+           <property name="font-size" stdset="0">
+            <string notr="true">caption</string>
+           </property>
           </widget>
          </item>
          <item>
           <widget class="QLabel" name="labelAllRightsReserved">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
            <property name="styleSheet">
             <string notr="true"/>
            </property>
            <property name="text">
             <string>All rights reserved.</string>
+           </property>
+           <property name="semibold" stdset="0">
+            <bool>true</bool>
+           </property>
+           <property name="font-size" stdset="0">
+            <string notr="true">caption</string>
            </property>
           </widget>
          </item>
@@ -625,7 +723,7 @@ border-bottom: 1px solid #FFFFFF; /*colorToken.border-strong*/
   <tabstop>bPolicy</tabstop>
  </tabstops>
  <resources>
-  <include location="../Resources_light.qrc"/>
+  <include location="../Resources_common.qrc"/>
  </resources>
  <connections/>
 </ui>
