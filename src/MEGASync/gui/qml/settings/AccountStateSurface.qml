@@ -14,6 +14,9 @@ Item {
     readonly property int dividerThickness: 1
     readonly property int titleTextPixelSize: 10
     readonly property int summaryTextPixelSize: 12
+    readonly property int preferredTextRenderType: OS.isWindows()
+                                                   ? Text.QtRendering
+                                                   : Text.NativeRendering
 
     ColumnLayout {
         id: contentLayout
@@ -44,7 +47,7 @@ Item {
                     font.pixelSize: root.titleTextPixelSize
                     font.weight: Font.DemiBold
                     elide: Text.ElideRight
-                    renderType: Text.NativeRendering  // Avoids the slightly blurred text appearance from default QML rendering in embedded QQuickWidget content.
+                    renderType: root.preferredTextRenderType
                 }
 
                 Texts.Text {
@@ -55,7 +58,7 @@ Item {
                     font.pixelSize: root.summaryTextPixelSize
                     font.weight: Font.DemiBold
                     horizontalAlignment: Text.AlignRight
-                    renderType: Text.NativeRendering // Avoids the slightly blurred text appearance from default QML rendering in embedded QQuickWidget content.
+                    renderType: root.preferredTextRenderType
                 }
             }
 
@@ -99,7 +102,7 @@ Item {
                     font.pixelSize: root.titleTextPixelSize
                     font.weight: Font.DemiBold
                     elide: Text.ElideRight
-                    renderType: Text.NativeRendering // Avoids the slightly blurred text appearance from default QML rendering in embedded QQuickWidget content.
+                    renderType: root.preferredTextRenderType
                 }
 
                 Texts.Text {
@@ -110,7 +113,7 @@ Item {
                     font.pixelSize: root.summaryTextPixelSize
                     font.weight: Font.DemiBold
                     horizontalAlignment: Text.AlignRight
-                    renderType: Text.NativeRendering // Avoids the slightly blurred text appearance from default QML rendering in embedded QQuickWidget content.
+                    renderType: root.preferredTextRenderType
                 }
             }
 
@@ -141,7 +144,7 @@ Item {
                 text: accountStateAccess.transferValueText
                 font.pixelSize: root.summaryTextPixelSize
                 font.weight: Font.DemiBold
-                renderType: Text.NativeRendering
+                renderType: root.preferredTextRenderType
             }
         }
 

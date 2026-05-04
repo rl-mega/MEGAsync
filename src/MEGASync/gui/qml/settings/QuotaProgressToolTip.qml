@@ -31,6 +31,9 @@ Popup {
     readonly property real arrowCenterX: Math.max(radius + arrowWidth / 2 - arrowOverlap,
                                                   Math.min(width - radius - arrowWidth / 2 + arrowOverlap,
                                                            anchorCenterX - x))
+    readonly property int preferredTextRenderType: OS.isWindows()
+                                                   ? Text.QtRendering
+                                                   : Text.NativeRendering
 
     implicitWidth: bubble.implicitWidth
     implicitHeight: bubble.implicitHeight + arrowHeight - arrowOverlap
@@ -74,7 +77,7 @@ Popup {
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 wrapMode: Text.Wrap
-                renderType: Text.NativeRendering
+                renderType: root.preferredTextRenderType
             }
 
             Texts.Text {
@@ -98,7 +101,7 @@ Popup {
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 wrapMode: Text.Wrap
-                renderType: Text.NativeRendering
+                renderType: root.preferredTextRenderType
             }
         }
 

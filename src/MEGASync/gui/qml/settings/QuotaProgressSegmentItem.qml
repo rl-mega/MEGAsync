@@ -25,6 +25,9 @@ Rectangle {
     readonly property bool showCenteredSizeText: root.isFreeSegment
                                                  && root.centeredSizeText.length > 0
                                                  && root.width >= centeredSizeTextLabel.implicitWidth + 16
+    readonly property int preferredTextRenderType: OS.isWindows()
+                                                   ? Text.QtRendering
+                                                   : Text.NativeRendering
 
     radius: (roundLeftEdge || roundRightEdge) ? segmentRadius : 0
     clip: true
@@ -89,7 +92,7 @@ Rectangle {
         font.weight: Font.DemiBold
         lineHeight: 16
         lineHeightMode: Text.FixedHeight
-        renderType: Text.NativeRendering
+        renderType: root.preferredTextRenderType
         z: 1
     }
 
