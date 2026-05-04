@@ -357,7 +357,7 @@ std::unique_ptr<ConflictTypes>
     return conflicts;
 }
 
-bool ConflictTypes::hasNoConflicts() const
+bool ConflictTypes::isConflictFree() const
 {
     return mFileConflicts.isEmpty() && mFolderConflicts.isEmpty() && mFileNameConflicts.isEmpty() &&
            mFolderNameConflicts.isEmpty();

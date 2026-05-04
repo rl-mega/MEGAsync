@@ -1842,7 +1842,7 @@ void MegaApplication::processUploadQueue(MegaHandle nodeHandle, QWidget* caller)
 
     auto uploads = CheckDuplicatedNodes::checkUploads(mUploadQueue, node);
 
-    if (uploads->hasNoConflicts())
+    if (uploads->isConflictFree())
     {
         onUploadsCheckedAndReady(std::move(uploads));
     }

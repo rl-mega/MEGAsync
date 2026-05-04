@@ -295,7 +295,7 @@ const QList<std::shared_ptr<DuplicatedNodeInfo> > &DuplicatedNodeDialog::getReso
 
 bool DuplicatedNodeDialog::isEmpty() const
 {
-    return mConflicts->hasNoConflicts();
+    return mConflicts->isConflictFree();
 }
 
 void DuplicatedNodeDialog::show()

@@ -123,7 +123,7 @@ struct ConflictTypes
     QList<std::shared_ptr<DuplicatedNodeInfo>> mFileNameConflicts;
     QList<std::shared_ptr<DuplicatedNodeInfo>> mFolderNameConflicts;
 
-    bool hasNoConflicts() const;
+    bool isConflictFree() const;
 };
 
 class CheckDuplicatedNodes
