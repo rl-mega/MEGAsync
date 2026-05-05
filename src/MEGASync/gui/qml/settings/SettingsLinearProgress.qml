@@ -24,9 +24,6 @@ Item {
     readonly property int bannerTextPixelSize: 12
     readonly property int bannerTextLineHeight: 18
     readonly property int minVisibleSegmentWidth: 4
-    readonly property int preferredTextRenderType: OS.isWindows()
-                                                   ? Text.QtRendering
-                                                   : Text.NativeRendering
     
     signal bannerActionClicked()
 
@@ -306,7 +303,6 @@ Item {
                                 lineHeight: 16
                                 lineHeightMode: Text.FixedHeight
                                 color: ColorTheme.textPrimary
-                                renderType: root.preferredTextRenderType
                             }
                         }
 
@@ -382,7 +378,6 @@ Item {
                             font.weight: Font.DemiBold
                             lineHeight: root.bannerTextLineHeight
                             lineHeightMode: Text.FixedHeight
-                            renderType: root.preferredTextRenderType
                         }
 
                         Texts.Text {
@@ -396,7 +391,6 @@ Item {
                             font.weight: Font.Normal
                             lineHeight: root.bannerTextLineHeight
                             lineHeightMode: Text.FixedHeight
-                            renderType: root.preferredTextRenderType
                         }
                     }
                 }
