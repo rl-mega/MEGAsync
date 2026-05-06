@@ -78,129 +78,213 @@ const qint64 FILE_READ_BUFFER_SIZE = 8192;
 void Utilities::initializeExtensions()
 {
     // clang-format off
-    extensionIcons[QString::fromLatin1("3ds")] = extensionIcons[QString::fromLatin1("3dm")]  = extensionIcons[QString::fromLatin1("max")] =
-                            extensionIcons[QString::fromLatin1("obj")]  = QString::fromLatin1("3D_%1");
+    // Chained QHash assignments are not safe in Qt6: inserting a key can rehash the table,
+    // invalidating references held by outer assignments in the chain. Use individual assignments.
+    extensionIcons[QString::fromLatin1("3ds")] = QString::fromLatin1("3D_%1");
+    extensionIcons[QString::fromLatin1("3dm")] = QString::fromLatin1("3D_%1");
+    extensionIcons[QString::fromLatin1("max")] = QString::fromLatin1("3D_%1");
+    extensionIcons[QString::fromLatin1("obj")] = QString::fromLatin1("3D_%1");
 
-    extensionIcons[QString::fromLatin1("aep")] = extensionIcons[QString::fromLatin1("aet")]  = QString::fromLatin1("aftereffects_%1");
+    extensionIcons[QString::fromLatin1("aep")] = QString::fromLatin1("aftereffects_%1");
+    extensionIcons[QString::fromLatin1("aet")] = QString::fromLatin1("aftereffects_%1");
 
-    extensionIcons[QString::fromLatin1("mp3")] = extensionIcons[QString::fromLatin1("wav")]  = extensionIcons[QString::fromLatin1("3ga")]  =
-                            extensionIcons[QString::fromLatin1("aif")]  = extensionIcons[QString::fromLatin1("aiff")] =
-                            extensionIcons[QString::fromLatin1("flac")] = extensionIcons[QString::fromLatin1("iff")]  = extensionIcons[QString::fromLatin1("ogg")] =
-                            extensionIcons[QString::fromLatin1("m4a")]  = extensionIcons[QString::fromLatin1("wma")]  =  QString::fromLatin1("audio_%1");
+    extensionIcons[QString::fromLatin1("mp3")]  = QString::fromLatin1("audio_%1");
+    extensionIcons[QString::fromLatin1("wav")]  = QString::fromLatin1("audio_%1");
+    extensionIcons[QString::fromLatin1("3ga")]  = QString::fromLatin1("audio_%1");
+    extensionIcons[QString::fromLatin1("aif")]  = QString::fromLatin1("audio_%1");
+    extensionIcons[QString::fromLatin1("aiff")] = QString::fromLatin1("audio_%1");
+    extensionIcons[QString::fromLatin1("flac")] = QString::fromLatin1("audio_%1");
+    extensionIcons[QString::fromLatin1("iff")]  = QString::fromLatin1("audio_%1");
+    extensionIcons[QString::fromLatin1("ogg")]  = QString::fromLatin1("audio_%1");
+    extensionIcons[QString::fromLatin1("m4a")]  = QString::fromLatin1("audio_%1");
+    extensionIcons[QString::fromLatin1("wma")]  = QString::fromLatin1("audio_%1");
 
-    extensionIcons[QString::fromLatin1("dxf")] = extensionIcons[QString::fromLatin1("dwg")] =  QString::fromLatin1("cad_%1");
+    extensionIcons[QString::fromLatin1("dxf")] = QString::fromLatin1("cad_%1");
+    extensionIcons[QString::fromLatin1("dwg")] = QString::fromLatin1("cad_%1");
 
+    extensionIcons[QString::fromLatin1("zip")]  = QString::fromLatin1("compressed_%1");
+    extensionIcons[QString::fromLatin1("rar")]  = QString::fromLatin1("compressed_%1");
+    extensionIcons[QString::fromLatin1("tgz")]  = QString::fromLatin1("compressed_%1");
+    extensionIcons[QString::fromLatin1("gz")]   = QString::fromLatin1("compressed_%1");
+    extensionIcons[QString::fromLatin1("bz2")]  = QString::fromLatin1("compressed_%1");
+    extensionIcons[QString::fromLatin1("tbz")]  = QString::fromLatin1("compressed_%1");
+    extensionIcons[QString::fromLatin1("tar")]  = QString::fromLatin1("compressed_%1");
+    extensionIcons[QString::fromLatin1("7z")]   = QString::fromLatin1("compressed_%1");
+    extensionIcons[QString::fromLatin1("sitx")] = QString::fromLatin1("compressed_%1");
 
-    extensionIcons[QString::fromLatin1("zip")] = extensionIcons[QString::fromLatin1("rar")] = extensionIcons[QString::fromLatin1("tgz")]  =
-                            extensionIcons[QString::fromLatin1("gz")]  = extensionIcons[QString::fromLatin1("bz2")]  =
-                            extensionIcons[QString::fromLatin1("tbz")] = extensionIcons[QString::fromLatin1("tar")]  =
-                            extensionIcons[QString::fromLatin1("7z")]  = extensionIcons[QString::fromLatin1("sitx")] =  QString::fromLatin1("compressed_%1");
-
-    extensionIcons[QString::fromLatin1("sql")] = extensionIcons[QString::fromLatin1("accdb")] = extensionIcons[QString::fromLatin1("db")]  =
-                            extensionIcons[QString::fromLatin1("dbf")]  = extensionIcons[QString::fromLatin1("mdb")]  =
-                            extensionIcons[QString::fromLatin1("pdb")] = QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("sql")]   = QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("accdb")] = QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("db")]    = QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("dbf")]   = QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("mdb")]   = QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("pdb")]   = QString::fromLatin1("web_lang_%1");
 
     extensionIcons[QString::fromLatin1("folder")] = QString::fromLatin1("folder_%1");
 
-    extensionIcons[QString::fromLatin1("xls")] = extensionIcons[QString::fromLatin1("xlsx")] = extensionIcons[QString::fromLatin1("xlt")]  =
-                            extensionIcons[QString::fromLatin1("xltm")]  = QString::fromLatin1("excel_%1");
+    extensionIcons[QString::fromLatin1("xls")]  = QString::fromLatin1("excel_%1");
+    extensionIcons[QString::fromLatin1("xlsx")] = QString::fromLatin1("excel_%1");
+    extensionIcons[QString::fromLatin1("xlt")]  = QString::fromLatin1("excel_%1");
+    extensionIcons[QString::fromLatin1("xltm")] = QString::fromLatin1("excel_%1");
 
-    extensionIcons[QString::fromLatin1("exe")] = extensionIcons[QString::fromLatin1("com")] = extensionIcons[QString::fromLatin1("bin")]  =
-                            extensionIcons[QString::fromLatin1("apk")]  = extensionIcons[QString::fromLatin1("app")]  =
-                             extensionIcons[QString::fromLatin1("msi")]  = extensionIcons[QString::fromLatin1("cmd")]  =
-                            extensionIcons[QString::fromLatin1("gadget")] = QString::fromLatin1("executable_%1");
+    extensionIcons[QString::fromLatin1("exe")]    = QString::fromLatin1("executable_%1");
+    extensionIcons[QString::fromLatin1("com")]    = QString::fromLatin1("executable_%1");
+    extensionIcons[QString::fromLatin1("bin")]    = QString::fromLatin1("executable_%1");
+    extensionIcons[QString::fromLatin1("apk")]    = QString::fromLatin1("executable_%1");
+    extensionIcons[QString::fromLatin1("app")]    = QString::fromLatin1("executable_%1");
+    extensionIcons[QString::fromLatin1("msi")]    = QString::fromLatin1("executable_%1");
+    extensionIcons[QString::fromLatin1("cmd")]    = QString::fromLatin1("executable_%1");
+    extensionIcons[QString::fromLatin1("gadget")] = QString::fromLatin1("executable_%1");
 
-    extensionIcons[QString::fromLatin1("fnt")] = extensionIcons[QString::fromLatin1("otf")] = extensionIcons[QString::fromLatin1("ttf")]  =
-                            extensionIcons[QString::fromLatin1("fon")]  = QString::fromLatin1("font_%1");
+    extensionIcons[QString::fromLatin1("fnt")] = QString::fromLatin1("font_%1");
+    extensionIcons[QString::fromLatin1("otf")] = QString::fromLatin1("font_%1");
+    extensionIcons[QString::fromLatin1("ttf")] = QString::fromLatin1("font_%1");
+    extensionIcons[QString::fromLatin1("fon")] = QString::fromLatin1("font_%1");
 
-    extensionIcons[QString::fromLatin1("gif")] = extensionIcons[QString::fromLatin1("tiff")]  = extensionIcons[QString::fromLatin1("tif")]  =
-                            extensionIcons[QString::fromLatin1("bmp")]  = extensionIcons[QString::fromLatin1("png")] =
-                            extensionIcons[QString::fromLatin1("tga")]  = QString::fromLatin1("image_%1");
+    extensionIcons[QString::fromLatin1("gif")]  = QString::fromLatin1("image_%1");
+    extensionIcons[QString::fromLatin1("tiff")] = QString::fromLatin1("image_%1");
+    extensionIcons[QString::fromLatin1("bmp")]  = QString::fromLatin1("image_%1");
+    extensionIcons[QString::fromLatin1("png")]  = QString::fromLatin1("image_%1");
+    extensionIcons[QString::fromLatin1("tga")]  = QString::fromLatin1("image_%1");
 
-    extensionIcons[QString::fromLatin1("ai")] = extensionIcons[QString::fromLatin1("ait")] = QString::fromLatin1("illustrator_%1");
-    extensionIcons[QString::fromLatin1("jpg")] = extensionIcons[QString::fromLatin1("jpeg")] = extensionIcons[QString::fromLatin1("heic")] =
-                            extensionIcons[QString::fromLatin1("webp")] = QString::fromLatin1("image_%1");
+    extensionIcons[QString::fromLatin1("ai")]  = QString::fromLatin1("illustrator_%1");
+    extensionIcons[QString::fromLatin1("ait")] = QString::fromLatin1("illustrator_%1");
+
+    extensionIcons[QString::fromLatin1("jpg")]  = QString::fromLatin1("image_%1");
+    extensionIcons[QString::fromLatin1("jpeg")] = QString::fromLatin1("image_%1");
+    extensionIcons[QString::fromLatin1("heic")] = QString::fromLatin1("image_%1");
+    extensionIcons[QString::fromLatin1("webp")] = QString::fromLatin1("image_%1");
+
     extensionIcons[QString::fromLatin1("indd")] = QString::fromLatin1("indesign_%1");
 
-    extensionIcons[QString::fromLatin1("jar")] = extensionIcons[QString::fromLatin1("java")]  = extensionIcons[QString::fromLatin1("class")]  = QString::fromLatin1("web_data_%1");
+    extensionIcons[QString::fromLatin1("jar")]   = QString::fromLatin1("web_data_%1");
+    extensionIcons[QString::fromLatin1("java")]  = QString::fromLatin1("web_data_%1");
+    extensionIcons[QString::fromLatin1("class")] = QString::fromLatin1("web_data_%1");
 
     extensionIcons[QString::fromLatin1("pdf")] = QString::fromLatin1("pdf_%1");
-    extensionIcons[QString::fromLatin1("abr")] = extensionIcons[QString::fromLatin1("psb")]  = extensionIcons[QString::fromLatin1("psd")]  =
-                            QString::fromLatin1("photoshop_%1");
 
-    extensionIcons[QString::fromLatin1("pps")] = extensionIcons[QString::fromLatin1("ppt")]  = extensionIcons[QString::fromLatin1("pptx")] = QString::fromLatin1("powerpoint_%1");
+    extensionIcons[QString::fromLatin1("abr")] = QString::fromLatin1("photoshop_%1");
+    extensionIcons[QString::fromLatin1("psb")] = QString::fromLatin1("photoshop_%1");
+    extensionIcons[QString::fromLatin1("psd")] = QString::fromLatin1("photoshop_%1");
 
-    extensionIcons[QString::fromLatin1("prproj")] = extensionIcons[QString::fromLatin1("ppj")]  = QString::fromLatin1("premiere_%1");
+    extensionIcons[QString::fromLatin1("pps")]  = QString::fromLatin1("powerpoint_%1");
+    extensionIcons[QString::fromLatin1("ppt")]  = QString::fromLatin1("powerpoint_%1");
+    extensionIcons[QString::fromLatin1("pptx")] = QString::fromLatin1("powerpoint_%1");
 
-    extensionIcons[QString::fromLatin1("3fr")] = extensionIcons[QString::fromLatin1("arw")]  = extensionIcons[QString::fromLatin1("bay")]  =
-                            extensionIcons[QString::fromLatin1("cr2")]  = extensionIcons[QString::fromLatin1("dcr")] =
-                            extensionIcons[QString::fromLatin1("dng")] = extensionIcons[QString::fromLatin1("fff")]  =
-                            extensionIcons[QString::fromLatin1("mef")] = extensionIcons[QString::fromLatin1("mrw")]  =
-                            extensionIcons[QString::fromLatin1("nef")] = extensionIcons[QString::fromLatin1("pef")]  =
-                            extensionIcons[QString::fromLatin1("rw2")] = extensionIcons[QString::fromLatin1("srf")]  =
-                            extensionIcons[QString::fromLatin1("orf")] = extensionIcons[QString::fromLatin1("rwl")]  =
-                            extensionIcons[QString::fromLatin1("ari")] = extensionIcons[QString::fromLatin1("braw")]  =
-                            extensionIcons[QString::fromLatin1("crw")] = extensionIcons[QString::fromLatin1("cr3")]  =
-                            extensionIcons[QString::fromLatin1("cap")] =
-                            extensionIcons[QString::fromLatin1("dcs")] = extensionIcons[QString::fromLatin1("drf")]  =
-                            extensionIcons[QString::fromLatin1("eip")] = extensionIcons[QString::fromLatin1("erf")]  =
-                            extensionIcons[QString::fromLatin1("gpr")] = extensionIcons[QString::fromLatin1("iiq")]  =
-                            extensionIcons[QString::fromLatin1("k25")] = extensionIcons[QString::fromLatin1("kdc")]  =
-                            extensionIcons[QString::fromLatin1("mdc")] = extensionIcons[QString::fromLatin1("mos")]  =
-                            extensionIcons[QString::fromLatin1("nrw")] = extensionIcons[QString::fromLatin1("obm")]  =
-                            extensionIcons[QString::fromLatin1("ptx")] = extensionIcons[QString::fromLatin1("pxn")]  =
-                            extensionIcons[QString::fromLatin1("r3d")] = extensionIcons[QString::fromLatin1("raf")]  =
-                            extensionIcons[QString::fromLatin1("raw")] = extensionIcons[QString::fromLatin1("rwz")]  =
-                            extensionIcons[QString::fromLatin1("sr2")] = extensionIcons[QString::fromLatin1("srw")]  =
-                            extensionIcons[QString::fromLatin1("tif")] = extensionIcons[QString::fromLatin1("x3f")]  =
-                            QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("prproj")] = QString::fromLatin1("premiere_%1");
+    extensionIcons[QString::fromLatin1("ppj")]    = QString::fromLatin1("premiere_%1");
 
-    extensionIcons[QString::fromLatin1("ods")]  = extensionIcons[QString::fromLatin1("ots")]  =
-                            extensionIcons[QString::fromLatin1("gsheet")]  = extensionIcons[QString::fromLatin1("nb")] =
-                            extensionIcons[QString::fromLatin1("xlr")] = QString::fromLatin1("spreadsheet_%1");
+    extensionIcons[QString::fromLatin1("3fr")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("arw")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("bay")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("cr2")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("dcr")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("dng")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("fff")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("mef")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("mrw")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("nef")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("pef")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("rw2")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("srf")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("orf")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("rwl")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("ari")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("braw")] = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("crw")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("cr3")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("cap")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("dcs")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("drf")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("eip")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("erf")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("gpr")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("iiq")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("k25")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("kdc")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("mdc")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("mos")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("nrw")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("obm")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("ptx")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("pxn")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("r3d")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("raf")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("raw")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("rwz")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("sr2")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("srw")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("tif")]  = QString::fromLatin1("raw_%1");
+    extensionIcons[QString::fromLatin1("x3f")]  = QString::fromLatin1("raw_%1");
+
+    extensionIcons[QString::fromLatin1("ods")]    = QString::fromLatin1("spreadsheet_%1");
+    extensionIcons[QString::fromLatin1("ots")]    = QString::fromLatin1("spreadsheet_%1");
+    extensionIcons[QString::fromLatin1("gsheet")] = QString::fromLatin1("spreadsheet_%1");
+    extensionIcons[QString::fromLatin1("nb")]     = QString::fromLatin1("spreadsheet_%1");
+    extensionIcons[QString::fromLatin1("xlr")]    = QString::fromLatin1("spreadsheet_%1");
 
     extensionIcons[QString::fromLatin1("torrent")] = QString::fromLatin1("torrent_%1");
-    extensionIcons[QString::fromLatin1("dmg")] = QString::fromLatin1("dmg_%1");
+    extensionIcons[QString::fromLatin1("dmg")]     = QString::fromLatin1("dmg_%1");
 
-    extensionIcons[QString::fromLatin1("txt")] = extensionIcons[QString::fromLatin1("rtf")]  = extensionIcons[QString::fromLatin1("ans")]  =
-                            extensionIcons[QString::fromLatin1("ascii")]  = extensionIcons[QString::fromLatin1("log")] =
-                            extensionIcons[QString::fromLatin1("odt")] = extensionIcons[QString::fromLatin1("wpd")]  =
-                            QString::fromLatin1("text_%1");
+    extensionIcons[QString::fromLatin1("txt")]   = QString::fromLatin1("text_%1");
+    extensionIcons[QString::fromLatin1("rtf")]   = QString::fromLatin1("text_%1");
+    extensionIcons[QString::fromLatin1("ans")]   = QString::fromLatin1("text_%1");
+    extensionIcons[QString::fromLatin1("ascii")] = QString::fromLatin1("text_%1");
+    extensionIcons[QString::fromLatin1("log")]   = QString::fromLatin1("text_%1");
+    extensionIcons[QString::fromLatin1("wpd")]   = QString::fromLatin1("text_%1");
 
-    extensionIcons[QString::fromLatin1("svgz")]  = extensionIcons[QString::fromLatin1("svg")]  =
-                            extensionIcons[QString::fromLatin1("cdr")]  = extensionIcons[QString::fromLatin1("eps")] =
-                            QString::fromLatin1("vector_%1");
+    extensionIcons[QString::fromLatin1("svgz")] = QString::fromLatin1("vector_%1");
+    extensionIcons[QString::fromLatin1("svg")]  = QString::fromLatin1("vector_%1");
+    extensionIcons[QString::fromLatin1("cdr")]  = QString::fromLatin1("vector_%1");
+    extensionIcons[QString::fromLatin1("eps")]  = QString::fromLatin1("vector_%1");
 
-     extensionIcons[QString::fromLatin1("mkv")]  = extensionIcons[QString::fromLatin1("webm")]  =
-                            extensionIcons[QString::fromLatin1("avi")]  = extensionIcons[QString::fromLatin1("mp4")] =
-                            extensionIcons[QString::fromLatin1("m4v")] = extensionIcons[QString::fromLatin1("mpg")]  =
-                            extensionIcons[QString::fromLatin1("mpeg")] = extensionIcons[QString::fromLatin1("mov")]  =
-                            extensionIcons[QString::fromLatin1("3g2")] = extensionIcons[QString::fromLatin1("3gp")]  =
-                            extensionIcons[QString::fromLatin1("asf")] = extensionIcons[QString::fromLatin1("wmv")]  =
-                            extensionIcons[QString::fromLatin1("flv")] = extensionIcons[QString::fromLatin1("vob")] =
-                            QString::fromLatin1("video_%1");
+    extensionIcons[QString::fromLatin1("mkv")]  = QString::fromLatin1("video_%1");
+    extensionIcons[QString::fromLatin1("webm")] = QString::fromLatin1("video_%1");
+    extensionIcons[QString::fromLatin1("avi")]  = QString::fromLatin1("video_%1");
+    extensionIcons[QString::fromLatin1("mp4")]  = QString::fromLatin1("video_%1");
+    extensionIcons[QString::fromLatin1("m4v")]  = QString::fromLatin1("video_%1");
+    extensionIcons[QString::fromLatin1("mpg")]  = QString::fromLatin1("video_%1");
+    extensionIcons[QString::fromLatin1("mpeg")] = QString::fromLatin1("video_%1");
+    extensionIcons[QString::fromLatin1("mov")]  = QString::fromLatin1("video_%1");
+    extensionIcons[QString::fromLatin1("3g2")]  = QString::fromLatin1("video_%1");
+    extensionIcons[QString::fromLatin1("3gp")]  = QString::fromLatin1("video_%1");
+    extensionIcons[QString::fromLatin1("asf")]  = QString::fromLatin1("video_%1");
+    extensionIcons[QString::fromLatin1("wmv")]  = QString::fromLatin1("video_%1");
+    extensionIcons[QString::fromLatin1("flv")]  = QString::fromLatin1("video_%1");
+    extensionIcons[QString::fromLatin1("vob")]  = QString::fromLatin1("video_%1");
 
-     extensionIcons[QString::fromLatin1("html")]  = extensionIcons[QString::fromLatin1("xml")] = extensionIcons[QString::fromLatin1("shtml")]  =
-                            extensionIcons[QString::fromLatin1("dhtml")] = extensionIcons[QString::fromLatin1("js")] =
-                            extensionIcons[QString::fromLatin1("css")]  = QString::fromLatin1("web_data_%1");
+    extensionIcons[QString::fromLatin1("html")]  = QString::fromLatin1("web_data_%1");
+    extensionIcons[QString::fromLatin1("xml")]   = QString::fromLatin1("web_data_%1");
+    extensionIcons[QString::fromLatin1("shtml")] = QString::fromLatin1("web_data_%1");
+    extensionIcons[QString::fromLatin1("dhtml")] = QString::fromLatin1("web_data_%1");
+    extensionIcons[QString::fromLatin1("js")]    = QString::fromLatin1("web_data_%1");
+    extensionIcons[QString::fromLatin1("css")]   = QString::fromLatin1("web_data_%1");
 
-     extensionIcons[QString::fromLatin1("php")]  = extensionIcons[QString::fromLatin1("php3")]  =
-                            extensionIcons[QString::fromLatin1("php4")]  = extensionIcons[QString::fromLatin1("php5")] =
-                            extensionIcons[QString::fromLatin1("phtml")] = extensionIcons[QString::fromLatin1("inc")]  =
-                            extensionIcons[QString::fromLatin1("asp")] = extensionIcons[QString::fromLatin1("pl")]  =
-                            extensionIcons[QString::fromLatin1("cgi")] = extensionIcons[QString::fromLatin1("py")]  =
-                            QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("php")]   = QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("php3")]  = QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("php4")]  = QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("php5")]  = QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("phtml")] = QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("inc")]   = QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("asp")]   = QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("pl")]    = QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("cgi")]   = QString::fromLatin1("web_lang_%1");
+    extensionIcons[QString::fromLatin1("py")]    = QString::fromLatin1("web_lang_%1");
 
-     extensionIcons[QString::fromLatin1("doc")]  = extensionIcons[QString::fromLatin1("docx")] = extensionIcons[QString::fromLatin1("dotx")]  =
-                            extensionIcons[QString::fromLatin1("wps")] = QString::fromLatin1("word_%1");
+    extensionIcons[QString::fromLatin1("doc")]  = QString::fromLatin1("word_%1");
+    extensionIcons[QString::fromLatin1("docx")] = QString::fromLatin1("word_%1");
+    extensionIcons[QString::fromLatin1("dotx")] = QString::fromLatin1("word_%1");
+    extensionIcons[QString::fromLatin1("wps")]  = QString::fromLatin1("word_%1");
 
-     extensionIcons[QString::fromLatin1("odt")]  = extensionIcons[QString::fromLatin1("ods")] = extensionIcons[QString::fromLatin1("odp")]  =
-                            extensionIcons[QString::fromLatin1("odb")] = extensionIcons[QString::fromLatin1("odg")] = QString::fromLatin1("openoffice_%1");
+    extensionIcons[QString::fromLatin1("odt")] = QString::fromLatin1("openoffice_%1");
+    extensionIcons[QString::fromLatin1("ods")] = QString::fromLatin1("openoffice_%1");
+    extensionIcons[QString::fromLatin1("odp")] = QString::fromLatin1("openoffice_%1");
+    extensionIcons[QString::fromLatin1("odb")] = QString::fromLatin1("openoffice_%1");
+    extensionIcons[QString::fromLatin1("odg")] = QString::fromLatin1("openoffice_%1");
 
-     extensionIcons[QString::fromLatin1("xd")] = QString::fromLatin1("experiencedesign_%1");
-     extensionIcons[QString::fromLatin1("pages")] = QString::fromLatin1("pages_%1");
-     extensionIcons[QString::fromLatin1("numbers")] = QString::fromLatin1("numbers_%1");
-     extensionIcons[QString::fromLatin1("key")] = QString::fromLatin1("keynote_%1");
+    extensionIcons[QString::fromLatin1("xd")]      = QString::fromLatin1("experiencedesign_%1");
+    extensionIcons[QString::fromLatin1("pages")]   = QString::fromLatin1("pages_%1");
+    extensionIcons[QString::fromLatin1("numbers")] = QString::fromLatin1("numbers_%1");
+    extensionIcons[QString::fromLatin1("key")]     = QString::fromLatin1("keynote_%1");
     // clang-format on
 }
 
