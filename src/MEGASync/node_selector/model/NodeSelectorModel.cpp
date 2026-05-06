@@ -148,15 +148,32 @@ void NodeRequester::addSearchRootItem(QList<std::shared_ptr<mega::MegaNode>> nod
     {
         qDeleteAll(items);
     }
-    else
+    else if (!items.isEmpty())
     {
-        if (!items.isEmpty())
-        {
-            QMutexLocker d(&mDataMutex);
-            mRootItems.append(items);
-            emit rootItemsAdded();
-        }
+        appendRootItems(items);
     }
+}
+
+void NodeRequester::appendRootItems(const QList<NodeSelectorModelItem*>& items)
+{
+    if (items.isEmpty())
+    {
+        return;
+    }
+
+    const int firstRow = rootIndexSize();
+    QMetaObject::invokeMethod(mModel,
+                              "beginRootItemsInsertion",
+                              Qt::BlockingQueuedConnection,
+                              Q_ARG(int, firstRow),
+                              Q_ARG(int, firstRow + items.size() - 1));
+
+    {
+        QMutexLocker d(&mDataMutex);
+        mRootItems.append(items);
+    }
+
+    emit rootItemsAdded();
 }
 
 NodeSelectorModelItem*
@@ -347,8 +364,7 @@ void NodeRequester::addIncomingSharesRootItem(std::shared_ptr<mega::MegaNode> no
         }
         else
         {
-            mRootItems.append(item);
-            emit rootItemsAdded();
+            appendRootItems({item});
         }
     }
     else
@@ -1922,6 +1938,11 @@ void NodeSelectorModel::onSyncStateChanged(std::shared_ptr<SyncSettings> sync)
 void NodeSelectorModel::onRootItemAdded()
 {
     endInsertRows();
+}
+
+void NodeSelectorModel::beginRootItemsInsertion(int first, int last)
+{
+    beginInsertRows(QModelIndex(), first, last);
 }
 
 bool NodeSelectorModel::addToLoadingList(const std::shared_ptr<mega::MegaNode> node)

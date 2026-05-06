@@ -137,6 +137,7 @@ private:
     bool isAborted();
     NodeSelectorModelItem* createSearchItem(mega::MegaNode* node,
                                             NodeSelectorModelItemSearch::Types typesAllowed);
+    void appendRootItems(const QList<NodeSelectorModelItem*>& items);
 
     std::atomic<bool> mShowFiles{true};
     std::atomic<bool> mShowReadOnlyFolders{true};
@@ -471,6 +472,7 @@ protected:
     QList<QPair<mega::MegaHandle, QModelIndex>> mIndexesToBeExpanded;
 
 protected slots:
+    void beginRootItemsInsertion(int first, int last);
     void onRootItemAdded();
 
 private slots:
