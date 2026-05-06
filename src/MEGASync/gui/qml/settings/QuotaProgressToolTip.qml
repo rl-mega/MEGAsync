@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtQuick.Window 2.15
 
 import common 1.0
 import components.texts 1.0 as Texts
@@ -25,9 +26,13 @@ Popup {
     readonly property real anchorCenterX: anchorPosition.x + (anchorItem ? anchorItem.width / 2 : 0)
     readonly property real textWidth: Math.ceil(Math.min(maxTextWidth,
                                                          Math.max(0, sizingText.paintedWidth)))
-    readonly property real unclampedX: anchorCenterX - width / 2
-    readonly property real minX: edgeMargin
-    readonly property real maxX: parent ? Math.max(edgeMargin, parent.width - width - edgeMargin) : edgeMargin
+    // Updated in onVisibleChanged — mapToItem() bindings don't track ancestor position changes.
+    property point parentWindowPos: Qt.point(0, 0)
+    property real windowWidth: 0
+    readonly property real minX: edgeMargin - parentWindowPos.x
+    readonly property real maxX: windowWidth > 0
+                                 ? Math.max(minX, windowWidth - width - edgeMargin - parentWindowPos.x)
+                                 : minX
     readonly property real arrowCenterX: Math.max(radius + arrowWidth / 2 - arrowOverlap,
                                                   Math.min(width - radius - arrowWidth / 2 + arrowOverlap,
                                                            anchorCenterX - x))
@@ -37,15 +42,21 @@ Popup {
     width: implicitWidth
     height: implicitHeight
     x: anchorItem
-       ? Math.round(Math.max(minX, Math.min(maxX, unclampedX)))
+       ? Math.round(Math.max(minX, Math.min(maxX, anchorCenterX - width / 2)))
        : 0
     y: anchorItem
        ? Math.round(anchorPosition.y - height - verticalOffset)
        : 0
     padding: 0
-    modal: false
-    focus: false
     closePolicy: Popup.NoAutoClose
+
+    onVisibleChanged: {
+        if (!visible || !parent) return
+        // Refresh here — mapToItem() is not reactive to ancestor position changes,
+        // so a binding would capture the stale pre-layout position for every segment.
+        parentWindowPos = parent.mapToItem(null, 0, 0)
+        windowWidth = (parent.Window.window ? parent.Window.window.width : 0)
+    }
 
     background: Item {
         Rectangle {
@@ -86,7 +97,6 @@ Popup {
                     rightMargin: root.horizontalContentMargin
                     bottomMargin: root.verticalContentMargin
                 }
-                width: root.textWidth
                 text: root.text
                 color: ColorTheme.textInverseAccent
                 font.pixelSize: 10

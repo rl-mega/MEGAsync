@@ -134,14 +134,20 @@ Rectangle {
     MouseArea {
         id: parentMouseArea
 
-        anchors.fill: parent
+        anchors {
+            left: parent.left
+            top: parent.top
+            bottom: parent.bottom
+        }
+        width: (childOverlayContainer.visible && root.childTooltipText.length > 0)
+               ? Math.max(0, root.width - childOverlayContainer.width)
+               : root.width
         hoverEnabled: true
 
         QuotaProgressToolTip {
             id: parentSegmentToolTip
 
             visible: parent.containsMouse
-                     && (!childOverlayContainer.visible || !childMouseArea.containsMouse)
             text: root.tooltipText
             anchorItem: root
         }
