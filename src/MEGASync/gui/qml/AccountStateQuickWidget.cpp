@@ -59,9 +59,8 @@ QVariantList buildStorageSegments(Preferences* preferences)
         QVariantList children;
         appendUsageSegment(children, AccountStateQuickWidget::Versions, versionsStorage);
 
-        segments.push_back(buildUsageSegment(AccountStateQuickWidget::CloudDrive,
-                                             cloudDriveStorage + versionsStorage,
-                                             children));
+        segments.push_back(
+            buildUsageSegment(AccountStateQuickWidget::CloudDrive, cloudDriveStorage, children));
     }
     appendUsageSegment(segments, AccountStateQuickWidget::Backups, preferences->vaultStorage());
     appendUsageSegment(segments,
