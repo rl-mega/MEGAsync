@@ -13,13 +13,11 @@
 #include <Shlobj.h>
 #include <Shlwapi.h>
 
-#include <QDesktopWidget>
 #include <QHostInfo>
 #include <QOperatingSystemVersion>
 #include <QScreen>
 #include <QSettings>
 #include <QtPlatformHeaders/QWindowsWindowFunctions>
-#include <QtWin>
 
 #include <comdef.h>
 #include <dpapi.h>
@@ -47,6 +45,9 @@ enum class StartupApprovedState : BYTE
     DISABLED_BY_USER = 0x03,
     ENABLED_BY_SYSTEM = 0x06,
 };
+
+constexpr HRESULT kTaskFolderAlreadyExists =
+    static_cast<HRESULT>(HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS));
 }
 bool WindowsPlatform_exiting = false;
 static const QString NotAllowedDefaultFactoryBiosName = QString::fromUtf8("To be filled by O.E.M.");
@@ -1037,7 +1038,7 @@ void PlatformImplementation::syncFolderAdded(QString syncPath, QString syncName,
 
 
     QString infoTip = QCoreApplication::translate("WindowsPlatform", "MEGA synced folder");
-    SHFOLDERCUSTOMSETTINGS fcs = {0};
+    SHFOLDERCUSTOMSETTINGS fcs{};
     fcs.dwSize = sizeof(SHFOLDERCUSTOMSETTINGS);
     fcs.dwMask = FCSM_ICONFILE | FCSM_INFOTIP;
     fcs.pszIconFile = (LPWSTR)MegaApplication::applicationFilePath().utf16();
@@ -1107,7 +1108,7 @@ void PlatformImplementation::syncFolderRemoved(QString syncPath, QString syncNam
         syncPath = syncPath.mid(4);
     }
 
-    SHFOLDERCUSTOMSETTINGS fcs = {0};
+    SHFOLDERCUSTOMSETTINGS fcs{};
     fcs.dwSize = sizeof(SHFOLDERCUSTOMSETTINGS);
     fcs.dwMask = FCSM_ICONFILE | FCSM_INFOTIP;
     SHGetSetFolderCustomSettings(&fcs, (LPCWSTR)syncPath.utf16(), FCS_FORCEWRITE);
@@ -1434,7 +1435,8 @@ bool PlatformImplementation::registerUpdateJob()
             && SUCCEEDED(pService->Connect(_variant_t(), _variant_t(), _variant_t(), _variant_t()))
             && SUCCEEDED(pService->GetFolder(_bstr_t( L"\\"), &pRootFolder)))
     {
-        if (pRootFolder->CreateFolder(_bstr_t(L"MEGA"), _variant_t(L""), &pMEGAFolder) == 0x800700b7)
+        if (pRootFolder->CreateFolder(_bstr_t(L"MEGA"), _variant_t(L""), &pMEGAFolder) ==
+            kTaskFolderAlreadyExists)
         {
             pRootFolder->GetFolder(_bstr_t(L"MEGA"), &pMEGAFolder);
         }
@@ -1594,7 +1596,8 @@ void PlatformImplementation::uninstall()
             && SUCCEEDED(pService->Connect(_variant_t(), _variant_t(), _variant_t(), _variant_t()))
             && SUCCEEDED(pService->GetFolder(_bstr_t( L"\\"), &pRootFolder)))
     {
-        if (pRootFolder->CreateFolder(_bstr_t(L"MEGA"), _variant_t(L""), &pMEGAFolder) == 0x800700b7)
+        if (pRootFolder->CreateFolder(_bstr_t(L"MEGA"), _variant_t(L""), &pMEGAFolder) ==
+            kTaskFolderAlreadyExists)
         {
             pRootFolder->GetFolder(_bstr_t(L"MEGA"), &pMEGAFolder);
         }
@@ -1615,7 +1618,7 @@ void PlatformImplementation::uninstall()
 
 bool PlatformImplementation::isUserActive()
 {
-    LASTINPUTINFO lii = {0};
+    LASTINPUTINFO lii{};
     lii.cbSize = sizeof(LASTINPUTINFO);
     bool userIsActive = true; // Default to true to avoid blocking
     if (GetLastInputInfo(&lii))
