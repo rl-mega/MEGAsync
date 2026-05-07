@@ -451,13 +451,6 @@ void deleteCache()
     MegaSyncApp->cleanLocalCaches(true);
 }
 
-void deleteRemoteCache(MegaApi* mMegaApi)
-{
-    MegaNode* n = mMegaApi->getNodeByPath("//bin/SyncDebris");
-    mMegaApi->remove(n);
-    delete n;
-}
-
 void SettingsDialog::setUpdateAvailable(bool updateAvailable)
 {
     if (updateAvailable)
@@ -621,7 +614,12 @@ void SettingsDialog::on_bClearRemoteCache_clicked()
     {
         if (msg->result() == QMessageBox::Yes)
         {
-            QtConcurrent::run(deleteRemoteCache, mMegaApi);
+            auto deleteRemoteCache = [this]()
+            {
+                std::unique_ptr<MegaNode> n(mMegaApi->getNodeByPath("//bin/SyncDebris"));
+                mMegaApi->remove(n.get());
+            };
+            QThreadPool::globalInstance()->start(deleteRemoteCache);
             mRemoteCacheSize = 0;
             onCacheSizeAvailable();
         }
