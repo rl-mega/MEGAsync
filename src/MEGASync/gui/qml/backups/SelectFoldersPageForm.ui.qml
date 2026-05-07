@@ -7,45 +7,61 @@ import components.texts 1.0 as Texts
 
 import BackupCandidatesProxyModel 1.0
 
-FooterButtonsPage {
+Item {
     id: root
 
-    readonly property int spacing: 24
+    property alias footerButtons: footerButtonsItem
+    readonly property int selectTableHeight: 260
 
-    footerButtons {
-        leftPrimary.visible: false
-        rightSecondary.text: Strings.cancel
-        rightPrimary {
-            text: Strings.next
-            icons.source: Images.arrowRight
-            enabled: backupCandidatesAccess.checkAllState !== Qt.Unchecked
-        }
-    }
+    implicitHeight: layoutItem.height
 
-    Texts.SecondaryText {
-        id: descriptionItem
+    Column {
+        id: layoutItem
 
         anchors {
+            left: parent.left
+            right: parent.right
             top: parent.top
-            left: parent.left
-            right: parent.right
         }
-        font.pixelSize: Texts.Text.Size.MEDIUM
-        wrapMode: Text.WordWrap
-        text: BackupsStrings.selectBackupFoldersDescription
-    }
 
-    SelectTable {
-        id: backupsTable
+        spacing: Constants.defaultComponentSpacing
 
-        anchors {
-            top: descriptionItem.bottom
-            left: parent.left
-            right: parent.right
-            bottom: footerButtons.top
-            topMargin: root.spacing
-            bottomMargin: root.spacing
+        Texts.SecondaryText {
+            id: descriptionItem
+
+            width: parent.width
+            font.pixelSize: Texts.Text.Size.MEDIUM
+            wrapMode: Text.WordWrap
+            text: BackupsStrings.selectBackupFoldersDescription
+        }
+
+        SelectTable {
+            id: backupsTable
+
+            width: parent.width
+            height: root.selectTableHeight
+        }
+
+        Item { // trick: wrapper to avoid the anchoring colision (inside the footerbuttons) with the layout manager. that's the only purpose.
+            height: footerButtonsItem.height
+            width: parent.width
+
+            FooterButtons {
+                id: footerButtonsItem
+
+                leftPrimary.visible: false
+                rightSecondary.text: Strings.cancel
+                rightPrimary {
+                    text: Strings.next
+                    icons.source: Images.arrowRight
+                    enabled: backupCandidatesAccess.checkAllState !== Qt.Unchecked
+                }
+            }
+        }
+
+        Item {
+            height: Constants.defaultComponentSpacing
+            width: parent.width
         }
     }
-
 }

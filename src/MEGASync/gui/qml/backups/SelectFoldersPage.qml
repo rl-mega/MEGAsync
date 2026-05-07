@@ -3,6 +3,9 @@ import common 1.0
 SelectFoldersPageForm {
     id: root
 
+    // added to avoid qml warning.
+    function setInitialFocusPosition() { }
+
     signal selectFolderMoveToConfirm
 
     footerButtons {
@@ -14,5 +17,4 @@ SelectFoldersPageForm {
             root.selectFolderMoveToConfirm();
         }
     }
-
 }

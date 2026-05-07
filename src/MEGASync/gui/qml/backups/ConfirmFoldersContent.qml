@@ -12,24 +12,19 @@ import QmlDeviceName 1.0
 Column {
     id: root
 
-    spacing: notificationItem.visible ? 8 : (24 - Constants.focusBorderWidth)
+    spacing: Constants.defaultComponentSpacing
+    property alias errorBanner: notificationItem
 
     ConfirmTable {
         id: confirmFoldersTable
 
-        anchors {
-            left: parent.left
-            right: parent.right
-        }
+        width: parent.width
     }
 
     Texts.BannerText {
         id: notificationItem
 
-        anchors {
-            left: parent.left
-            right: parent.right
-        }
+        width: parent.width
         showBorder: true
         type: backupCandidatesAccess.globalError === BackupCandidates.SDK_CREATION
                 ? Constants.MessageType.ERROR
@@ -57,5 +52,5 @@ Column {
             id: deviceName
         }
     }
-
 }
+

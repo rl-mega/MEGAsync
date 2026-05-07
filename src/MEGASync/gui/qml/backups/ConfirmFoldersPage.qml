@@ -5,6 +5,9 @@ import common 1.0
 ConfirmFoldersPageForm {
     id: root
 
+    // added to avoid qml warning.
+    function setInitialFocusPosition() { }
+
     signal openExclusionsDialog
     signal confirmFoldersMoveToSelect
     signal confirmFoldersMoveToFinal(bool success)
@@ -43,5 +46,4 @@ ConfirmFoldersPageForm {
             root.confirmFoldersMoveToFinal(success);
         }
     }
-
 }

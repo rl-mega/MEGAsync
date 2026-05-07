@@ -16,75 +16,87 @@ SyncsQmlDialog {
     title: BackupsStrings.backupsWindowTitle
     visible: false
     modality: Qt.NonModal
+    minimumHeight: backupsContentItem.implicitHeight
+    maximumHeight: backupsContentItem.implicitHeight
+    height: minimumHeight
     width: 640
-    height: 403
-    maximumHeight: height
     maximumWidth: width
-    minimumHeight: height
     minimumWidth: width
     backup: true
     closeOnEscapePressed: true
+    color: ColorTheme.surface1
 
     readonly property int defaultWindowMargin: 24
 
-    Column {
-        id: contentItem
+    Behavior on height {
+        NumberAnimation {
+            duration: 200
+            easing.type: Easing.InOutQuad
+        }
+    }
 
-        anchors.fill: parent
+    Rectangle {
+        id: backupsContentItem
 
-        Rectangle {
-            id: backupsContentItem
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: parent.top
+        }
 
-            readonly property string backupsFlow: "backupsFlow"
-            readonly property string resume: "resume"
+        color: ColorTheme.surface1
 
-            width: parent.width
-            height: parent.height
-            color: ColorTheme.surface1
+        implicitHeight : stackView.implicitHeight
+        height: implicitHeight
 
-            state: backupsFlow
-            states: [
-                State {
-                    name: backupsContentItem.backupsFlow
-                    StateChangeScript {
-                        script: stackView.replace(backupsFlowPage);
-                    }
-                },
-                State {
-                    name: backupsContentItem.resume
-                    StateChangeScript {
-                        script: stackView.replace(resumePage);
-                    }
+        readonly property string backupsFlow: "backupsFlow"
+        readonly property string resume: "resume"
+
+        state: backupsFlow
+        states: [
+            State {
+                name: backupsContentItem.backupsFlow
+                StateChangeScript {
+                    script: stackView.replace(backupsFlowPage);
                 }
-            ]
-
-            StackViewBase {
-                id: stackView
-
-                anchors {
-                    fill: parent
-                    margins: defaultWindowMargin
+            },
+            State {
+                name: backupsContentItem.resume
+                StateChangeScript {
+                    script: stackView.replace(resumePage);
                 }
+            }
+        ]
 
-                Component {
-                    id: backupsFlowPage
+        StackViewBase {
+            id: stackView
 
-                    BackupsPage {
-                        id: backupsFlowItem
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                margins: defaultWindowMargin
+            }
 
-                        backupsContentItemRef: backupsContentItem
-                    }
+            implicitHeight: currentItem.implicitHeight
+
+            Component {
+                id: backupsFlowPage
+
+                BackupsPage {
+                    id: backupsFlowItem
+
+                    backupsContentItemRef: backupsContentItem
                 }
+            }
 
-                Component {
-                    id: resumePage
+            Component {
+                id: resumePage
 
-                    ResumePage {
-                        id: resumePageItem
-                    }
+                ResumePage {
+                    id: resumePageItem
                 }
             }
         }
     }
-
 }

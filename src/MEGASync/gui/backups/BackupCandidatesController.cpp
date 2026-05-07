@@ -15,6 +15,14 @@
 
 static const int CHECK_DIRS_TIME_IN_MS = 1000;
 
+namespace
+{
+long long normalizedFolderSize(long long folderSize)
+{
+    return std::max(0LL, folderSize);
+}
+}
+
 BackupCandidatesController::BackupCandidatesController():
     DataController(),
     mBackupCandidates(std::make_shared<BackupCandidates>()),
@@ -203,7 +211,7 @@ void BackupCandidatesController::updateSelectedAndTotalSize()
             if (data(candidate, BackupCandidates::SIZE_READY_ROLE).toBool())
             {
                 ++selectedAndSizeReadyFolders;
-                totalSize += candidate->mFolderSize;
+                totalSize += normalizedFolderSize(candidate->mFolderSize);
             }
         }
     }
@@ -557,7 +565,8 @@ QVariant BackupCandidatesController::data(std::shared_ptr<BackupCandidates::Data
                 field = candidate->mFolder;
                 break;
             case BackupCandidates::SIZE_ROLE:
-                field = Utilities::getSizeStringLocalized(candidate->mFolderSize);
+                field =
+                    Utilities::getSizeStringLocalized(normalizedFolderSize(candidate->mFolderSize));
                 break;
             case BackupCandidates::SIZE_READY_ROLE:
                 field = candidate->mFolderSize != LocalFileFolderAttributes::NOT_READY;
