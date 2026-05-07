@@ -52,7 +52,10 @@ QmlDialogWrapperBase::QmlDialogWrapperBase(QWidget* parent):
 
 QmlDialogWrapperBase::~QmlDialogWrapperBase()
 {
-    mWindow->deleteLater();
+    if (mWindow)
+    {
+        mWindow->deleteLater();
+    }
 }
 
 Qt::WindowModality QmlDialogWrapperBase::windowModality()
