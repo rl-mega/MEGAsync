@@ -8,7 +8,7 @@ import SyncsComponents 1.0
 
 import syncs 1.0 as Syncs
 
-Syncs.SyncsFlow {
+SyncsFlow {
     id: root
 
     required property StepPanel stepPanelRef

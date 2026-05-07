@@ -28,6 +28,9 @@ FocusScope {
     height: folderItem.height
     Layout.preferredHeight: folderItem.height
 
+    width: parent.width
+    Layout.preferredWidth: width
+
     TextField {
         id: folderItem
 
