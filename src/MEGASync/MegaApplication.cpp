@@ -1200,9 +1200,10 @@ void MegaApplication::start()
 
     connect(mDiscountStateMachine,
             &DiscountStateMachine::requestShowDialog,
+            this,
             [this]()
             {
-                auto dialog = QMLComponent::showDialog<OfferComponent>();
+                auto dialog = QMLComponent::showDialog<OfferComponent>(nullptr);
                 dialog->getDialog()->wrapper()->setDiscountPolicy(mDiscountPolicy);
 
                 mDiscountPolicy->recordShown();
@@ -4294,7 +4295,7 @@ void MegaApplication::openDeviceCentre()
     }
 #endif
 
-    QMLComponent::showDialog<DeviceCentre>();
+    QMLComponent::showDialog<DeviceCentre>(nullptr);
 }
 
 void MegaApplication::importLinks(AppStatsEvents::EventType event)
@@ -7302,6 +7303,7 @@ void MegaApplication::startCrashReportingDialog()
             QPointer<CrashReportDialog> crashDialog = new CrashReportDialog();
             crashDialog->setAttribute(Qt::WA_DeleteOnClose);
             crashDialog->setParent(crashDialog->parentWidget(), crashDialog->windowFlags());
+            crashDialog->move(DialogOpener::initialDialogPosition(crashDialog->geometry().size()));
             TokenParserWidgetManager::instance()->applyCurrentTheme(crashDialog);
             TokenParserWidgetManager::instance()->registerWidgetForTheming(crashDialog);
 

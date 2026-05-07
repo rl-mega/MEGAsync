@@ -26,6 +26,9 @@ public:
     bool startOnStartup(bool value) override;
     bool isStartOnStartupActive() override;
     bool isTilingWindowManager() override;
+    QPoint initialDialogPosition(const QSize& dialogSize) const override;
+    QPoint initialDialogPosition(const QSize& dialogSize,
+                                 const QRect& parentGeometry) const override;
     bool showInFolder(QString pathIn) override;
     void startShellDispatcher(MegaApplication *receiver) override;
     void stopShellDispatcher() override;

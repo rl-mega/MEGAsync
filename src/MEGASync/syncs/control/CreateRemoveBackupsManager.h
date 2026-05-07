@@ -15,12 +15,15 @@ public:
     ~CreateRemoveBackupsManager() = delete;
 
     static void addBackup(SyncInfo::SyncOrigin origin,
-                          const QStringList& localFolders = QStringList());
+                          const QStringList& localFolders = QStringList(),
+                          QWidget* parent = nullptr);
     static void removeBackup(std::shared_ptr<SyncSettings> backup, QWidget* parent);
     static bool isBackupsDialogOpen();
 
 private:
-    static void showBackupDialog(SyncInfo::SyncOrigin origin, const QStringList& localFolders);
+    static void showBackupDialog(SyncInfo::SyncOrigin origin,
+                                 const QStringList& localFolders,
+                                 QWidget* parent);
 
     static void showBackupDialog(bool comesFromSettings, const QStringList& localFolders);
 

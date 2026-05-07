@@ -1,8 +1,5 @@
 #include "MessageDialogOpener.h"
 
-#include "DialogOpener.h"
-#include "MessageDialogComponent.h"
-#include "QmlDialogWrapper.h"
 #include "Utilities.h"
 
 #include <QPointer>
@@ -36,10 +33,14 @@ void MessageDialogOpener::show(MessageDialogData::Type type, const MessageDialog
 {
     auto showDialog = [type, info]()
     {
-        QPointer<MessageDialogData> data = new MessageDialogData(type, info, info.parent);
-        QPointer<QmlDialogWrapper<MessageDialogComponent>> dialog =
-            new QmlDialogWrapper<MessageDialogComponent>(info.parent, data);
-        DialogOpener::showMessageDialog(dialog, data);
+        if (info.parentQml)
+        {
+            createQmlDialogWrapper<QmlDialog>(type, info, info.parentQml);
+        }
+        else
+        {
+            createQmlDialogWrapper<QWidget>(type, info, info.parent);
+        }
     };
 
     if (MegaSyncApp->thread() != MegaSyncApp->thread()->currentThread())

@@ -4,6 +4,7 @@
 #include "MessageDialogOpener.h"
 #include "NautilusFileManager.h"
 
+#include <QGuiApplication>
 #include <QHostInfo>
 #include <QObject>
 #include <QProgressBar>
@@ -128,6 +129,40 @@ bool PlatformImplementation::isTilingWindowManager()
 
     return getValue("MEGASYNC_ASSUME_TILING_WM", false)
            || tiling_wms.contains(getWindowManagerName());
+}
+
+QPoint PlatformImplementation::initialDialogPosition(const QSize& dialogSize) const
+{
+    auto primaryScreen = QGuiApplication::primaryScreen();
+    if (!primaryScreen)
+    {
+        return QPoint();
+    }
+
+    const auto primaryGeometry = primaryScreen->geometry();
+
+    constexpr double CENTERING_FACTOR(0.5);
+    int xPos(primaryGeometry.x() + static_cast<int>(primaryGeometry.width() * CENTERING_FACTOR -
+                                                    dialogSize.width() * CENTERING_FACTOR));
+    int yPos(primaryGeometry.y() + static_cast<int>(primaryGeometry.height() * CENTERING_FACTOR -
+                                                    dialogSize.height() * CENTERING_FACTOR));
+    return QPoint(xPos, yPos);
+}
+
+QPoint PlatformImplementation::initialDialogPosition(const QSize& dialogSize,
+                                                     const QRect& parentGeometry) const
+{
+    if (!parentGeometry.isValid())
+    {
+        return initialDialogPosition(dialogSize);
+    }
+
+    constexpr double CENTERING_FACTOR(0.5);
+    int xPos(parentGeometry.x() + static_cast<int>(parentGeometry.width() * CENTERING_FACTOR -
+                                                   dialogSize.width() * CENTERING_FACTOR));
+    int yPos(parentGeometry.y() + static_cast<int>(parentGeometry.height() * CENTERING_FACTOR -
+                                                   dialogSize.height() * CENTERING_FACTOR));
+    return QPoint(xPos, yPos);
 }
 
 bool PlatformImplementation::showInFolder(QString pathIn)

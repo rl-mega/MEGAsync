@@ -97,15 +97,12 @@ void BackupCandidatesComponent::setOrigin(SyncInfo::SyncOrigin origin)
 
 void BackupCandidatesComponent::openExclusionsDialog() const
 {
-    if (auto dialog = DialogOpener::findDialog<QmlDialogWrapper<BackupCandidatesComponent>>())
-    {
-        auto folderPaths = mBackupCandidatesController->getSelectedCandidates();
+    auto folderPaths = mBackupCandidatesController->getSelectedCandidates();
 
-        QWidget* parentWidget = static_cast<QWidget*>(dialog->getDialog().data());
-        QPointer<QmlDialogWrapper<AddExclusionRule>> exclusions =
-            new QmlDialogWrapper<AddExclusionRule>(parentWidget, folderPaths);
-        DialogOpener::showDialog(exclusions);
-    }
+    QmlDialog* parent(QmlDialogWrapperUtilities::getQmlDialog<BackupCandidatesComponent>());
+    QPointer<QmlDialogWrapper<AddExclusionRule>> exclusions =
+        new QmlDialogWrapper<AddExclusionRule>(parent, folderPaths);
+    DialogOpener::showDialog(exclusions);
 }
 
 void BackupCandidatesComponent::confirmFoldersMoveToSelect()

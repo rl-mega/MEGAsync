@@ -828,7 +828,7 @@ void NodeSelectorTreeViewWidget::onDeleteClicked(const QList<mega::MegaHandle>& 
     if (showConfirmationMessageBox)
     {
         MessageDialogInfo msgInfo;
-        msgInfo.parent = ui->tMegaFolders;
+        msgInfo.parent = Utilities::getTopParent<QDialog>(ui->tMegaFolders);
         msgInfo.buttons = QMessageBox::Yes | QMessageBox::No;
         msgInfo.defaultButton = QMessageBox::Yes;
         msgInfo.finishFunc = [this, handles, permanently](QPointer<MessageDialogResult> msg)
@@ -915,7 +915,7 @@ void NodeSelectorTreeViewWidget::onLeaveShareClicked(const QList<mega::MegaHandl
     }
 
     MessageDialogInfo msgInfo;
-    msgInfo.parent = ui->tMegaFolders;
+    msgInfo.parent = Utilities::getTopParent<QDialog>(ui->tMegaFolders);
     msgInfo.buttons = QMessageBox::Yes | QMessageBox::No;
     msgInfo.defaultButton = QMessageBox::Yes;
     msgInfo.buttonsText.insert(QMessageBox::Yes, tr("Leave"));

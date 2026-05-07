@@ -152,7 +152,8 @@ void SyncSettingsUIBase::openExclusionsDialog(std::shared_ptr<SyncSettings> sync
     if (syncDir.exists())
     {
         QPointer<QmlDialogWrapper<SyncExclusions>> exclusions =
-            new QmlDialogWrapper<SyncExclusions>(this, sync->getLocalFolder());
+            new QmlDialogWrapper<SyncExclusions>(Utilities::getTopParent<SettingsDialog>(this),
+                                                 sync->getLocalFolder());
         DialogOpener::showDialog(exclusions);
     }
     else
@@ -185,7 +186,7 @@ void SyncSettingsUIBase::initTable()
 void SyncSettingsUIBase::showOpenMegaIgnoreError()
 {
     MessageDialogInfo msgInfo;
-    msgInfo.parent = this;
+    msgInfo.parent = Utilities::getTopParent<SettingsDialog>(this);
     msgInfo.descriptionText = tr("Error opening megaignore file");
     MessageDialogOpener::warning(msgInfo);
 }

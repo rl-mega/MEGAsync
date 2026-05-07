@@ -1,5 +1,7 @@
 #include "QmlDialogWrapper.h"
 
+#include "QmlDialogWrapperUtilities.h"
+
 #include <QQmlProperty>
 #include <QWindow>
 
@@ -276,4 +278,9 @@ void QmlDialogWrapperBase::onWindowFinished()
         emit rejected();
     }
     emit finished(mResult);
+}
+
+QPointer<QmlDialog> QmlDialogWrapperBase::getQmlWindow() const
+{
+    return mWindow;
 }

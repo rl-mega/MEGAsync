@@ -1,9 +1,11 @@
 #include "ChangePasswordComponent.h"
 
 #include "ChangePasswordDialog.h"
+#include "DialogOpener.h"
 #include "MessageDialogData.h"
 #include "MessageDialogOpener.h"
 #include "PasswordStrengthChecker.h"
+#include "SettingsDialog.h"
 
 static bool qmlRegistrationDone = false;
 
@@ -47,7 +49,10 @@ void ChangePasswordComponent::onPasswordChangeSucceed(QString title, QString des
 {
     emit passwordChangeSucceed();
 
+    auto dialog = DialogOpener::findDialog<SettingsDialog>();
+
     MessageDialogInfo info;
+    info.parent = dialog ? dialog->getDialog() : nullptr;
     info.titleText = title;
     info.descriptionText = description;
 

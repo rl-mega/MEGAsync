@@ -9,7 +9,8 @@
 
 void CreateRemoveSyncsManager::addSync(SyncInfo::SyncOrigin origin,
                                        mega::MegaHandle handle,
-                                       const QString& localPath)
+                                       const QString& localPath,
+                                       QWidget* parent)
 {
     QString remoteFolder;
 
@@ -23,17 +24,17 @@ void CreateRemoveSyncsManager::addSync(SyncInfo::SyncOrigin origin,
     if (overQuotaDialog)
     {
         DialogOpener::showDialog(overQuotaDialog,
-                                 [overQuotaDialog, origin, remoteFolder, localPath]()
+                                 [overQuotaDialog, origin, remoteFolder, localPath, parent]()
                                  {
                                      if (overQuotaDialog->result() == QDialog::Rejected)
                                      {
-                                         showSyncDialog(origin, remoteFolder, localPath);
+                                         showSyncDialog(origin, remoteFolder, localPath, parent);
                                      }
                                  });
     }
     else
     {
-        showSyncDialog(origin, remoteFolder, localPath);
+        showSyncDialog(origin, remoteFolder, localPath, parent);
     }
 }
 
@@ -85,7 +86,8 @@ bool CreateRemoveSyncsManager::removeSync(std::shared_ptr<SyncSettings> syncSett
 
 void CreateRemoveSyncsManager::showSyncDialog(SyncInfo::SyncOrigin origin,
                                               QString remoteFolder,
-                                              QString localFolder)
+                                              QString localFolder,
+                                              QWidget* parent)
 {
     QPointer<QmlDialogWrapper<SyncsComponent>> syncsDialog;
     if (auto dialog = DialogOpener::findDialog<QmlDialogWrapper<SyncsComponent>>())
@@ -94,7 +96,7 @@ void CreateRemoveSyncsManager::showSyncDialog(SyncInfo::SyncOrigin origin,
     }
     else
     {
-        syncsDialog = new QmlDialogWrapper<SyncsComponent>();
+        syncsDialog = new QmlDialogWrapper<SyncsComponent>(parent);
     }
     syncsDialog->wrapper()->setSyncOrigin(origin);
     syncsDialog->wrapper()->setRemoteFolder(remoteFolder);

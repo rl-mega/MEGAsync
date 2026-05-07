@@ -50,7 +50,9 @@ BackupSettingsUI::~BackupSettingsUI() {}
 
 void BackupSettingsUI::addButtonClicked(mega::MegaHandle)
 {
-    CreateRemoveBackupsManager::addBackup(SyncInfo::SyncOrigin::SETTINGS_ORIGIN);
+    CreateRemoveBackupsManager::addBackup(SyncInfo::SyncOrigin::SETTINGS_ORIGIN,
+                                          QStringList(),
+                                          Utilities::getTopParent<SettingsDialog>(this));
 }
 
 bool BackupSettingsUI::event(QEvent* event)

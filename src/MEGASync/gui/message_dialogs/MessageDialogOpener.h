@@ -1,7 +1,10 @@
 #ifndef MESSAGE_DIALOG_OPENER_H
 #define MESSAGE_DIALOG_OPENER_H
 
+#include "DialogOpener.h"
+#include "MessageDialogComponent.h"
 #include "MessageDialogData.h"
+#include "QmlDialogWrapper.h"
 
 class MessageDialogOpener
 {
@@ -17,6 +20,17 @@ public:
 
 private:
     static void show(MessageDialogData::Type type, const MessageDialogInfo& info);
+
+    template<typename parentType>
+    static void createQmlDialogWrapper(MessageDialogData::Type type,
+                                       const MessageDialogInfo& info,
+                                       parentType* parent)
+    {
+        QPointer<MessageDialogData> data = new MessageDialogData(type, info, parent);
+        auto dialog = new QmlDialogWrapper<MessageDialogComponent>(parent, data);
+        dialog->setShowWhenCreated();
+        DialogOpener::showMessageDialog(dialog, data);
+    }
 };
 
 #endif // MESSAGE_DIALOG_OPENER_H

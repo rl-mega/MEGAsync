@@ -5,6 +5,7 @@
 #include "MultiQFileDialog.h"
 #include "TokenParserWidgetManager.h"
 
+#include <QGuiApplication>
 #include <QScreen>
 
 using namespace mega;
@@ -24,6 +25,31 @@ void AbstractPlatform::unHideTrayIcon() {}
 bool AbstractPlatform::isTilingWindowManager()
 {
     return false;
+}
+
+QPoint AbstractPlatform::initialDialogPosition(const QSize& dialogSize) const
+{
+    auto primaryScreen = QGuiApplication::primaryScreen();
+    if (!primaryScreen)
+    {
+        return QPoint();
+    }
+
+    const auto primaryGeometry = primaryScreen->geometry();
+    return QPoint(primaryGeometry.x() + (primaryGeometry.width() - dialogSize.width()) / 2,
+                  primaryGeometry.y() + (primaryGeometry.height() - dialogSize.height()) / 2);
+}
+
+QPoint AbstractPlatform::initialDialogPosition(const QSize& dialogSize,
+                                               const QRect& parentGeometry) const
+{
+    if (!parentGeometry.isValid())
+    {
+        return initialDialogPosition(dialogSize);
+    }
+
+    return QPoint(parentGeometry.x() + (parentGeometry.width() - dialogSize.width()) / 2,
+                  parentGeometry.y() + (parentGeometry.height() - dialogSize.height()) / 2);
 }
 
 QByteArray AbstractPlatform::encrypt(QByteArray data, QByteArray /*key*/)

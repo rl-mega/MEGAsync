@@ -64,6 +64,7 @@ set(DESKTOP_APP_GUI_HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlClipboard.h
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlDialog.h
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlDialogWrapper.h
+    ${CMAKE_CURRENT_LIST_DIR}/qml/QmlDialogWrapperUtilities.h
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlWidgetWrapper.h
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlInstancesManager.h
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlItem.h

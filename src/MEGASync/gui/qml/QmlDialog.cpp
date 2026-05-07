@@ -1,13 +1,20 @@
 #include "QmlDialog.h"
 
+#include "DialogOpener.h"
+#include "QmlDialogWrapperUtilities.h"
+
 #include <QEvent>
+#include <QResizeEvent>
 #include <QScreen>
 
 namespace
 {
 const QLatin1String DEFAULT_RES_MEGA_ICON(":/images/app_ico.ico");
 const QLatin1String DEFAULT_TITLE("MEGA");
-constexpr double CENTERING_FACTOR(0.5);
+const qreal HIDDEN_OPACITY(0.0);
+const qreal DEFAULT_VISIBLE_OPACITY(1.0);
+const int SHOW_WHEN_CREATED_FALLBACK_DELAY_MS(60);
+const int RESTORE_OPACITY_DELAY_MS(60);
 }
 
 QmlDialog::QmlDialog(QWindow* parent):
@@ -30,6 +37,35 @@ QmlDialog::QmlDialog(QWindow* parent):
             &QmlInstancesManager::instancesChanged,
             this,
             &QmlDialog::instancesManagerChanged);
+
+    mShowWhenCreatedFallbackTimer.setInterval(SHOW_WHEN_CREATED_FALLBACK_DELAY_MS);
+    mShowWhenCreatedFallbackTimer.setSingleShot(true);
+    connect(&mShowWhenCreatedFallbackTimer,
+            &QTimer::timeout,
+            this,
+            [this]()
+            {
+                if (mCenterAndRaiseAfterFirstHeightChangeEvent)
+                {
+                    placeAndRaise();
+                }
+            });
+
+    // We restore the opacity with a timer to ensure the dialog is render
+    mRestoreOpacityTimer.setInterval(RESTORE_OPACITY_DELAY_MS);
+    mRestoreOpacityTimer.setSingleShot(true);
+    connect(&mRestoreOpacityTimer,
+            &QTimer::timeout,
+            this,
+            [this]()
+            {
+                setOpacity(mPreviousOpacity > HIDDEN_OPACITY ? mPreviousOpacity :
+                                                               DEFAULT_VISIBLE_OPACITY);
+
+                // The following two lines are required by Windows (activate) and macOS (raise)
+                requestActivate();
+                raise();
+            });
 }
 
 void QmlDialog::setIconSrc(const QString& iconSrc)
@@ -52,25 +88,18 @@ QmlInstancesManager* QmlDialog::getInstancesManager()
     return mInstancesManager;
 }
 
-void QmlDialog::centerAndRaise()
+void QmlDialog::readyToBeShow()
 {
-    // The following four lines are required by Ubuntu to bring the window to the front and
-    // move it to the center of the current screen, if the screen is a part of a virtual desktop or
-    // multiple screen we will need add the current screen offset(topleft) to the calculated central
-    // position.
-    const auto& geometry(QmlDialog::screen()->geometry());
-    int xPos(geometry.x() +
-             static_cast<int>(geometry.width() * CENTERING_FACTOR - width() * CENTERING_FACTOR));
-    int yPos(geometry.y() +
-             static_cast<int>(geometry.height() * CENTERING_FACTOR - height() * CENTERING_FACTOR));
+    mCenterAndRaiseAfterFirstHeightChangeEvent = true;
+    mTrackedSize = geometry().size();
 
     hide();
-    QmlDialog::setPosition(xPos, yPos);
+    // Set the opacity to 0.0 to hide the window even if it is shown
+    // The opacity will be set again to the real opacity
+    mPreviousOpacity = opacity() > HIDDEN_OPACITY ? opacity() : DEFAULT_VISIBLE_OPACITY;
+    setOpacity(HIDDEN_OPACITY);
     show();
-
-    // The following two lines are required by Windows (activate) and macOS (raise)
-    QmlDialog::requestActivate();
-    QmlDialog::raise();
+    mShowWhenCreatedFallbackTimer.start();
 }
 
 bool QmlDialog::getCloseOnEscapePressed() const
@@ -94,6 +123,29 @@ bool QmlDialog::event(QEvent* event)
     {
         emit finished();
     }
+    else if (event->type() == QEvent::Resize)
+    {
+        auto* resizeEvent = static_cast<QResizeEvent*>(event);
+        if (mCenterAndRaiseAfterFirstHeightChangeEvent)
+        {
+            mShowWhenCreatedFallbackTimer.start();
+        }
+
+#ifdef Q_OS_LINUX
+        // Linux qml dialogs starts with QSize(1,1), so the first resize is invalid
+        if (mTrackedSize.height() <= 1)
+        {
+            mTrackedSize = resizeEvent->size();
+            return QQuickWindow::event(event);
+        }
+#endif
+
+        if (resizeEvent && mCenterAndRaiseAfterFirstHeightChangeEvent &&
+            mTrackedSize != resizeEvent->size())
+        {
+            placeAndRaise();
+        }
+    }
     else if (event->type() == QEvent::KeyPress)
     {
         auto* keyPressEvent = static_cast<QKeyEvent*>(event);
@@ -110,4 +162,17 @@ bool QmlDialog::event(QEvent* event)
 void QmlDialog::onRequestPageFocus()
 {
     emit initializePageFocus();
+}
+
+void QmlDialog::placeAndRaise()
+{
+    mShowWhenCreatedFallbackTimer.stop();
+
+    mCenterAndRaiseAfterFirstHeightChangeEvent = false;
+
+    QSize dialogSize = geometry().size();
+    auto parentGeometry = QmlDialogWrapperUtilities::getParentGeometry(this);
+    QmlDialog::setFramePosition(DialogOpener::initialDialogPosition(dialogSize, parentGeometry));
+
+    mRestoreOpacityTimer.start();
 }

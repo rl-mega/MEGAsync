@@ -129,13 +129,10 @@ void SyncsComponent::onLocalFolderChosen(QString localPath)
 
 void SyncsComponent::openExclusionsDialog(const QString& folder) const
 {
-    if (auto dialog = DialogOpener::findDialog<QmlDialogWrapper<SyncsComponent>>())
-    {
-        QWidget* parentWidget = static_cast<QWidget*>(dialog->getDialog().data());
-        QPointer<QmlDialogWrapper<AddExclusionRule>> exclusions =
-            new QmlDialogWrapper<AddExclusionRule>(parentWidget, QStringList() << folder);
-        DialogOpener::showDialog(exclusions);
-    }
+    QmlDialog* parent(QmlDialogWrapperUtilities::getQmlDialog<SyncsComponent>());
+    QPointer<QmlDialogWrapper<AddExclusionRule>> exclusions =
+        new QmlDialogWrapper<AddExclusionRule>(parent, QStringList() << folder);
+    DialogOpener::showDialog(exclusions);
 }
 
 void SyncsComponent::clearRemoteFolderErrorHint()

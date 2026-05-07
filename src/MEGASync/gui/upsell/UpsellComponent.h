@@ -14,7 +14,7 @@ class UpsellComponent: public QMLComponent
     Q_OBJECT
 
 public:
-    explicit UpsellComponent(QObject* parent, UpsellPlans::ViewMode mode);
+    explicit UpsellComponent(QWidget* parent, UpsellPlans::ViewMode mode);
     virtual ~UpsellComponent() = default;
 
     QUrl getQmlUrl() override;

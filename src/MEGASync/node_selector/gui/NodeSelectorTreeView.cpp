@@ -588,11 +588,13 @@ void NodeSelectorTreeView::addSyncMenuActions(QMap<int, QAction*>& actions,
         connect(syncAction,
                 &QAction::triggered,
                 this,
-                [selectedHandle]()
+                [this, selectedHandle]()
                 {
                     CreateRemoveSyncsManager::addSync(
                         SyncInfo::SyncOrigin::CLOUD_DRIVE_DIALOG_ORIGIN,
-                        selectedHandle);
+                        selectedHandle,
+                        QString(),
+                        Utilities::getTopParent<NodeSelector>(this));
                 });
         actions.insert(ActionsOrder::SYNC, syncAction);
     }
