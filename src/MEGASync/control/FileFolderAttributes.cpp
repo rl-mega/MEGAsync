@@ -359,7 +359,7 @@ qint64 LocalFileFolderAttributes::calculateSize()
 
     if (fileInfo.isFile())
     {
-        return fileInfo.isReadable() ? fileInfo.size() : NOT_READABLE;
+        return fileInfo.isReadable() ? fileInfo.size() : static_cast<qint64>(NOT_READABLE);
     }
 
     qint64 newSize(0);
