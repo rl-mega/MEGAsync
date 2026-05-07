@@ -45,7 +45,9 @@ public:
     bool isSpecialNode() const;
     bool canBeRenamed() const;
 
-    void createChildItems(std::unique_ptr<mega::MegaNodeList> nodeList);
+    QList<QPointer<NodeSelectorModelItem>>
+        createChildItems(std::unique_ptr<mega::MegaNodeList> nodeList);
+    void initializeChildItems(const QList<QPointer<NodeSelectorModelItem>>& items);
     bool areChildrenInitialized() const;
 
     bool canFetchMore();
@@ -68,6 +70,9 @@ public:
     bool isCloudDrive() const;
     bool isRubbishBin() const;
     bool isInRubbishBin() const;
+    QList<QPointer<NodeSelectorModelItem>>
+        buildNodes(const QList<std::shared_ptr<mega::MegaNode>>& nodes);
+    void appendNodes(const QList<QPointer<NodeSelectorModelItem>>& items);
     QPointer<NodeSelectorModelItem> addNode(std::shared_ptr<mega::MegaNode> node);
     QList<QPointer<NodeSelectorModelItem>> addNodes(QList<std::shared_ptr<mega::MegaNode>> nodes);
     QPointer<NodeSelectorModelItem> findChildNode(std::shared_ptr<mega::MegaNode> node);

@@ -119,7 +119,7 @@ public slots:
     void abort();
 
 signals:
-    void nodesReady(NodeSelectorModelItem* parent);
+    void nodesReady(NodeSelectorModelItem* parent, int insertedCount);
     void megaCloudDriveRootItemCreated();
     void megaIncomingSharesRootItemsCreated();
     void megaRubbishRootItemsCreated();
@@ -185,6 +185,7 @@ public:
     RemoveNodesQueue(NodeSelectorModel* model);
 
     void addStep(const mega::MegaHandle& handle);
+    void skipCurrentStep();
 
 signals:
     void startBeginRemoveRows(const mega::MegaHandle& handle);
@@ -473,11 +474,13 @@ protected:
 
 protected slots:
     void beginRootItemsInsertion(int first, int last);
+    void beginChildRowsInsertion(const QModelIndex& parent, int first, int last);
     void onRootItemAdded();
 
 private slots:
-    void onChildNodesReady(NodeSelectorModelItem* parent);
+    void onChildNodesReady(NodeSelectorModelItem* parent, int insertedCount);
     void onNodesAdded(QList<QPointer<NodeSelectorModelItem>> childrenItem);
+    void cancelPendingModification();
     void onSyncStateChanged(std::shared_ptr<SyncSettings> sync);
     void resetMoveProcessing();
     void checkFinishedRequest(mega::MegaHandle handle, int errorCode);
