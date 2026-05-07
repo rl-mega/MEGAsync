@@ -351,22 +351,26 @@ QDateTime LocalFileFolderAttributes::calculateModifiedTime()
 
 qint64 LocalFileFolderAttributes::calculateSize()
 {
-    qint64 newSize(0);
-
     QFileInfo fileInfo(mPath);
-    if(!fileInfo.isReadable())
+    if (mPath.isEmpty() || !fileInfo.exists())
     {
-        newSize = NOT_READABLE;
+        return NOT_READABLE;
     }
-    if(!mPath.isEmpty() && fileInfo.exists())
-    {
-        QDirIterator filesIt(mPath, QDir::Files| QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Hidden, QDirIterator::Subdirectories);
 
-        while (filesIt.hasNext())
-        {
-            filesIt.next();
-            newSize += filesIt.fileInfo().size();
-        }
+    if (fileInfo.isFile())
+    {
+        return fileInfo.isReadable() ? fileInfo.size() : NOT_READABLE;
+    }
+
+    qint64 newSize(0);
+    QDirIterator filesIt(mPath,
+                         QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Hidden,
+                         QDirIterator::Subdirectories);
+
+    while (filesIt.hasNext())
+    {
+        filesIt.next();
+        newSize += filesIt.fileInfo().size();
     }
 
     return newSize;
