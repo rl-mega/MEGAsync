@@ -150,6 +150,17 @@ InfoDialog::InfoDialog(MegaApplication* app, QWidget* parent, InfoDialog* olddia
 
     connect(ui->bCreateSync, &QAbstractButton::clicked, this, &InfoDialog::onAddSyncClicked);
 
+    connect(ui->bAvatar,
+            &AvatarWidget::clicked,
+            this,
+            []()
+            {
+                MegaSyncApp->openSettings(SettingsDialog::ACCOUNT_TAB);
+                MegaSyncApp->getStatsEventHandler()->sendTrackedEvent(
+                    AppStatsEvents::EventType::AVATAR_CLICKED,
+                    true);
+            });
+
     // Set window properties
 #ifdef Q_OS_LINUX
     doNotActAsPopup = Platform::getInstance()->getValue("USE_MEGASYNC_AS_REGULAR_WINDOW", false);

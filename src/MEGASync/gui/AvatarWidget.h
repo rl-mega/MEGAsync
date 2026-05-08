@@ -24,6 +24,7 @@ public:
 
 signals:
     void avatarUpdated();
+    void clicked();
 
 protected:
     void paintEvent(QPaintEvent* event);
