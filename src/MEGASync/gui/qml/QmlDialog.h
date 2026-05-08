@@ -26,6 +26,12 @@ public slots:
     bool getCloseOnEscapePressed() const;
     void setCloseOnEscapePressed(bool active);
 
+    // Attach this QML window to its parent's native window so the OS treats it
+    // as an embedded modal dialog (centered over parent, blocks parent input,
+    // not resizable as a standalone top-level window).
+    // Safe to call multiple times; idempotent on the same parent.
+    void attachToParentWindow(QWindow* parentWindow, bool embedded = true);
+
 signals:
     void instancesManagerChanged();
     void accept();

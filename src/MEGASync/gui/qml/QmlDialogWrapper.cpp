@@ -267,6 +267,40 @@ void QmlDialogWrapperBase::reject()
     close();
 }
 
+void QmlDialogWrapperBase::attachQmlToParentWindow()
+{
+    if (!mWindow)
+    {
+        return;
+    }
+
+    QWidget* pw = this->parentWidget();
+    if (!pw)
+    {
+        return;
+    }
+
+    QWindow* parentWindow = nullptr;
+
+    // QML->QML: parent is another QmlDialogWrapperBase whose visible window
+    // is its inner QQuickWindow. Avoid creating a native window for the
+    // never-shown wrapper QWidget (that creates a stray empty frame).
+    if (auto* qmlBase = qobject_cast<QmlDialogWrapperBase*>(pw))
+    {
+        parentWindow = qmlBase->windowHandle();
+    }
+    else if (QWidget* topLevel = pw->window())
+    {
+        topLevel->createWinId();
+        parentWindow = topLevel->windowHandle();
+    }
+
+    if (parentWindow)
+    {
+        mWindow->attachToParentWindow(parentWindow);
+    }
+}
+
 void QmlDialogWrapperBase::onWindowFinished()
 {
     if (mResult == QDialog::Accepted)

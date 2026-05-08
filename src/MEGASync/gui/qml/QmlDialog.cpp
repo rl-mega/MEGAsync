@@ -102,6 +102,44 @@ void QmlDialog::readyToBeShow()
     mShowWhenCreatedFallbackTimer.start();
 }
 
+void QmlDialog::attachToParentWindow(QWindow* parentWindow, bool embedded)
+{
+    if (parentWindow == nullptr || parentWindow == this)
+    {
+        return;
+    }
+
+    // Idempotent: only re-bind if the transient parent actually changed.
+    if (transientParent() != parentWindow)
+    {
+        setTransientParent(parentWindow);
+    }
+
+    if (embedded)
+    {
+        // If QML left it NonModal, promote to WindowModal. Do not downgrade
+        // ApplicationModal if a dialog explicitly asked for it.
+        if (modality() == Qt::NonModal)
+        {
+            setModality(Qt::WindowModal);
+        }
+
+        // Embedded dialogs should not show maximize/minimize affordances.
+        // Keep Qt::Dialog (set by the constructor) and the close button.
+        Qt::WindowFlags wflags = flags();
+        wflags |= Qt::Dialog;
+        wflags &= ~(Qt::WindowMaximizeButtonHint | Qt::WindowMinimizeButtonHint);
+#ifdef Q_OS_WIN
+        // On Windows this hint removes the resize border for fixed-size dialogs.
+        wflags |= Qt::MSWindowsFixedSizeDialogHint;
+#endif
+        if (wflags != flags())
+        {
+            setFlags(wflags);
+        }
+    }
+}
+
 bool QmlDialog::getCloseOnEscapePressed() const
 {
     return mCloseOnEscapePressed;
