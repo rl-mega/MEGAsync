@@ -62,7 +62,10 @@ SyncsMenu::SyncsMenu(mega::MegaSync::SyncType type, int itemIndent, QWidget* par
 
 SyncsMenu::~SyncsMenu()
 {
-    mMenu->deleteLater();
+    if (mMenu)
+    {
+        mMenu->deleteLater();
+    }
 }
 
 SyncsMenu* SyncsMenu::newSyncsMenu(mega::MegaSync::SyncType type, QWidget* parent)
@@ -299,8 +302,6 @@ void BackupSyncsMenu::refresh()
         const auto actions (menu->actions());
         auto* const firstBackup (actions.isEmpty() ? nullptr : actions.first());
 
-        // Show device name
-        mDevNameAction->deleteLater();
         // Display device name before folders
         mDevNameAction =
             new MegaMenuItemAction(QString(),

@@ -43,5 +43,8 @@ QmlWidgetWrapperBase::QmlWidgetWrapperBase(QWidget* parent):
 
 QmlWidgetWrapperBase::~QmlWidgetWrapperBase()
 {
-    mItem->deleteLater();
+    if (mItem)
+    {
+        mItem->deleteLater();
+    }
 }

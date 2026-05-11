@@ -357,17 +357,7 @@ public:
         mViewLayout(nullptr)
     {}
 
-    ~ViewLoadingScene()
-    {
-        if (mLoadingDelegate)
-        {
-            mLoadingDelegate->deleteLater();
-        }
-        if (mLoadingModel)
-        {
-            mLoadingModel->deleteLater();
-        }
-    }
+    ~ViewLoadingScene() {}
 
     bool isLoadingViewSet() const
     {

@@ -123,7 +123,10 @@ LoadingSceneMessageHandler::LoadingSceneMessageHandler(Ui::ViewLoadingSceneUI* v
 
 LoadingSceneMessageHandler::~LoadingSceneMessageHandler()
 {
-    mLoadingMessage->deleteLater();
+    if (mLoadingMessage)
+    {
+        mLoadingMessage->deleteLater();
+    }
 }
 
 bool LoadingSceneMessageHandler::needsAnswerFromUser() const
