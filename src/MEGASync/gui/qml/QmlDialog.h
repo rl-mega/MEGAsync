@@ -14,6 +14,8 @@ class QmlDialog: public QQuickWindow
     Q_PROPERTY(bool closeOnEscapePressed READ getCloseOnEscapePressed WRITE setCloseOnEscapePressed)
     Q_PROPERTY(QmlInstancesManager* instancesManager READ getInstancesManager NOTIFY
                    instancesManagerChanged)
+    Q_PROPERTY(bool initialLayoutComplete READ initialLayoutComplete NOTIFY
+                   initialLayoutCompleteChanged)
 
 public:
     explicit QmlDialog(QWindow* parent = nullptr);
@@ -25,6 +27,13 @@ public slots:
     void readyToBeShow();
     bool getCloseOnEscapePressed() const;
     void setCloseOnEscapePressed(bool active);
+    bool initialLayoutComplete() const;
+
+    // Attach this QML window to its parent's native window so the OS treats it
+    // as an embedded modal dialog (centered over parent, blocks parent input,
+    // not resizable as a standalone top-level window).
+    // Safe to call multiple times; idempotent on the same parent.
+    void attachToParentWindow(QWindow* parentWindow, bool embedded = true);
 
 signals:
     void instancesManagerChanged();
@@ -36,6 +45,7 @@ signals:
     void requestPageFocus();
     void initializePageFocus();
     void closeOnEscapePressedChanged();
+    void initialLayoutCompleteChanged();
 
 protected:
     bool event(QEvent* event) override;
@@ -47,6 +57,7 @@ private:
     QString mIconSrc;
     bool mCloseOnEscapePressed = false;
     bool mCenterAndRaiseAfterFirstHeightChangeEvent = false;
+    bool mInitialLayoutComplete = false;
     QTimer mShowWhenCreatedFallbackTimer;
     QTimer mRestoreOpacityTimer;
     QSize mTrackedSize;

@@ -550,6 +550,14 @@ private:
                 dialog->setWindowModality(Qt::WindowModal);
             }
 
+            // For QML dialog wrappers, the setParent() above can recreate the
+            // native handle and drop the inner QQuickWindow's transient parent
+            // binding. Re-bind it via the public slot.
+            if (isQML && dialog && dialog->parent())
+            {
+                QMetaObject::invokeMethod(dialog, "attachQmlToParentWindow", Qt::DirectConnection);
+            }
+
             if (ignoreGeometry)
             {
                 dialog->show();

@@ -65,6 +65,12 @@ QmlDialog::QmlDialog(QWindow* parent):
                 // The following two lines are required by Windows (activate) and macOS (raise)
                 requestActivate();
                 raise();
+
+                if (!mInitialLayoutComplete)
+                {
+                    mInitialLayoutComplete = true;
+                    emit initialLayoutCompleteChanged();
+                }
             });
 }
 
@@ -93,6 +99,12 @@ void QmlDialog::readyToBeShow()
     mCenterAndRaiseAfterFirstHeightChangeEvent = true;
     mTrackedSize = geometry().size();
 
+    if (mInitialLayoutComplete)
+    {
+        mInitialLayoutComplete = false;
+        emit initialLayoutCompleteChanged();
+    }
+
     hide();
     // Set the opacity to 0.0 to hide the window even if it is shown
     // The opacity will be set again to the real opacity
@@ -100,6 +112,57 @@ void QmlDialog::readyToBeShow()
     setOpacity(HIDDEN_OPACITY);
     show();
     mShowWhenCreatedFallbackTimer.start();
+}
+
+bool QmlDialog::initialLayoutComplete() const
+{
+    return mInitialLayoutComplete;
+}
+
+void QmlDialog::attachToParentWindow(QWindow* parentWindow, bool embedded)
+{
+    if (parentWindow == nullptr || parentWindow == this)
+    {
+        return;
+    }
+
+    // Idempotent: only re-bind if the transient parent actually changed.
+    if (transientParent() != parentWindow)
+    {
+        setTransientParent(parentWindow);
+    }
+
+    if (embedded)
+    {
+        // If QML left it NonModal, promote to WindowModal. Do not downgrade
+        // ApplicationModal if a dialog explicitly asked for it.
+        if (modality() == Qt::NonModal)
+        {
+            setModality(Qt::WindowModal);
+        }
+
+#ifndef Q_OS_WIN
+        // Embedded dialogs should not show maximize/minimize affordances.
+        // Keep Qt::Dialog (set by the constructor) and the close button.
+        //
+        // NOTE: this is intentionally skipped on Windows. Calling setFlags()
+        // on a QQuickWindow whose native HWND already exists triggers a
+        // window recreation that loses the QML width/height bindings — the
+        // dialog flashes frameless and then collapses to a tiny pixel-sized
+        // window. transientParent + WindowModal above are enough to give us
+        // the embedded modal behavior on Windows; the fixed size is already
+        // guaranteed by the QML's minimumWidth/maximumWidth declarations,
+        // and the native dialog frame from Qt::Dialog (set in the
+        // constructor) is preserved untouched.
+        Qt::WindowFlags wflags = flags();
+        wflags |= Qt::Dialog;
+        wflags &= ~(Qt::WindowMaximizeButtonHint | Qt::WindowMinimizeButtonHint);
+        if (wflags != flags())
+        {
+            setFlags(wflags);
+        }
+#endif
+    }
 }
 
 bool QmlDialog::getCloseOnEscapePressed() const
@@ -126,10 +189,6 @@ bool QmlDialog::event(QEvent* event)
     else if (event->type() == QEvent::Resize)
     {
         auto* resizeEvent = static_cast<QResizeEvent*>(event);
-        if (mCenterAndRaiseAfterFirstHeightChangeEvent)
-        {
-            mShowWhenCreatedFallbackTimer.start();
-        }
 
 #ifdef Q_OS_LINUX
         // Linux qml dialogs starts with QSize(1,1), so the first resize is invalid
@@ -140,10 +199,21 @@ bool QmlDialog::event(QEvent* event)
         }
 #endif
 
-        if (resizeEvent && mCenterAndRaiseAfterFirstHeightChangeEvent &&
+        // Debounce: while we are in the post-show "place & raise" phase,
+        // every Resize event restarts the fallback timer. placeAndRaise()
+        // only runs when the timer fires (no resize for one interval),
+        // i.e. after the QML content has settled on its final size.
+        //
+        // Without this, multi-pass layouts (e.g. BackupCandidates' folder
+        // list whose height is computed in two passes) produce a visible
+        // shrink: the first Resize triggered placeAndRaise immediately,
+        // restored the opacity, and the second Resize that arrived after
+        // was already visible on screen.
+        if (mCenterAndRaiseAfterFirstHeightChangeEvent && resizeEvent &&
             mTrackedSize != resizeEvent->size())
         {
-            placeAndRaise();
+            mTrackedSize = resizeEvent->size();
+            mShowWhenCreatedFallbackTimer.start();
         }
     }
     else if (event->type() == QEvent::KeyPress)

@@ -134,6 +134,11 @@ public:
     Q_INVOKABLE void accept();
     Q_INVOKABLE void reject();
 
+    // Re-bind the inner QML window to its current parent widget's native
+    // QWindow as transient parent. Idempotent. No-op if there is no
+    // parent widget or the inner window has not been created yet.
+    Q_INVOKABLE void attachQmlToParentWindow();
+
     QPointer<QmlDialog> getQmlWindow() const;
 
 signals:
@@ -164,6 +169,15 @@ public:
     {
         if (parent)
         {
+            // QML->QML: the QWidget-parent constructor delegated above runs
+            // with a null QWidget parent, so its attachToParentWindow path
+            // is skipped. Bind the inner QQuickWindow directly to the QML
+            // parent here so it still behaves as an embedded modal dialog.
+            if (mWindow)
+            {
+                mWindow->attachToParentWindow(parent);
+            }
+
             const auto parentGeometry = parent->geometry();
 
             // Set on QmlDialog to use for showWhenCreatedQMLs
@@ -219,6 +233,39 @@ public:
 
             if (mWindow)
             {
+                // Bind the inner QQuickWindow to the parent widget's native
+                // window so it behaves as a true child/modal dialog of it.
+                // Without this, QML dialogs with a parent show as standalone
+                // resizable top-level windows because Qt::WindowModal has no
+                // transient parent to apply to.
+                //
+                // IMPORTANT: for QML->QML the parent widget is a
+                // QmlDialogWrapperBase whose own QWidget is never shown; the
+                // visible window is its inner QQuickWindow (mWindow). We must
+                // use that inner QQuickWindow as transient parent. Otherwise
+                // QWidget::createWinId() materializes an empty native window
+                // and the WM renders it as a stray frame around the dialog.
+                if (QWidget* pw = this->parentWidget())
+                {
+                    QWindow* parentWindow = nullptr;
+                    if (auto* qmlBase = qobject_cast<QmlDialogWrapperBase*>(pw))
+                    {
+                        // Reach the visible inner QQuickWindow (overridden
+                        // windowHandle in QmlDialogWrapperBase returns mWindow).
+                        parentWindow = qmlBase->windowHandle();
+                    }
+                    else if (QWidget* topLevel = pw->window())
+                    {
+                        topLevel->createWinId();
+                        parentWindow = topLevel->windowHandle();
+                    }
+
+                    if (parentWindow)
+                    {
+                        mWindow->attachToParentWindow(parentWindow);
+                    }
+                }
+
                 mWrapper->setParent(mWindow);
                 mWindow->getInstancesManager()->initInstances(mWrapper);
 
