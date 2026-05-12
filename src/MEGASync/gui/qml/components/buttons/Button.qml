@@ -22,53 +22,53 @@ Qml.RoundButton {
     property int buttonCursorShape: Qt.PointingHandCursor
 
     function getBorderColor() {
+        if(!root.enabled && !icons.busyIndicatorVisible) {
+            return colors.borderDisabled;
+        }
         if(root.pressed || root.checked) {
             return colors.borderPressed;
         }
         if(root.hovered) {
             return colors.borderHover;
         }
-        if(!root.enabled && !icons.busyIndicatorVisible) {
-            return colors.borderDisabled;
-        }
         return colors.border;
     }
 
     function getBackgroundColor() {
+        if(!root.enabled && !icons.busyIndicatorVisible) {
+            return colors.disabled;
+        }
         if(root.pressed || root.checked) {
             return colors.pressed;
         }
         if(root.hovered) {
             return colors.hover;
         }
-        if(!root.enabled && !icons.busyIndicatorVisible) {
-            return colors.disabled;
-        }
         return colors.background;
     }
 
     function getTextColor() {
+        if(!root.enabled && !icons.busyIndicatorVisible) {
+            return colors.textDisabled;
+        }
         if(root.pressed || root.checked) {
             return colors.textPressed;
         }
         if(root.hovered) {
             return colors.textHover;
         }
-        if(!root.enabled && !icons.busyIndicatorVisible) {
-            return colors.textDisabled;
-        }
         return colors.text;
     }
 
     function getIconColor() {
+        if(!root.enabled && !icons.busyIndicatorVisible) {
+            return icons.colorDisabled;
+        }
         if(root.pressed || root.checked) {
             return icons.colorPressed;
         }
         if(root.hovered) {
             return icons.colorHovered;
-        }
-        if(!root.enabled && !icons.busyIndicatorVisible) {
-            return icons.colorDisabled;
         }
         return icons.colorEnabled;
     }
