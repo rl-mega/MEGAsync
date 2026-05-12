@@ -296,7 +296,7 @@ void NameConflictedStalledIssue::updateName()
     }
 }
 
-bool NameConflictedStalledIssue::checkForExternalChanges()
+bool NameConflictedStalledIssue::checkForExternalChanges(QObject*)
 {
     if(!mLocalConflictedNames.isEmpty())
     {
@@ -310,7 +310,7 @@ bool NameConflictedStalledIssue::checkForExternalChanges()
                 {
                     if(checkAndSolveConflictedNamesSolved())
                     {
-                        setIsSolved(SolveType::POTENTIALLY_SOLVED);
+                        setIsSolved(ResolutionState::POTENTIALLY_SOLVED);
                         break;
                     }
                 }
@@ -333,7 +333,7 @@ bool NameConflictedStalledIssue::checkForExternalChanges()
                     {
                         if(checkAndSolveConflictedNamesSolved())
                         {
-                            setIsSolved(SolveType::POTENTIALLY_SOLVED);
+                            setIsSolved(ResolutionState::POTENTIALLY_SOLVED);
                             break;
                         }
                     }
@@ -729,7 +729,7 @@ bool NameConflictedStalledIssue::semiAutoSolveIssue(ActionsSelected option)
 }
 
 //This code is never called. NameConflict, for the moment, are not autosolvable.
-StalledIssue::AutoSolveIssueResult NameConflictedStalledIssue::autoSolveIssue()
+StalledIssue::ResolutionState NameConflictedStalledIssue::autoSolveIssue()
 {
     setAutoResolutionApplied(true);
     ActionsSelected options(ActionSelected::RemoveDuplicated | ActionSelected::Rename | ActionSelected::MergeFolders);
@@ -737,10 +737,10 @@ StalledIssue::AutoSolveIssueResult NameConflictedStalledIssue::autoSolveIssue()
     if(result)
     {
         MegaSyncApp->getStatsEventHandler()->sendEvent(AppStatsEvents::EventType::SI_NAMECONFLICT_SOLVED_AUTOMATICALLY);
-        return StalledIssue::AutoSolveIssueResult::SOLVED;
+        return StalledIssue::ResolutionState::SOLVED;
     }
 
-    return StalledIssue::AutoSolveIssueResult::FAILED;
+    return StalledIssue::ResolutionState::FAILED;
 }
 
 bool NameConflictedStalledIssue::isAutoSolvable() const
@@ -752,12 +752,12 @@ bool NameConflictedStalledIssue::solveIssue(ActionsSelected option)
 {
     auto result(false);
 
-    if(option & ActionSelected::MergeFolders && foldersCount() > 1)
+    if (option & ActionSelected::MergeFolders && foldersCount() > 1)
     {
         auto errorInfo = mCloudConflictedNames.mergeFolders();
         result = errorInfo.error.isEmpty();
 
-        if(result)
+        if (result)
         {
             result = checkAndSolveConflictedNamesSolved();
         }
@@ -767,28 +767,28 @@ bool NameConflictedStalledIssue::solveIssue(ActionsSelected option)
         }
     }
 
-    if(!result && option & ActionSelected::RemoveDuplicated)
+    if (!result && option & ActionSelected::RemoveDuplicated)
     {
         result = mCloudConflictedNames.removeDuplicatedNodes() == nullptr;
-        if(result)
+        if (result)
         {
             result = checkAndSolveConflictedNamesSolved();
         }
     }
 
-    if(!result && option & ActionSelected::KeepMostRecentlyModifiedNode)
+    if (!result && option & ActionSelected::KeepMostRecentlyModifiedNode)
     {
         result = mCloudConflictedNames.keepMostRecentlyModifiedNode() == nullptr;
-        if(result)
+        if (result)
         {
             result = checkAndSolveConflictedNamesSolved();
         }
     }
 
-    if(!result && option & ActionSelected::Rename)
+    if (!result && option & ActionSelected::Rename)
     {
         result = renameNodesAutomatically();
-        if(result)
+        if (result)
         {
             checkAndSolveConflictedNamesSolved();
         }

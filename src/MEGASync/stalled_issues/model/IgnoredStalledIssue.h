@@ -13,7 +13,7 @@ public:
     IgnoredStalledIssue(const mega::MegaSyncStall *stallIssue);
     ~IgnoredStalledIssue() = default;
 
-    StalledIssue::AutoSolveIssueResult autoSolveIssue() override;
+    ResolutionState autoSolveIssue() override;
     bool isAutoSolvable() const override;
 
     void fillIssue(const mega::MegaSyncStall *stall) override;
@@ -23,7 +23,7 @@ public:
     bool isHardLink() const;
 
     bool isExpandable() const override;
-    bool checkForExternalChanges() override;
+    bool checkForExternalChanges(QObject* context) override;
 
     static void clearIgnoredSyncs();
 

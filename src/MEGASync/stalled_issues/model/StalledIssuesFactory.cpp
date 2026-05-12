@@ -27,14 +27,10 @@ void StalledIssuesCreator::createIssues(const mega::MegaSyncStallMap* stallsMap,
 {
     if (stallsMap)
     {
-        purgeRecentlyResolvedIssueHashes();
-
         struct SolvableIssues
         {
             StalledIssueVariant variant;
             bool solvedSynchronously = true;
-            // Avoid receiving the recently solved issue meanwhile the SDK updates the stall state
-            bool shouldDiscardReappearingIssuesByResolvedHash = false;
         };
 
         QList<SolvableIssues> solvableIssues;
@@ -170,13 +166,10 @@ void StalledIssuesCreator::createIssues(const mega::MegaSyncStallMap* stallsMap,
                     continue;
                 }
 
-                const auto shouldDiscardReappearingIssuesByResolvedHash =
-                    variant.consultData()->shouldDiscardReappearingIssuesByResolvedHash();
-
-                // Ignore the same issue for a short time after solving it.
-                if (shouldDiscardReappearingIssuesByResolvedHash &&
-                    shouldDiscardRecentlyResolvedIssue(hash))
+                // Do not add it to the model
+                if (mHashDiscardTracker->shouldDiscard(hash))
                 {
+                    mHashDiscardTracker->markAsRecentlyReceived(variant.consultData().get());
                     continue;
                 }
 
@@ -218,8 +211,6 @@ void StalledIssuesCreator::createIssues(const mega::MegaSyncStallMap* stallsMap,
                         {
                             SolvableIssues issueToSolve;
                             issueToSolve.variant = variant;
-                            issueToSolve.shouldDiscardReappearingIssuesByResolvedHash =
-                                shouldDiscardReappearingIssuesByResolvedHash;
 
                             // For the moment MoveOrRenameCannotOccur are the only issues solved
                             // asynchronously
@@ -274,25 +265,21 @@ void StalledIssuesCreator::createIssues(const mega::MegaSyncStallMap* stallsMap,
             // Keeps the count of fixed and failed issues
             if (solvableIssueInfo.solvedSynchronously)
             {
-                if (result == StalledIssue::AutoSolveIssueResult::FAILED)
+                if (result == StalledIssue::ResolutionState::FAILED ||
+                    result == StalledIssue::ResolutionState::SOLVED)
                 {
-                    solvableIssue.getData()->setIsSolved(StalledIssue::SolveType::FAILED);
-                    mStalledIssues.mFailedAutoSolvedStalledIssues.append(solvableIssue);
-                    solvingIssuesStats.issuesFailed++;
-                }
-                else if (result == StalledIssue::AutoSolveIssueResult::SOLVED)
-                {
-                    solvableIssue.getData()->setIsSolved(StalledIssue::SolveType::SOLVED);
-                    if (solvableIssueInfo.shouldDiscardReappearingIssuesByResolvedHash)
+                    solvableIssue.getData()->setIsSolved(result);
+
+                    if (result == StalledIssue::ResolutionState::FAILED)
                     {
-                        const auto& originalStall = solvableIssue.consultData()->getOriginalStall();
-                        if (originalStall)
-                        {
-                            rememberResolvedIssueHash(originalStall->getHash());
-                        }
+                        mStalledIssues.mFailedAutoSolvedStalledIssues.append(solvableIssue);
+                        solvingIssuesStats.issuesFailed++;
                     }
-                    mStalledIssues.mAutoSolvedStalledIssues.append(solvableIssue);
-                    solvingIssuesStats.issuesFixed++;
+                    else
+                    {
+                        mStalledIssues.mAutoSolvedStalledIssues.append(solvableIssue);
+                        solvingIssuesStats.issuesFixed++;
+                    }
                 }
 
                 solvingIssuesStats.currentIssueBeingSolved++;
@@ -324,14 +311,17 @@ void StalledIssuesCreator::createIssues(const mega::MegaSyncStallMap* stallsMap,
     }
 }
 
-void StalledIssuesCreator::rememberResolvedIssueHash(size_t hash)
+void StalledIssuesCreator::setHashDiscardTracker(
+    std::shared_ptr<StalledIssueHashDiscardTracker> tracker)
 {
-    mRecentlyResolvedIssueHashes[hash] = std::chrono::steady_clock::now();
+    mHashDiscardTracker = tracker;
 }
 
 bool StalledIssuesCreator::multiStepIssueSolveActive() const
 {
-    for (auto it = mMultiStepIssueSolversByReason.keyValueBegin(); it != mMultiStepIssueSolversByReason.keyValueEnd(); ++it)
+    for (auto it = mMultiStepIssueSolversByReason.keyValueBegin();
+         it != mMultiStepIssueSolversByReason.keyValueEnd();
+         ++it)
     {
         if(it->second->isActive())
         {
@@ -351,29 +341,6 @@ void StalledIssuesCreator::start()
 void StalledIssuesCreator::finish()
 {
     mMoveOrRenameCannotOccurFactory->finish();
-}
-
-void StalledIssuesCreator::purgeRecentlyResolvedIssueHashes()
-{
-    const auto now = std::chrono::steady_clock::now();
-
-    // Drop expired entries so the same issue can be handled again later if it reappears.
-    for (auto it = mRecentlyResolvedIssueHashes.begin(); it != mRecentlyResolvedIssueHashes.end();)
-    {
-        if ((now - it->second) > RECENTLY_RESOLVED_ISSUE_TTL)
-        {
-            it = mRecentlyResolvedIssueHashes.erase(it);
-        }
-        else
-        {
-            ++it;
-        }
-    }
-}
-
-bool StalledIssuesCreator::shouldDiscardRecentlyResolvedIssue(size_t hash) const
-{
-    return mRecentlyResolvedIssueHashes.find(hash) != mRecentlyResolvedIssueHashes.end();
 }
 
 void StalledIssuesCreator::addMultiStepIssueSolver(MultiStepIssueSolverBase* solver)

@@ -531,7 +531,7 @@ public:
     void updateHandle(mega::MegaHandle handle) override;
     void updateName() override;
 
-    bool checkForExternalChanges() override;
+    bool checkForExternalChanges(QObject* context) override;
 
     bool solveLocalConflictedNameByRemove(int conflictIndex);
     bool solveCloudConflictedNameByRemove(int conflictIndex);
@@ -544,8 +544,18 @@ public:
     bool renameNodesAutomatically();
 
     bool semiAutoSolveIssue(ActionsSelected option);
-    AutoSolveIssueResult autoSolveIssue() override;
+    ResolutionState autoSolveIssue() override;
     bool isAutoSolvable() const override;
+
+    HashDiscardRuleOpt hashDiscardRuleForState(ResolutionState type) const override
+    {
+        if (type == ResolutionState::FAILED)
+        {
+            return HashDiscardRule{std::chrono::seconds(60)};
+        }
+
+        return std::nullopt;
+    }
 
     bool hasDuplicatedNodes() const;
     bool areAllDuplicatedNodes() const;

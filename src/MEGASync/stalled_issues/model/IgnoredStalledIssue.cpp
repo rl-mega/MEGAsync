@@ -111,16 +111,16 @@ bool IgnoredStalledIssue::isExpandable() const
     return !(isSymLink() || isSpecialLink() || isHardLink());
 }
 
-bool IgnoredStalledIssue::checkForExternalChanges()
+bool IgnoredStalledIssue::checkForExternalChanges(QObject*)
 {
     return false;
 }
 
 //Only for Symbolic, hard and special links
-StalledIssue::AutoSolveIssueResult IgnoredStalledIssue::autoSolveIssue()
+StalledIssue::ResolutionState IgnoredStalledIssue::autoSolveIssue()
 {
     setAutoResolutionApplied(true);
-    StalledIssue::AutoSolveIssueResult result(StalledIssue::AutoSolveIssueResult::FAILED);
+    StalledIssue::ResolutionState result(StalledIssue::ResolutionState::FAILED);
 
     if(!syncIds().isEmpty())
     {
@@ -166,7 +166,7 @@ StalledIssue::AutoSolveIssueResult IgnoredStalledIssue::autoSolveIssue()
                 auto changesApplied(ignoreManager.applyChanges());
                 if(changesApplied < MegaIgnoreManager::ApplyChangesError::NO_WRITE_PERMISSION)
                 {
-                    result = StalledIssue::AutoSolveIssueResult::SOLVED;
+                    result = StalledIssue::ResolutionState::SOLVED;
                 }
                 else
                 {
@@ -180,7 +180,7 @@ StalledIssue::AutoSolveIssueResult IgnoredStalledIssue::autoSolveIssue()
         //Only done for sym links
         else if(mSymLinksIgnoredInSyncs.value(syncId) == true)
         {
-            result = StalledIssue::AutoSolveIssueResult::SOLVED;
+            result = StalledIssue::ResolutionState::SOLVED;
         }
     }
 

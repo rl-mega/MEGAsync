@@ -3,9 +3,7 @@
 
 #include "MultiStepIssueSolver.h"
 #include "StalledIssue.h"
-
-#include <chrono>
-#include <unordered_map>
+#include "StalledIssueHashDiscardTracker.h"
 
 class MoveOrRenameCannotOccurFactory;
 
@@ -83,10 +81,6 @@ enum class UpdateType
 
 Q_DECLARE_METATYPE(UpdateType)
 
-// Discard any issue received before 60 seconds after fixing it (check the issue type as not all of
-// them use this feature)
-static constexpr auto RECENTLY_RESOLVED_ISSUE_TTL = std::chrono::seconds(60);
-
 class StalledIssuesCreator : public QObject
 {
         Q_OBJECT
@@ -104,7 +98,7 @@ public:
     StalledIssuesCreator();
 
     void createIssues(const mega::MegaSyncStallMap* stallsMap, UpdateType updateType);
-    void rememberResolvedIssueHash(size_t hash);
+    void setHashDiscardTracker(std::shared_ptr<StalledIssueHashDiscardTracker> tracker);
 
     bool multiStepIssueSolveActive() const;
     void addMultiStepIssueSolver(MultiStepIssueSolverBase* issue);
@@ -122,17 +116,13 @@ protected:
     ReceivedStalledIssues mStalledIssues;
 
 private:
-    void purgeRecentlyResolvedIssueHashes();
-    bool shouldDiscardRecentlyResolvedIssue(size_t hash) const;
-
     QPointer<MultiStepIssueSolverBase>
         getMultiStepIssueSolverByStall(const mega::MegaSyncStall* stall, mega::MegaHandle syncId);
 
     QMultiMap<mega::MegaSyncStall::SyncStallReason,
         MultiStepIssueSolverBase*> mMultiStepIssueSolversByReason;
     std::shared_ptr<MoveOrRenameCannotOccurFactory> mMoveOrRenameCannotOccurFactory;
-    // Keeps recently solved issue hashes until the SDK reports the updated stall state.
-    std::unordered_map<size_t, std::chrono::steady_clock::time_point> mRecentlyResolvedIssueHashes;
+    std::shared_ptr<StalledIssueHashDiscardTracker> mHashDiscardTracker;
 };
 
 Q_DECLARE_METATYPE(StalledIssuesCreator::IssuesCount)

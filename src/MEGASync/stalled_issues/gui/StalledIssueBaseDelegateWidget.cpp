@@ -158,7 +158,8 @@ void StalledIssueBaseDelegateWidget::updateSizeHint()
 
 bool StalledIssueBaseDelegateWidget::checkForExternalChanges(bool isSingleSelection)
 {
-    if(isSingleSelection && MegaSyncApp->getStalledIssuesModel()->checkForExternalChanges(getCurrentIndex()))
+    if (isSingleSelection &&
+        MegaSyncApp->getStalledIssuesModel()->checkForExternalChanges(getCurrentIndex(), this))
     {
         updateSizeHint();
         return true;
