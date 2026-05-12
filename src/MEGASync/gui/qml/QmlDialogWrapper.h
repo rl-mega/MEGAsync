@@ -342,15 +342,13 @@ public:
 
     void setShowWhenCreated()
     {
-        connect(
-            mWrapper,
-            &Type::dataReady,
-            this,
-            [this]()
-            {
-                mWindow->readyToBeShow();
-            },
-            Qt::UniqueConnection);
+        connect(mWrapper,
+                &Type::dataReady,
+                this,
+                [this]()
+                {
+                    mWindow->readyToBeShow();
+                });
 
         QmlDialogWrapperUtilities::setShowWhenCreated(mWindow, true);
     }

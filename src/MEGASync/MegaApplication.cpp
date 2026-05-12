@@ -1192,12 +1192,6 @@ void MegaApplication::start()
 
     mDiscountStateMachine = new DiscountStateMachine(mDiscountPolicy);
 
-    connect(infoDialog,
-            &InfoDialog::requestShowDiscountDialog,
-            mDiscountStateMachine,
-            &DiscountStateMachine::onDiscountButtonClicked,
-            Qt::UniqueConnection);
-
     connect(mDiscountStateMachine,
             &DiscountStateMachine::requestShowDialog,
             this,

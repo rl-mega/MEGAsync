@@ -29,9 +29,13 @@ DuplicatedNodeDialog::DuplicatedNodeDialog(QWidget* parent) :
 
     mSizeAdjustTimer.setSingleShot(true);
     mSizeAdjustTimer.setInterval(0);
-    connect(&mSizeAdjustTimer, &QTimer::timeout, this, [this](){
-        adjustSize();
-    }, Qt::UniqueConnection);
+    connect(&mSizeAdjustTimer,
+            &QTimer::timeout,
+            this,
+            [this]()
+            {
+                adjustSize();
+            });
 }
 
 DuplicatedNodeDialog::~DuplicatedNodeDialog()
