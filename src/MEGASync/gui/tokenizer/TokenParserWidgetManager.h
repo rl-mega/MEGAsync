@@ -35,7 +35,7 @@ private:
     void loadStandardStyleSheetComponents();
     void onThemeChanged();
     void onUpdateRequested();
-    void applyTheme(QWidget* widget);
+    void applyTheme(QWidget* widget, bool prependStandardComponents = true);
     void replaceIconColorTokens(QWidget* widget, QString& styleSheet);
     void replaceColorTokens(QString& styleSheet, const ColorTokens& colorTokens);
     void removeFrameOnDialogCombos(QWidget* widget);

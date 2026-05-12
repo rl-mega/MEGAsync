@@ -268,7 +268,7 @@ void TokenParserWidgetManager::styleQFileDialog(QPointer<QFileDialog> dialog)
     }
 }
 
-void TokenParserWidgetManager::applyTheme(QWidget* widget)
+void TokenParserWidgetManager::applyTheme(QWidget* widget, bool prependStandardComponents)
 {
     auto currentTheme = ThemeManager::instance()->getSelectedColorSchemaString();
 
@@ -296,7 +296,13 @@ void TokenParserWidgetManager::applyTheme(QWidget* widget)
     tokenizeChildStyleSheets(widget);
     removeFrameOnDialogCombos(widget);
 
-    QString styleSheet = mThemedStandardComponentsStyleSheet[currentTheme] % widgetStyleSheet;
+    // Only the top-level themed widget receives the global standard-components stylesheet.
+    // Prepending it onto every child with a local styleSheet would inject rules like
+    // QGroupBox[type="mega"] { background-color: transparent; } directly onto the child,
+    // overriding ID-specific overrides defined in the parent dialog's stylesheet.
+    QString styleSheet = prependStandardComponents ?
+                             mThemedStandardComponentsStyleSheet[currentTheme] % widgetStyleSheet :
+                             widgetStyleSheet;
 
     widget->setStyleSheet(styleSheet);
 }
@@ -396,7 +402,7 @@ void TokenParserWidgetManager::tokenizeChildStyleSheets(QWidget* widget)
     {
         if (!child->styleSheet().isEmpty())
         {
-            applyTheme(child);
+            applyTheme(child, false);
         }
     }
 }
