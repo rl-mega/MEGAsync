@@ -33,6 +33,7 @@ Popup {
     readonly property real maxX: windowWidth > 0
                                  ? Math.max(minX, windowWidth - width - edgeMargin - parentWindowPos.x)
                                  : minX
+    readonly property real minY: edgeMargin - parentWindowPos.y
     readonly property real arrowCenterX: Math.max(radius + arrowWidth / 2 - arrowOverlap,
                                                   Math.min(width - radius - arrowWidth / 2 + arrowOverlap,
                                                            anchorCenterX - x))
@@ -45,7 +46,7 @@ Popup {
        ? Math.round(Math.max(minX, Math.min(maxX, anchorCenterX - width / 2)))
        : 0
     y: anchorItem
-       ? Math.round(anchorPosition.y - height - verticalOffset)
+       ? Math.round(Math.max(minY, anchorPosition.y - height - verticalOffset))
        : 0
     padding: 0
     closePolicy: Popup.NoAutoClose
