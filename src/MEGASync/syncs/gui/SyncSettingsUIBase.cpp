@@ -146,6 +146,16 @@ void SyncSettingsUIBase::setDisabledSyncsText()
     ui->lDisabledSyncs->setText(disableString());
 }
 
+bool SyncSettingsUIBase::event(QEvent* event)
+{
+    if (event->type() == QEvent::LanguageChange)
+    {
+        setDisabledSyncsText();
+    }
+
+    return QWidget::event(event);
+}
+
 void SyncSettingsUIBase::openExclusionsDialog(std::shared_ptr<SyncSettings> sync)
 {
     QFileInfo syncDir(sync->getLocalFolder());

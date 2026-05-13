@@ -219,6 +219,8 @@ signals:
     void disableParentDialog(bool state);
 
 protected:
+    bool event(QEvent* event) override;
+
     Ui::SyncSettingsUIBase* ui;
     SyncTableView* mTable;
     QDialog* mParentDialog;
