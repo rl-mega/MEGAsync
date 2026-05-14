@@ -115,7 +115,7 @@ void NodeSelectorModelItem::initializeChildItems(
         }
     }
     mChildItems.append(items);
-    mChildrenCounter = mChildItems.size();
+    mChildrenCounter = static_cast<int>(mChildItems.size());
     mRequestingChildren = false;
     mChildrenAreInit = true;
 }

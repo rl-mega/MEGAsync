@@ -93,7 +93,7 @@ void NodeRequester::requestNodeAndCreateChildren(NodeSelectorModelItem* item,
                 lockDataMutex(true);
                 item->initializeChildItems(childItems);
                 lockDataMutex(false);
-                emit nodesReady(item, childCount);
+                emit nodesReady(item, static_cast<int>(childCount));
             }
         }
     }

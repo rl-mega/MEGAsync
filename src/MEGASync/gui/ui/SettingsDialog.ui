@@ -4338,7 +4338,7 @@ border: none
          </layout>
         </widget>
         <widget class="QWidget" name="wBackupFooter">
-         <layout class="QVBoxLayout" name="verticalLayout_2">
+         <layout class="QVBoxLayout" name="verticalLayoutBackupFooter">
           <property name="leftMargin">
            <number>0</number>
           </property>
