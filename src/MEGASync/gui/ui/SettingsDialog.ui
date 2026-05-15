@@ -3202,7 +3202,7 @@ border: none
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Control who can access new folders and files created in the app, whether it's just you, your group, or everyone on this device.</string>
+             <string>Control who can access new folders and files created in the app, whether it’s just you, your group, or everyone on this device.</string>
             </property>
             <property name="wordWrap">
              <bool>true</bool>
@@ -3956,7 +3956,7 @@ border: none
          <item>
           <widget class="QLabel" name="lConnectionsDescription">
            <property name="text">
-            <string>Sets the number of connections used for each transfer. Doesn't affect how many transfers run in parallel.</string>
+            <string>Sets the number of connections used for each transfer. Doesn’t affect how many transfers run in parallel.</string>
            </property>
            <property name="wordWrap">
             <bool>true</bool>
