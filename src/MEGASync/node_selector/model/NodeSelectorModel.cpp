@@ -2850,23 +2850,26 @@ bool NodeSelectorModel::isRequestingNodes() const
     return mNodeRequesterWorker->isRequestingNodes();
 }
 
-void NodeSelectorModel::fetchItemChildren(const QModelIndex& parent)
+bool NodeSelectorModel::fetchItemChildren(const QModelIndex& parent)
 {
     NodeSelectorModelItem* item = static_cast<NodeSelectorModelItem*>(parent.internalPointer());
-    if (!item->areChildrenInitialized() && !item->requestingChildren())
+    if (!item || item->areChildrenInitialized() || item->requestingChildren())
     {
-        // Just in case the children changed
-        item->resetChildrenCounter();
-        const auto itemNumChildren = item->getNumChildren();
-        if (itemNumChildren > 0)
-        {
-            sendBlockUiSignal(true);
-            emit requestChildNodes(item, parent);
-
-            // Unblock UI when children are added async
-            return;
-        }
+        return false;
     }
+
+    // Just in case the children changed
+    item->resetChildrenCounter();
+    const auto itemNumChildren = item->getNumChildren();
+    if (itemNumChildren > 0)
+    {
+        sendBlockUiSignal(true);
+        emit requestChildNodes(item, parent);
+
+        return true;
+    }
+
+    return false;
 }
 
 void NodeSelectorModel::onChildNodesReady(NodeSelectorModelItem* parent, int insertedCount)
