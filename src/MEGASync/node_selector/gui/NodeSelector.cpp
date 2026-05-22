@@ -207,10 +207,16 @@ void NodeSelector::mousePressEvent(QMouseEvent* event)
 
 void NodeSelector::onbOkClicked()
 {
+    auto currentViewContainer = getCurrentTreeViewWidget();
+    if (currentViewContainer && currentViewContainer->containsTakenDownSelected())
+    {
+        return;
+    }
+
     for (int page = 0; page < ui->stackedWidget->count(); ++page)
     {
         auto viewContainer = getTreeViewWidget(page);
-        if (viewContainer && viewContainer != getCurrentTreeViewWidget())
+        if (viewContainer && viewContainer != currentViewContainer)
         {
             viewContainer->abort();
         }

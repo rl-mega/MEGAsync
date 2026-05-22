@@ -1655,6 +1655,11 @@ QModelIndexList NodeSelectorTreeViewWidget::getSelectedIndexes() const
     return ui->tMegaFolders->selectedRows();
 }
 
+bool NodeSelectorTreeViewWidget::containsTakenDownSelected() const
+{
+    return ui->tMegaFolders->containsTakenDownItem(ui->tMegaFolders->selectedRows());
+}
+
 void NodeSelectorTreeViewWidget::checkBackForwardButtons()
 {
     ui->navigationButtons->setVisible(!mNavigationInfo.backwardHandles.isEmpty() ||

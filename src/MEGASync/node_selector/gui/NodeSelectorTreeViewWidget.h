@@ -59,6 +59,7 @@ public:
     mega::MegaHandle getSelectedNodeHandle();
     QList<mega::MegaHandle> getMultiSelectionNodeHandle();
     QModelIndexList getSelectedIndexes() const;
+    bool containsTakenDownSelected() const;
     void navigateToItem(const mega::MegaHandle& handle);
     void setSelectedNodeHandle(const mega::MegaHandle& selectedHandle);
 
