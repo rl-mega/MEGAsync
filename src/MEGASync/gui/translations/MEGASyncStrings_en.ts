@@ -6278,7 +6278,7 @@ Enter a different name.</translation>
 - Bug fixes and performance improvements.
 </source>
         <translatorcomment>Change log for version 6.4.0. SNC-6468</translatorcomment>
-        <translation>- Rename upload conflicts and duplicate same-folder items more easily.
+        <translation>- Duplicated folder name conflicts are now resolved automatically.
 - Cloud drive, sync, backup, and settings dialogs are clearer and more consistent.
 - Bug fixes and performance improvements.</translation>
     </message>
@@ -7636,16 +7636,6 @@ Do you want to delete it anyway?</translation>
         <source>Uploads are disabled and folder synchronisation is paused.</source>
         <translatorcomment>Warning description shown in the Account pane when the account storage is full. DSN-2975</translatorcomment>
         <translation>Uploads are disabled and folder syncing is paused.</translation>
-    </message>
-    <message>
-        <source>Versions</source>
-        <translatorcomment>Legend label shown in the Account pane usage bar for the Versions segment. Keep as short as possible. DSN-2975</translatorcomment>
-        <translation>Versions</translation>
-    </message>
-    <message>
-        <source>Versions[BR]%1</source>
-        <translatorcomment>Tooltip text shown when hovering the Versions segment in the Account pane usage bar. Keep the [BR] line break tag. %1 will be replaced with the storage amount. DSN-2975</translatorcomment>
-        <translation>Versions[BR]%1</translation>
     </message>
     <message>
         <source>Your MEGA account is full</source>
