@@ -7132,6 +7132,7 @@ void MegaApplication::onNodesUpdate(MegaApi* , MegaNodeList *nodes)
     MegaApi::log(MegaApi::LOG_LEVEL_INFO, QString::fromUtf8("%1 updated files/folders").arg(nodes->size()).toUtf8().constData());
 
     //Check all modified nodes
+    bool parentChanged = false;
     QString localPath;
     for (int i = 0; i < nodes->size(); i++)
     {
@@ -7139,12 +7140,23 @@ void MegaApplication::onNodesUpdate(MegaApi* , MegaNodeList *nodes)
         MegaNode *node = nodes->get(i);
         if (node->getChanges() & MegaNode::CHANGE_TYPE_PARENT)
         {
+            parentChanged = true;
             emit nodeMoved(node->getHandle());
         }
         if (node->getChanges() & MegaNode::CHANGE_TYPE_ATTRIBUTES)
         {
             emit nodeAttributesChanged(node->getHandle());
         }
+    }
+
+    if (parentChanged)
+    {
+        // Moving nodes between roots (e.g. to/from Rubbish, Backups <-> Cloud Drive)
+        // redistributes storage without changing the total, so EVENT_STORAGE_SUM_CHANGED
+        // does not fire and the per-root breakdown would stay stale until the next full
+        // account-details fetch. Recompute it explicitly: this is debounced and reads from
+        // local NodeCounters, so it costs no network `uq` request.
+        AccountDetailsManager::instance()->refreshStorageBreakdownLocal();
     }
 }
 
