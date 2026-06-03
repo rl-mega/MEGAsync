@@ -4943,6 +4943,11 @@ Enter a different name</source>
         <translation>項目を復元できませんでした。後でもう一度お試しください。</translation>
     </message>
     <message>
+        <source>This file has been the subject of a takedown notice</source>
+        <translatorcomment>Tooltip to explain the user that the node (file) has been blocked due to a takedown notice. SNC-5350</translatorcomment>
+        <translation>このファイルは削除通知の対象となっています</translation>
+    </message>
+    <message>
         <source>This folder has been the subject of a takedown notice</source>
         <translatorcomment>Tooltip to explain the user that the node has been blocked due to a takedown notice. SNC-5350</translatorcomment>
         <translation>このフォルダはテイクダウン通知（削除要請）の対象となっています</translation>

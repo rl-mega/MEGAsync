@@ -4981,6 +4981,11 @@ Digite um nome diferente.
         <translation>Não foi possível restaurar os itens. Tente novamente mais tarde.</translation>
     </message>
     <message>
+        <source>This file has been the subject of a takedown notice</source>
+        <translatorcomment>Tooltip to explain the user that the node (file) has been blocked due to a takedown notice. SNC-5350</translatorcomment>
+        <translation>Este arquivo foi alvo de um aviso de remoção</translation>
+    </message>
+    <message>
         <source>This folder has been the subject of a takedown notice</source>
         <translatorcomment>Tooltip to explain the user that the node has been blocked due to a takedown notice. SNC-5350</translatorcomment>
         <translation>Esta pasta foi alvo de um aviso de remoção</translation>
@@ -5041,7 +5046,7 @@ Digite um nome diferente.
     <message>
         <source>Share link</source>
         <translatorcomment>Contextual menu text that appears when we right click on a folder/file on node selector. It copies the selected items MEGA link to the clipboard. SAT-426</translatorcomment>
-        <translation>Obter link</translation>
+        <translation>Compartilhar link</translation>
     </message>
     <message>
         <source>Stop syncing</source>

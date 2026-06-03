@@ -4980,6 +4980,11 @@ Saisissez un nom différent.</translation>
         <translation>L’élément n’a pas pu être restauré. Réessayez plus tard.</translation>
     </message>
     <message>
+        <source>This file has been the subject of a takedown notice</source>
+        <translatorcomment>Tooltip to explain the user that the node (file) has been blocked due to a takedown notice. SNC-5350</translatorcomment>
+        <translation>Ce fichier a fait l’objet d’un avis de retrait</translation>
+    </message>
+    <message>
         <source>This folder has been the subject of a takedown notice</source>
         <translatorcomment>Tooltip to explain the user that the node has been blocked due to a takedown notice. SNC-5350</translatorcomment>
         <translation>Ce dossier a fait l’objet d’un avis de retrait</translation>

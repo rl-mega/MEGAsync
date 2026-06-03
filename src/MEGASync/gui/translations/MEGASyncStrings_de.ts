@@ -4980,6 +4980,11 @@ Bitte geben Sie einen anderen Namen ein.</translation>
         <translation>Die Inhalte konnten nicht wiederhergestellt werden. Versuchen Sie es später erneut.</translation>
     </message>
     <message>
+        <source>This file has been the subject of a takedown notice</source>
+        <translatorcomment>Tooltip to explain the user that the node (file) has been blocked due to a takedown notice. SNC-5350</translatorcomment>
+        <translation>Diese Datei wurde aufgrund einer Löschanfrage gelöscht.</translation>
+    </message>
+    <message>
         <source>This folder has been the subject of a takedown notice</source>
         <translatorcomment>Tooltip to explain the user that the node has been blocked due to a takedown notice. SNC-5350</translatorcomment>
         <translation>Dieser Ordner wurde wegen einer Beschwerde entfernt</translation>

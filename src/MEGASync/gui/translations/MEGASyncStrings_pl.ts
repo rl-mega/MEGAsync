@@ -5016,6 +5016,11 @@ Wprowadź inną nazwę.</translation>
         <translation>Elementów nie można było przywrócić. Spróbuj ponownie później.</translation>
     </message>
     <message>
+        <source>This file has been the subject of a takedown notice</source>
+        <translatorcomment>Tooltip to explain the user that the node (file) has been blocked due to a takedown notice. SNC-5350</translatorcomment>
+        <translation>Ten plik był przedmiotem zawiadomienia o usunięciu</translation>
+    </message>
+    <message>
         <source>This folder has been the subject of a takedown notice</source>
         <translatorcomment>Tooltip to explain the user that the node has been blocked due to a takedown notice. SNC-5350</translatorcomment>
         <translation>Katalog został zgłoszony jako naruszenie praw autorskich</translation>

@@ -4944,6 +4944,11 @@ Enter a different name</source>
         <translation>항목을 복원할 수 없었습니다. 나중에 다시 시도하세요.</translation>
     </message>
     <message>
+        <source>This file has been the subject of a takedown notice</source>
+        <translatorcomment>Tooltip to explain the user that the node (file) has been blocked due to a takedown notice. SNC-5350</translatorcomment>
+        <translation>이 파일은 게시중단 통지의 대상입니다</translation>
+    </message>
+    <message>
         <source>This folder has been the subject of a takedown notice</source>
         <translatorcomment>Tooltip to explain the user that the node has been blocked due to a takedown notice. SNC-5350</translatorcomment>
         <translation>이 폴더는 게시중단 통지의 대상입니다</translation>
