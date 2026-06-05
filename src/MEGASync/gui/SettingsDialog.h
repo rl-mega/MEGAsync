@@ -4,6 +4,7 @@
 #include "AppState.h"
 #include "megaapi.h"
 #include "Preferences.h"
+#include "qml/AccountStateQuickWidget.h"
 #include "SyncInfo.h"
 #include "UsersUpdateListener.h"
 #include "Utilities.h"
@@ -19,7 +20,6 @@ class SettingsDialog;
 
 class ProxySettings;
 class MegaApplication;
-
 class SettingsDialog : public QDialog, public IStorageObserver, public IBandwidthObserver,
         public IAccountObserver
 {
@@ -58,7 +58,7 @@ public:
     // Backup
     void on_bBackup_clicked();
 
-    // Folders
+    // File management
     void updateUploadFolder();
     void updateDownloadFolder();
 
@@ -112,7 +112,7 @@ private slots:
     void on_lAccountType_clicked();
     void on_bUpgrade_clicked();
     void on_bMyAccount_clicked();
-    void on_bStorageDetails_clicked();
+    void onStorageDetailsClicked();
     void on_bLogout_clicked();
 
     // Security
@@ -121,15 +121,16 @@ private slots:
     void on_bChangePassword_clicked();
     void on_bSessionHistory_clicked();
 
-    // Folders
+    // File management
     void on_bFolders_clicked();
     void on_bUploadFolder_clicked();
     void on_bDownloadFolder_clicked();
-
+#ifndef Q_OS_WINDOWS
+    void onPermissionsClicked();
+#endif
     // Network
     void on_bNetwork_clicked();
     void on_bOpenProxySettings_clicked();
-    void on_bOpenBandwidthSettings_clicked();
 
     //Notifications
     void on_bNotifications_clicked();
@@ -143,17 +144,24 @@ private slots:
     void onUserEmailChanged(mega::MegaHandle userHandle, const QString& newEmail);
     void onRequestTaskbarPinningTimeout();
     void onBLearnMore();
+    void onBAboutMega();
+    void onUploadLimitOptionChanged();
+    void onUploadLimitValueChanged();
+    void onDownloadLimitOptionChanged();
+    void onDownloadLimitValueChanged();
+    void onMaxDownloadConnectionsChanged(int value);
+    void onMaxUploadConnectionsChanged(int value);
 
 private:
     void loadSettings();
     void onCacheSizeAvailable();
     void saveExcludeSyncNames();
+    void initNetworkTab();
     void updateNetworkTab();
     void setShortCutsForToolBarItems();
     void updateCacheSchedulerDaysLabel();
     void setGeneralTabEnabled(const bool enabled);
     void setOverlayCheckboxEnabled(const bool enabled, const bool checked);
-    void setProgressState(const QString& stateName);
     void startRequestTaskbarPinningTimer();
     void initColorTheme();
     void onEmailClicked();
@@ -178,5 +186,6 @@ private:
     bool mHasDefaultDownloadOption;
     std::unique_ptr<UsersUpdateListener> usersUpdateListener;
     QTimer* mTaskbarPinningRequestTimer;
+    AccountStateQuickWidget* mAccountStateQuickWidget;
 };
 #endif // SETTINGSDIALOG_H

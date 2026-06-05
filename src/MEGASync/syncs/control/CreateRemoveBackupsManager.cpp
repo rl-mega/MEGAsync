@@ -6,24 +6,25 @@
 #include "SyncSettings.h"
 
 void CreateRemoveBackupsManager::addBackup(SyncInfo::SyncOrigin origin,
-                                           const QStringList& localFolders)
+                                           const QStringList& localFolders,
+                                           QWidget* parent)
 {
     auto overQuotaDialog = MegaSyncApp->createOverquotaDialogIfNeeded();
 
     if (overQuotaDialog)
     {
         DialogOpener::showDialog(overQuotaDialog,
-                                 [overQuotaDialog, origin, localFolders]()
+                                 [overQuotaDialog, origin, localFolders, parent]()
                                  {
                                      if (overQuotaDialog->result() == QDialog::Rejected)
                                      {
-                                         showBackupDialog(origin, localFolders);
+                                         showBackupDialog(origin, localFolders, parent);
                                      }
                                  });
     }
     else
     {
-        showBackupDialog(origin, localFolders);
+        showBackupDialog(origin, localFolders, parent);
     }
 }
 
@@ -43,7 +44,8 @@ bool CreateRemoveBackupsManager::isBackupsDialogOpen()
 }
 
 void CreateRemoveBackupsManager::showBackupDialog(SyncInfo::SyncOrigin origin,
-                                                  const QStringList& localFolders)
+                                                  const QStringList& localFolders,
+                                                  QWidget* parent)
 {
     QPointer<QmlDialogWrapper<BackupCandidatesComponent>> backupsDialog;
     if (auto dialog = DialogOpener::findDialog<QmlDialogWrapper<BackupCandidatesComponent>>())
@@ -52,7 +54,7 @@ void CreateRemoveBackupsManager::showBackupDialog(SyncInfo::SyncOrigin origin,
     }
     else
     {
-        backupsDialog = new QmlDialogWrapper<BackupCandidatesComponent>();
+        backupsDialog = new QmlDialogWrapper<BackupCandidatesComponent>(parent);
     }
     backupsDialog->wrapper()->setOrigin(origin);
     if (!localFolders.empty())

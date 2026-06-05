@@ -94,8 +94,6 @@ QmlDialog{
         return result;
     }
 
-    signal accepted
-
     onVisibleChanged: {
         if(visible){
             valueTextField.title = getTextFieldTitle();

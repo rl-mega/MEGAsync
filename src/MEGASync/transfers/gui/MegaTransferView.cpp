@@ -355,7 +355,7 @@ void MegaTransferView::onCancelVisibleTransfers()
         MessageDialogInfo msgInfo;
         msgInfo.titleText = info.titleText;
         msgInfo.descriptionText = info.actionText;
-        msgInfo.parent = this;
+        msgInfo.parent = Utilities::getTopParent<QDialog>(this);
         msgInfo.buttons = QMessageBox::Yes | QMessageBox::No;
         msgInfo.defaultButton = QMessageBox::No;
         msgInfo.buttonsText = info.buttonsText;
@@ -382,7 +382,7 @@ void MegaTransferView::onCancelSelectedTransfers()
     MessageDialogInfo msgInfo;
     msgInfo.titleText = info.titleText;
     msgInfo.descriptionText = info.actionText;
-    msgInfo.parent = this;
+    msgInfo.parent = Utilities::getTopParent<QDialog>(this);
     msgInfo.buttons = QMessageBox::Yes | QMessageBox::No;
     msgInfo.defaultButton = QMessageBox::No;
     msgInfo.buttonsText = info.buttonsText;
@@ -485,7 +485,7 @@ void MegaTransferView::onCancelAllTransfers()
         msgInfo.titleText = cancelTransfersMultiSelectionTitleText();
         msgInfo.descriptionText = proxy->isAnySync() ? cancelTransfersWithSyncDescriptionText() :
                                                        cancelAllDescriptionText();
-        msgInfo.parent = this;
+        msgInfo.parent = Utilities::getTopParent<QDialog>(this);
         msgInfo.buttons = QMessageBox::Yes | QMessageBox::No;
         msgInfo.defaultButton = QMessageBox::No;
         msgInfo.buttonsText = getCancelDialogButtons();
@@ -508,7 +508,7 @@ void MegaTransferView::onClearAllTransfers()
     MessageDialogInfo msgInfo;
     msgInfo.titleText = clearTransfersMultiSelectionTitleText();
     msgInfo.descriptionText = clearAllCompletedDescriptionText();
-    msgInfo.parent = this;
+    msgInfo.parent = Utilities::getTopParent<QDialog>(this);
     msgInfo.buttons = QMessageBox::Yes | QMessageBox::No;
     msgInfo.defaultButton = QMessageBox::No;
     msgInfo.buttonsText = getClearDialogButtons();
@@ -531,7 +531,7 @@ void MegaTransferView::onCancelAndClearVisibleTransfers()
     MessageDialogInfo msgInfo;
     msgInfo.titleText = info.titleText;
     msgInfo.descriptionText = info.actionText;
-    msgInfo.parent = this;
+    msgInfo.parent = Utilities::getTopParent<QDialog>(this);
     msgInfo.buttons = QMessageBox::Yes | QMessageBox::No;
     msgInfo.defaultButton = QMessageBox::No;
     msgInfo.buttonsText = info.buttonsText;
@@ -559,7 +559,7 @@ void MegaTransferView::onClearVisibleTransfers()
     MessageDialogInfo msgInfo;
     msgInfo.titleText = clearTransfersMultiSelectionTitleText();
     msgInfo.descriptionText = clearCategoryTransfersDescriptionText();
-    msgInfo.parent = this;
+    msgInfo.parent = Utilities::getTopParent<QDialog>(this);
     msgInfo.buttons = QMessageBox::Yes | QMessageBox::No;
     msgInfo.defaultButton = QMessageBox::No;
     msgInfo.buttonsText = getClearDialogButtons();
@@ -1422,7 +1422,7 @@ void MegaTransferView::onOpenUrlFinished()
 void MegaTransferView::showOpeningFileError()
 {
     MessageDialogInfo msgInfo;
-    msgInfo.parent = this;
+    msgInfo.parent = Utilities::getTopParent<QDialog>(this);
     msgInfo.descriptionText = errorOpeningFileText();
     MessageDialogOpener::warning(msgInfo);
 }

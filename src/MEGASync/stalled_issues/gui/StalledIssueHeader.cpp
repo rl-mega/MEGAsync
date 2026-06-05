@@ -243,7 +243,7 @@ void StalledIssueHeader::showMessage(const QString& message,
 
 void StalledIssueHeader::updateIssueState()
 {
-    StalledIssue::SolveType type(StalledIssue::SolveType::UNSOLVED);
+    StalledIssue::ResolutionState type(StalledIssue::ResolutionState::UNSOLVED);
     QString iconName;
     QString iconToken;
     QString message;
@@ -260,7 +260,7 @@ void StalledIssueHeader::updateIssueState()
         type = getData().consultData()->getIsSolved();
     }
 
-    if(type == StalledIssue::SolveType::BEING_SOLVED)
+    if (type == StalledIssue::ResolutionState::BEING_SOLVED)
     {
         ui->actionWaitingSpinner->start();
     }
@@ -271,7 +271,7 @@ void StalledIssueHeader::updateIssueState()
 
     switch(type)
     {
-        case StalledIssue::SolveType::BEING_SOLVED:
+        case StalledIssue::ResolutionState::BEING_SOLVED:
         {
             ui->actionMessageContainer->setProperty(ISSUE_STATE, QLatin1String("being solved"));
             if (message.isEmpty())
@@ -280,7 +280,7 @@ void StalledIssueHeader::updateIssueState()
             }
             break;
         }
-        case StalledIssue::SolveType::SOLVED:
+        case StalledIssue::ResolutionState::SOLVED:
         {
             if(getData().convert<IgnoredStalledIssue>())
             {
@@ -331,7 +331,7 @@ void StalledIssueHeader::updateIssueState()
 
             break;
         }
-        case StalledIssue::SolveType::FAILED:
+        case StalledIssue::ResolutionState::FAILED:
         {
             ui->actionMessageContainer->setProperty(ISSUE_STATE, QLatin1String("failed"));
             iconName = Utilities::getPixmapName(QLatin1String("cross"),
@@ -347,7 +347,7 @@ void StalledIssueHeader::updateIssueState()
 
             break;
         }
-        case StalledIssue::SolveType::UNSOLVED:
+        case StalledIssue::ResolutionState::UNSOLVED:
         {
             ui->actionMessageContainer->setProperty(ISSUE_STATE, QString());
             if(getData().convert<IgnoredStalledIssue>())

@@ -682,6 +682,11 @@ QUrl ServiceUrls::getSyncDebrisHelpLink()
     return url;
 }
 
+QUrl ServiceUrls::getDisputeTakenDownLink()
+{
+    return {QLatin1String("https://mega.io/dispute")};
+}
+
 QUrl ServiceUrls::getDiscountUrl(const QString& discountCode) const
 {
     auto url = getSessionTransferBaseUrl();

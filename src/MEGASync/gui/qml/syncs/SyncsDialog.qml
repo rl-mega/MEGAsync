@@ -1,4 +1,6 @@
-import QtQuick 2.15
+import QtQuick 2.0
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
 import common 1.0
 import components.views 1.0
@@ -13,21 +15,37 @@ SyncsQmlDialog {
     title: SyncsStrings.syncsWindowTitle
     visible: false
     modality: Qt.NonModal
+    minimumHeight: syncsContentItem.implicitHeight
+    maximumHeight: syncsContentItem.implicitHeight
+    height: minimumHeight
     width: 640
-    height: 402
-    maximumHeight: height
     maximumWidth: width
-    minimumHeight: height
     minimumWidth: width
     closeOnEscapePressed: true
+    color: ColorTheme.surface1
 
     readonly property int defaultWindowMargin: 24
+
+    Behavior on height {
+        NumberAnimation {
+            duration: 200
+            easing.type: Easing.InOutQuad
+        }
+    }
 
     Rectangle {
         id: syncsContentItem
 
-        anchors.fill: parent
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: parent.top
+        }
+
         color: ColorTheme.surface1
+
+        implicitHeight : stackView.implicitHeight
+        height: implicitHeight
 
         readonly property string syncsFlow: "syncsFlow"
         readonly property string resume: "resume"
@@ -52,9 +70,13 @@ SyncsQmlDialog {
             id: stackView
 
             anchors {
-                fill: parent
+                left: parent.left
+                right: parent.right
+                top: parent.top
                 margins: defaultWindowMargin
             }
+
+            implicitHeight: currentItem.implicitHeight
 
             Component {
                 id: syncsFlowPage
@@ -77,5 +99,4 @@ SyncsQmlDialog {
             }
         }
     }
-
 }

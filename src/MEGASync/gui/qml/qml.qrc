@@ -13,6 +13,13 @@
         <file>common/themes/dark/Colors.qml</file>
         <file>components/accountData/qmldir</file>
         <file>components/accountData/InfoAccount.qml</file>
+        <file>settings/qmldir</file>
+        <file>settings/AccountStateSurface.qml</file>
+        <file>settings/SettingsStrings.qml</file>
+        <file>settings/SettingsLinearProgress.qml</file>
+        <file>settings/QuotaProgressSegments.qml</file>
+        <file>settings/QuotaProgressSegmentItem.qml</file>
+        <file>settings/QuotaProgressToolTip.qml</file>
         <file>components/busyIndicator/qmldir</file>
         <file>components/busyIndicator/BusyIndicator.qml</file>
         <file>components/buttons/qmldir</file>
@@ -137,10 +144,12 @@
         <file>onboard/syncs_types/SyncsVerticalButton.qml</file>
         <file>onboard/syncs_types/StepPanel.qml</file>
         <file>onboard/syncs_types/SyncsPage.qml</file>
+        <file>onboard/syncs_types/SyncsFlow.qml</file>
         <file>onboard/syncs_types/AddSyncPage.qml</file>
         <file>onboard/syncs_types/AddSyncPageForm.ui.qml</file>
         <file>onboard/syncs_types/backups/qmldir</file>
         <file>onboard/syncs_types/backups/BackupsPage.qml</file>
+        <file>onboard/syncs_types/backups/BackupsFlow.qml</file>
         <file>onboard/syncs_types/backups/ConfirmFoldersPage.qml</file>
         <file>onboard/syncs_types/backups/ConfirmFoldersPageForm.ui.qml</file>
         <file>onboard/syncs_types/backups/SelectFoldersPage.qml</file>

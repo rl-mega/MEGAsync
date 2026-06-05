@@ -16,7 +16,8 @@ public:
 
     static void addSync(SyncInfo::SyncOrigin origin,
                         mega::MegaHandle handle = mega::INVALID_HANDLE,
-                        const QString& localPath = QString());
+                        const QString& localPath = QString(),
+                        QWidget* parent = nullptr);
 
     static bool removeSync(mega::MegaHandle handle, QWidget* parent);
     static bool removeSync(std::shared_ptr<SyncSettings> syncSettings, QWidget* parent);
@@ -24,7 +25,8 @@ public:
 private:
     static void showSyncDialog(SyncInfo::SyncOrigin origin,
                                QString remoteFolder,
-                               QString localFolder);
+                               QString localFolder,
+                               QWidget* parent);
 };
 
 #endif // CREATEREMOVESYNCFROMUIMANAGER_H

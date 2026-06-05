@@ -1,6 +1,8 @@
 #include "DuplicatedNodeItem.h"
 
 #include "MegaApplication.h"
+#include "TextDecorator.h"
+#include "ThemeManager.h"
 #include "TokenParserWidgetManager.h"
 #include "ui_DuplicatedNodeItem.h"
 #include "Utilities.h"
@@ -40,10 +42,27 @@ void DuplicatedNodeItem::setDescription(const QString &description)
 
 void DuplicatedNodeItem::showLearnMore(const QString& url)
 {
-    QString moreAboutLink(QLatin1String(
-        "<a href=\"%1\"><font color=#2C5BEB;/*colorToken.link-primary*/>%2</font></a>"));
-    ui->lLearnMore->setText(moreAboutLink.arg(url,tr("Learn more")));
+    mLearnMoreUrl = url;
+    rebuildLearnMore();
     ui->lLearnMore->show();
+
+    connect(ThemeManager::instance(),
+            &ThemeManager::themeChanged,
+            this,
+            &DuplicatedNodeItem::rebuildLearnMore,
+            Qt::UniqueConnection);
+}
+
+void DuplicatedNodeItem::rebuildLearnMore()
+{
+    if (mLearnMoreUrl.isEmpty())
+    {
+        return;
+    }
+
+    QString text = QStringLiteral("[A]%1[/A]").arg(tr("Learn more"));
+    Text::Link(mLearnMoreUrl).process(text);
+    ui->lLearnMore->setText(text);
 }
 
 void DuplicatedNodeItem::fillUi()
@@ -142,7 +161,10 @@ DuplicatedRemoteItem::DuplicatedRemoteItem(QWidget *parent)
 
 DuplicatedRemoteItem::~DuplicatedRemoteItem()
 {
-    mFolderAttributes->cancel();
+    if (mFolderAttributes)
+    {
+        mFolderAttributes->cancel();
+    }
 }
 
 void DuplicatedRemoteItem::setInfo(std::shared_ptr<DuplicatedNodeInfo> info, NodeItemType type)
@@ -208,7 +230,10 @@ DuplicatedLocalItem::DuplicatedLocalItem(QWidget *parent)
 
 DuplicatedLocalItem::~DuplicatedLocalItem()
 {
-    mFolderAttributes->cancel();
+    if (mFolderAttributes)
+    {
+        mFolderAttributes->cancel();
+    }
 }
 
 void DuplicatedLocalItem::setInfo(std::shared_ptr<DuplicatedNodeInfo> info, NodeItemType type)

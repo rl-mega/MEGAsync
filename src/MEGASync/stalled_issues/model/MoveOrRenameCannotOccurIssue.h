@@ -30,14 +30,14 @@ public:
 
     void fillIssue(const mega::MegaSyncStall* stall) override;
 
-    void setIsSolved(SolveType type) override;
+    void setIsSolved(ResolutionState type) override;
     bool isAutoSolvable() const override;
     void solveIssue(MoveOrRenameIssueChosenSide side);
-    StalledIssue::AutoSolveIssueResult autoSolveIssue() override;
+    ResolutionState autoSolveIssue() override;
 
     bool isKeepSideAvailable(MoveOrRenameIssueChosenSide side) const;
 
-    bool checkForExternalChanges() override;
+    bool checkForExternalChanges(QObject* context) override;
 
     MoveOrRenameIssueChosenSide getChosenSide() const;
     MoveOrRenameIssueChosenSide getSyncIdChosenSide() const;

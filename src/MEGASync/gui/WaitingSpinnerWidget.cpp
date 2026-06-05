@@ -290,21 +290,21 @@ QColor WaitingSpinnerWidget::currentLineColor(int countDistance,
     {
         return color;
     }
-    const auto minAlphaF = minOpacity / 100.0;
+    const qreal minAlphaF = minOpacity / qreal(100.0);
     const auto distanceThreshold = ceil((totalNrOfLines - 1) * trailFadePerc / 100.0);
     if (countDistance > distanceThreshold)
     {
-        color.setAlphaF(minAlphaF);
+        color.setAlphaF(static_cast<float>(minAlphaF));
     }
     else
     {
-        const auto alphaDiff = color.alphaF() - minAlphaF;
-        const auto gradient = alphaDiff / (distanceThreshold + 1.);
-        auto resultAlpha = color.alphaF() - gradient * countDistance;
+        const qreal alphaDiff = color.alphaF() - minAlphaF;
+        const qreal gradient = alphaDiff / qreal(distanceThreshold + 1.0);
+        qreal resultAlpha = color.alphaF() - gradient * countDistance;
 
         // If alpha is out of bounds, clip it.
-        resultAlpha = std::min(1.0, std::max(0.0, resultAlpha));
-        color.setAlphaF(resultAlpha);
+        resultAlpha = std::min<qreal>(qreal(1.0), std::max<qreal>(qreal(0.0), resultAlpha));
+        color.setAlphaF(static_cast<float>(resultAlpha));
     }
     return color;
 }

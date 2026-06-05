@@ -344,8 +344,9 @@ void DeviceCentre::manageExclusions(int row) const
     QFileInfo syncDir(folderPath);
     if (syncDir.exists())
     {
+        QmlDialog* parent(QmlDialogWrapperUtilities::getQmlDialog<DeviceCentre>());
         QPointer<QmlDialogWrapper<SyncExclusions>> exclusions =
-            new QmlDialogWrapper<SyncExclusions>(nullptr, folderPath);
+            new QmlDialogWrapper<SyncExclusions>(parent, folderPath);
         DialogOpener::showDialog(exclusions);
     }
 }

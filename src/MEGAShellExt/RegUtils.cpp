@@ -549,7 +549,16 @@ HRESULT UnregisterShellExtContextMenuHandler(
     hr = StringCchPrintf(szSubkey, ARRAYSIZE(szSubkey),
         L"%s\\shellex\\ContextMenuHandlers\\%s", pszFileType, pszFriendlyName);
     if (!SUCCEEDED(hr)) return hr;
-    
+
+    RegDelNode(HKEY_CLASSES_ROOT, szSubkey);
+
+    hr = StringCchPrintf(szSubkey,
+                         ARRAYSIZE(szSubkey),
+                         L"Directory\\shellex\\ContextMenuHandlers\\%s",
+                         pszFriendlyName);
+    if (!SUCCEEDED(hr))
+        return hr;
+
     RegDelNode(HKEY_CLASSES_ROOT, szSubkey);
     return hr;
 }

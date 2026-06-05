@@ -393,7 +393,9 @@ void NameConflict::onActionClicked(int actionId)
     {
         auto dialog = DialogOpener::findDialog<StalledIssuesDialog>();
 
-        if(MegaSyncApp->getStalledIssuesModel()->checkForExternalChanges(mDelegateWidget->getCurrentIndex()))
+        if (MegaSyncApp->getStalledIssuesModel()->checkForExternalChanges(
+                mDelegateWidget->getCurrentIndex(),
+                this))
         {
             mDelegateWidget->updateSizeHint();
 

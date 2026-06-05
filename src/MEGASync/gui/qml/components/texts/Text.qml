@@ -26,7 +26,9 @@ Qml.Text {
         pixelSize: Text.Size.NORMAL
     }
     color: enabled ? ColorTheme.textPrimary : ColorTheme.textDisabled
+    textFormat: Text.PlainText
     wrapMode: Text.WordWrap
+    renderType: OS.isWindows() ? Text.QtRendering : Text.NativeRendering
 
     Qml.MouseArea {
         id: mouseArea

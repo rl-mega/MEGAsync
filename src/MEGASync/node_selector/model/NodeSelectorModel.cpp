@@ -1,6 +1,7 @@
 #include "NodeSelectorModel.h"
 
 #include "CameraUploadFolder.h"
+#include "DuplicatedNodeConflictAutoResolution.h"
 #include "IconTokenizer.h"
 #include "MegaApplication.h"
 #include "MegaNodeNames.h"
@@ -76,9 +77,23 @@ void NodeRequester::requestNodeAndCreateChildren(NodeSelectorModelItem* item,
             if (!isAborted())
             {
                 lockDataMutex(true);
-                item->createChildItems(std::move(childNodesFiltered));
+                auto childItems = item->createChildItems(std::move(childNodesFiltered));
                 lockDataMutex(false);
-                emit nodesReady(item);
+                const auto childCount = childItems.size();
+                if (childCount > 0)
+                {
+                    QMetaObject::invokeMethod(mModel,
+                                              "beginChildRowsInsertion",
+                                              Qt::BlockingQueuedConnection,
+                                              Q_ARG(QModelIndex, parentIndex),
+                                              Q_ARG(int, 0),
+                                              Q_ARG(int, childCount - 1));
+                }
+
+                lockDataMutex(true);
+                item->initializeChildItems(childItems);
+                lockDataMutex(false);
+                emit nodesReady(item, static_cast<int>(childCount));
             }
         }
     }
@@ -147,15 +162,32 @@ void NodeRequester::addSearchRootItem(QList<std::shared_ptr<mega::MegaNode>> nod
     {
         qDeleteAll(items);
     }
-    else
+    else if (!items.isEmpty())
     {
-        if (!items.isEmpty())
-        {
-            QMutexLocker d(&mDataMutex);
-            mRootItems.append(items);
-            emit rootItemsAdded();
-        }
+        appendRootItems(items);
     }
+}
+
+void NodeRequester::appendRootItems(const QList<NodeSelectorModelItem*>& items)
+{
+    if (items.isEmpty())
+    {
+        return;
+    }
+
+    const int firstRow = rootIndexSize();
+    QMetaObject::invokeMethod(mModel,
+                              "beginRootItemsInsertion",
+                              Qt::BlockingQueuedConnection,
+                              Q_ARG(int, firstRow),
+                              Q_ARG(int, firstRow + items.size() - 1));
+
+    {
+        QMutexLocker d(&mDataMutex);
+        mRootItems.append(items);
+    }
+
+    emit rootItemsAdded();
 }
 
 NodeSelectorModelItem*
@@ -346,8 +378,7 @@ void NodeRequester::addIncomingSharesRootItem(std::shared_ptr<mega::MegaNode> no
         }
         else
         {
-            mRootItems.append(item);
-            emit rootItemsAdded();
+            appendRootItems({item});
         }
     }
     else
@@ -405,27 +436,42 @@ void NodeRequester::onAddNodesRequested(QList<std::shared_ptr<mega::MegaNode>> n
                                         const QModelIndex& parentIndex,
                                         NodeSelectorModelItem* parentItem)
 {
-    auto lastChild = parentItem->getNumChildren();
     lockDataMutex(true);
-    auto childrenItem = parentItem->addNodes(std::move(newNodes));
+    auto lastChild = parentItem->getNumChildren();
+    auto childrenItem = parentItem->buildNodes(newNodes);
     lockDataMutex(false);
+
+    const auto childCount = childrenItem.size();
+    if (childCount <= 0 || isAborted())
+    {
+        QMetaObject::invokeMethod(mModel,
+                                  "cancelPendingModification",
+                                  Qt::BlockingQueuedConnection);
+        foreach(auto& childItem, childrenItem)
+        {
+            childItem->deleteLater();
+        }
+        return;
+    }
+
+    QMetaObject::invokeMethod(mModel,
+                              "beginChildRowsInsertion",
+                              Qt::BlockingQueuedConnection,
+                              Q_ARG(QModelIndex, parentIndex),
+                              Q_ARG(int, lastChild),
+                              Q_ARG(int, lastChild + childCount - 1));
+
+    lockDataMutex(true);
+    parentItem->appendNodes(childrenItem);
+    lockDataMutex(false);
+
     foreach(auto& childItem, childrenItem)
     {
         childItem->setProperty(INDEX_PROPERTY, mModel->index(lastChild, 0, parentIndex));
         lastChild++;
     }
 
-    if (!isAborted())
-    {
-        emit nodesAdded(childrenItem);
-    }
-    else
-    {
-        foreach(auto& childItem, childrenItem)
-        {
-            removeItem(childItem);
-        }
-    }
+    emit nodesAdded(childrenItem);
 }
 
 void NodeRequester::removeItem(NodeSelectorModelItem* item)
@@ -658,6 +704,14 @@ void NodeSelectorModel::setIsModelBeingModified(bool state)
     emit modelIsBeingModifiedChanged(state);
 }
 
+void NodeSelectorModel::cancelPendingModification()
+{
+    if (mIsBeingModified)
+    {
+        setIsModelBeingModified(false);
+    }
+}
+
 void NodeSelectorModel::protectModelWhenPerformingActions()
 {
     auto protectModel = [this]()
@@ -728,6 +782,12 @@ void NodeSelectorModel::executeAddExtraSpaceLogic(const QModelIndex& currentInde
 
 void NodeSelectorModel::executeExtraSpaceLogic()
 {
+    if (isBeingModified())
+    {
+        mAddExpaceWhenLoadingFinish = true;
+        return;
+    }
+
     executeRemoveExtraSpaceLogic(mCurrentRootIndex);
     mCurrentRootIndex = mPendingRootIndex;
     executeAddExtraSpaceLogic(mCurrentRootIndex);
@@ -790,6 +850,17 @@ QVariant NodeSelectorModel::data(const QModelIndex& index, int role) const
                         return item->getOwnerName() + QLatin1String(" (") + item->getOwnerEmail() +
                                QLatin1String(")");
                     }
+                    else if (item->isTakenDown())
+                    {
+                        if (item->isFile())
+                        {
+                            return tr("This file has been the subject of a takedown notice");
+                        }
+                        else
+                        {
+                            return tr("This folder has been the subject of a takedown notice");
+                        }
+                    }
                     else if (mSyncSetupMode)
                     {
                         if ((item->getStatus() == NodeSelectorModelItem::Status::SYNC) ||
@@ -812,6 +883,10 @@ QVariant NodeSelectorModel::data(const QModelIndex& index, int role) const
                 case toInt(NodeSelectorModelRoles::IS_FILE_ROLE):
                 {
                     return QVariant::fromValue(item->getNode()->isFile());
+                }
+                case toInt(NodeSelectorModelRoles::IS_TAKEN_DOWN_ROLE):
+                {
+                    return QVariant::fromValue(item->isTakenDown());
                 }
                 case toInt(NodeSelectorModelRoles::IS_SYNCABLE_FOLDER_ROLE):
                 {
@@ -876,19 +951,25 @@ Qt::ItemFlags NodeSelectorModel::flags(const QModelIndex& index) const
         NodeSelectorModelItem* item = static_cast<NodeSelectorModelItem*>(index.internalPointer());
         if (item)
         {
-            if ((mSyncSetupMode && !item->isSyncable()) ||
-                (item->getNode() && !item->getNode()->isNodeKeyDecrypted()))
+            if (item->getNode() && !item->getNode()->isNodeKeyDecrypted())
             {
                 flags &= ~(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             }
 
             if (mAcceptDragAndDrop)
             {
-                flags |= Qt::ItemIsDropEnabled;
-
-                if (!item->isSpecialNode() && !item->isInShare())
+                if (item->isTakenDown())
                 {
-                    flags |= Qt::ItemIsDragEnabled;
+                    flags &= ~(Qt::ItemIsDropEnabled | Qt::ItemIsDragEnabled);
+                }
+                else
+                {
+                    flags |= Qt::ItemIsDropEnabled;
+
+                    if (!item->isSpecialNode() && !item->isInShare())
+                    {
+                        flags |= Qt::ItemIsDragEnabled;
+                    }
                 }
             }
         }
@@ -919,11 +1000,10 @@ bool NodeSelectorModel::canDropMimeData(const QMimeData* data,
                                         int column,
                                         const QModelIndex& parent) const
 {
-    Q_UNUSED(row);
-    Q_UNUSED(column);
-
     if (action == Qt::CopyAction || action == Qt::MoveAction)
     {
+        auto dropIndex(index(row, column, parent));
+
         if (parent.isValid())
         {
             if (action == Qt::CopyAction)
@@ -932,12 +1012,12 @@ bool NodeSelectorModel::canDropMimeData(const QMimeData* data,
             }
             else
             {
-                return checkDraggedMimeData(data);
+                return checkDraggedMimeData(data, dropIndex);
             }
         }
         else
         {
-            return checkDraggedMimeData(data);
+            return checkDraggedMimeData(data, dropIndex);
         }
     }
 
@@ -949,8 +1029,15 @@ bool NodeSelectorModel::canDropMimeData() const
     return true;
 }
 
-bool NodeSelectorModel::checkDraggedMimeData(const QMimeData* data) const
+bool NodeSelectorModel::checkDraggedMimeData(const QMimeData* data,
+                                             const QModelIndex& dropIndex) const
 {
+    auto targetItem = getItemByIndex(dropIndex);
+    if (targetItem && targetItem->isTakenDown())
+    {
+        return false;
+    }
+
     QByteArray encodedData = data->data(MIME_DATA_INTERNAL_MOVE);
     QDataStream stream(&encodedData, QIODevice::ReadOnly);
 
@@ -1430,7 +1517,16 @@ bool NodeSelectorModel::processNodesAndCheckConflicts(
 
     auto conflicts = CheckDuplicatedNodes::checkMoves(handleAndTarget, sourceNode);
 
-    if (!conflicts->hasNoConflicts())
+    if (type == MoveActionType::COPY)
+    {
+        DuplicatedNodeConflictAutoResolution::resolveFolderConflictsForCopy(conflicts);
+    }
+
+    if (conflicts->isConflictFree())
+    {
+        processNodesAfterConflictCheck(conflicts, type);
+    }
+    else
     {
         if (!handleAndTarget.isEmpty())
         {
@@ -1438,10 +1534,6 @@ bool NodeSelectorModel::processNodesAndCheckConflicts(
         }
 
         emit showDuplicatedNodeDialog(conflicts, type);
-    }
-    else
-    {
-        processNodesAfterConflictCheck(conflicts, type);
     }
 
     return true;
@@ -1620,7 +1712,16 @@ void NodeSelectorModel::onStartBeginRemoveRowsAsync(const mega::MegaHandle& hand
         auto index = findIndexByNodeHandle(handle, QModelIndex());
         if (index.isValid())
         {
-            deleteNodeFromModel(index);
+            // deleteNodeFromModel returns true only when beginRemoveRows/endRemoveRows
+            // were actually emitted. If it returns false (e.g. the item is no longer
+            // a child of its expected parent), no rowsRemoved signal will fire and the
+            // queue would otherwise stall, since RemoveNodesQueue::onRowsRemoved is
+            // what advances it.
+            if (!deleteNodeFromModel(index))
+            {
+                mRemoveNodesQueue.skipCurrentStep();
+                return;
+            }
 
             // If the loading view is set, decrease the moving number by 1
             if (isMovingNodes())
@@ -1628,6 +1729,14 @@ void NodeSelectorModel::onStartBeginRemoveRowsAsync(const mega::MegaHandle& hand
                 moveProcessedByNumber(1);
             }
         }
+        else
+        {
+            mRemoveNodesQueue.skipCurrentStep();
+        }
+    }
+    else
+    {
+        mRemoveNodesQueue.skipCurrentStep();
     }
 }
 
@@ -1694,7 +1803,10 @@ int NodeSelectorModel::rowCount(const QModelIndex& parent) const
     {
         mNodeRequesterWorker->lockDataMutex(true);
         NodeSelectorModelItem* item = static_cast<NodeSelectorModelItem*>(parent.internalPointer());
-        rows = item ? item->getNumChildren() : 0;
+        if (item)
+        {
+            rows = item->areChildrenInitialized() ? item->getNumChildren() : 0;
+        }
         if (mExtraSpaceAdded && parent == mCurrentRootIndex)
         {
             rows = rows + 1;
@@ -1729,6 +1841,11 @@ bool NodeSelectorModel::hasChildren(const QModelIndex& parent) const
     NodeSelectorModelItem* item = static_cast<NodeSelectorModelItem*>(parent.internalPointer());
     if (item && item->getNode())
     {
+        if (item->isTakenDown())
+        {
+            return false;
+        }
+
         mNodeRequesterWorker->lockDataMutex(true);
         auto numChild = item->getNumChildren() > 0;
         mNodeRequesterWorker->lockDataMutex(false);
@@ -1833,10 +1950,7 @@ bool NodeSelectorModel::addNodes(QList<std::shared_ptr<mega::MegaNode>> nodes,
                 if (parentItem && parentItem->getNode()->isFolder() &&
                     parentItem->areChildrenInitialized())
                 {
-                    auto totalRows = rowCount(parent);
-                    beginInsertRows(parent,
-                                    totalRows,
-                                    static_cast<int>(totalRows + nodes.size() - 1));
+                    setIsModelBeingModified(true);
                     emit requestAddNodes(nodes, parent, parentItem);
                     return true;
                 }
@@ -1916,6 +2030,16 @@ void NodeSelectorModel::onSyncStateChanged(std::shared_ptr<SyncSettings> sync)
 void NodeSelectorModel::onRootItemAdded()
 {
     endInsertRows();
+}
+
+void NodeSelectorModel::beginRootItemsInsertion(int first, int last)
+{
+    beginInsertRows(QModelIndex(), first, last);
+}
+
+void NodeSelectorModel::beginChildRowsInsertion(const QModelIndex& parent, int first, int last)
+{
+    beginInsertRows(parent, first, last);
 }
 
 bool NodeSelectorModel::addToLoadingList(const std::shared_ptr<mega::MegaNode> node)
@@ -2018,52 +2142,61 @@ bool NodeSelectorModel::areAllNodesEligibleForRestore(const QList<mega::MegaHand
     return restorableItems == 0;
 }
 
-void NodeSelectorModel::deleteNodeFromModel(const QModelIndex& index)
+bool NodeSelectorModel::deleteNodeFromModel(const QModelIndex& index)
 {
     if (!index.isValid())
     {
-        return;
+        return false;
     }
     auto item = static_cast<NodeSelectorModelItem*>(index.internalPointer());
-    if (item)
+    if (!item)
     {
-        std::shared_ptr<mega::MegaNode> node = item->getNode();
-        if (node)
+        return false;
+    }
+
+    std::shared_ptr<mega::MegaNode> node = item->getNode();
+    if (!node)
+    {
+        return false;
+    }
+
+    if (mExtraSpaceAdded && mCurrentRootIndex == index.parent())
+    {
+        auto currentRowCount(rowCount(index.parent()));
+        // 2 is the result of 1 for the extra row + 1 for the row
+        // about to be removed
+        if (currentRowCount == 2)
         {
-            if (mExtraSpaceAdded && mCurrentRootIndex == index.parent())
-            {
-                auto currentRowCount(rowCount(index.parent()));
-                // 2 is the result of 1 for the extra row + 1 for the row
-                // about to be removed
-                if (currentRowCount == 2)
-                {
-                    executeRemoveExtraSpaceLogic(mCurrentRootIndex);
-                }
-            }
-
-            NodeSelectorModelItem* parent =
-                static_cast<NodeSelectorModelItem*>(index.parent().internalPointer());
-            if (parent)
-            {
-                int row = parent->indexOf(item);
-                beginRemoveRows(index.parent(), row, row);
-                mNodeRequesterWorker->lockDataMutex(true);
-                auto itemToRemove = parent->findChildNode(node);
-                mNodeRequesterWorker->lockDataMutex(false);
-                emit removeItem(itemToRemove);
-                endRemoveRows();
-            }
-            else
-            {
-                int row = index.row();
-                beginRemoveRows(index.parent(), row, row);
-                emit removeRootItem(item);
-                endRemoveRows();
-            }
-
-            emit modelModified();
+            executeRemoveExtraSpaceLogic(mCurrentRootIndex);
         }
     }
+
+    NodeSelectorModelItem* parent =
+        static_cast<NodeSelectorModelItem*>(index.parent().internalPointer());
+    if (parent)
+    {
+        int row = parent->indexOf(item);
+        if (row < 0)
+        {
+            return false;
+        }
+        beginRemoveRows(index.parent(), row, row);
+        mNodeRequesterWorker->lockDataMutex(true);
+        auto itemToRemove = parent->findChildNode(node);
+        mNodeRequesterWorker->lockDataMutex(false);
+        emit removeItem(itemToRemove);
+        endRemoveRows();
+    }
+    else
+    {
+        int row = index.row();
+        beginRemoveRows(index.parent(), row, row);
+        emit removeRootItem(item);
+        endRemoveRows();
+    }
+
+    emit modelModified();
+    return true;
 }
 
 int NodeSelectorModel::getNodeAccess(mega::MegaNode* node)
@@ -2678,6 +2811,11 @@ bool NodeSelectorModel::canFetchMore(const QModelIndex& parent) const
     NodeSelectorModelItem* item = static_cast<NodeSelectorModelItem*>(parent.internalPointer());
     if (item)
     {
+        if (item->isTakenDown())
+        {
+            return false;
+        }
+
         return item->canFetchMore();
     }
     else
@@ -2725,31 +2863,41 @@ bool NodeSelectorModel::isRequestingNodes() const
     return mNodeRequesterWorker->isRequestingNodes();
 }
 
-void NodeSelectorModel::fetchItemChildren(const QModelIndex& parent)
+bool NodeSelectorModel::fetchItemChildren(const QModelIndex& parent)
 {
     NodeSelectorModelItem* item = static_cast<NodeSelectorModelItem*>(parent.internalPointer());
-    if (!item->areChildrenInitialized() && !item->requestingChildren())
+    if (!item || item->areChildrenInitialized())
     {
-        // Just in case the children changed
-        item->resetChildrenCounter();
-        const auto itemNumChildren = item->getNumChildren();
-        if (itemNumChildren > 0)
-        {
-            sendBlockUiSignal(true);
-
-            blockSignals(true);
-            beginInsertRows(parent, 0, itemNumChildren - 1);
-            blockSignals(false);
-            emit requestChildNodes(item, parent);
-
-            // Unblock UI when children are added async
-            return;
-        }
+        return false;
     }
+
+    // A previous request is already in flight; its nodesReady will balance the caller's counter.
+    if (item->requestingChildren())
+    {
+        return true;
+    }
+
+    // Just in case the children changed
+    item->resetChildrenCounter();
+    const auto itemNumChildren = item->getNumChildren();
+    if (itemNumChildren > 0)
+    {
+        sendBlockUiSignal(true);
+        emit requestChildNodes(item, parent);
+
+        return true;
+    }
+
+    return false;
 }
 
-void NodeSelectorModel::onChildNodesReady(NodeSelectorModelItem* parent)
+void NodeSelectorModel::onChildNodesReady(NodeSelectorModelItem* parent, int insertedCount)
 {
+    if (insertedCount > 0)
+    {
+        endInsertRows();
+    }
+
     auto index = parent->property(INDEX_PROPERTY).value<QModelIndex>();
     continueWithNextItemToLoad(index);
 }
@@ -2856,6 +3004,11 @@ QPair<QIcon, QString> NodeSelectorModel::getFolderIcon(NodeSelectorModelItem* it
 
     if (item)
     {
+        if (item->isTakenDown())
+        {
+            return qMakePair(QIcon(QStringLiteral(":/taken_down_medium")), QString());
+        }
+
         auto node = item->getNode();
 
         if (node)
@@ -2995,6 +3148,19 @@ void RemoveNodesQueue::addStep(const mega::MegaHandle& handle)
     if (mSteps.size() == 1)
     {
         emit startBeginRemoveRows(handle);
+    }
+}
+
+void RemoveNodesQueue::skipCurrentStep()
+{
+    if (!mSteps.isEmpty())
+    {
+        mSteps.dequeue();
+
+        if (!mSteps.isEmpty())
+        {
+            emit startBeginRemoveRows(mSteps.head());
+        }
     }
 }
 

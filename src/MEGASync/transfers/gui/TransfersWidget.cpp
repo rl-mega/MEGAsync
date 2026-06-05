@@ -580,7 +580,7 @@ void TransfersWidget::onCancelClearButtonPressedOnDelegate()
     auto info = ui->tvTransfers->getSelectedCancelOrClearInfo();
 
     MessageDialogInfo msgInfo;
-    msgInfo.parent = this;
+    msgInfo.parent = Utilities::getTopParent<QDialog>(this);
     msgInfo.titleText = info.titleText;
     msgInfo.descriptionText = info.actionText;
     msgInfo.buttons = QMessageBox::Yes | QMessageBox::No;

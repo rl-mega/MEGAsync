@@ -107,6 +107,9 @@ public:
     ~TokenizableItem();
 
     void forceUpdate();
+    // For these cases where the label can use tokenizable and non-tokenizable icons in the same
+    // session
+    void setIsTokenized(bool state);
 
 protected:
     bool stateHasChanged(const QStyleOption& option);
@@ -129,6 +132,7 @@ private:
     QStyleOption mCurrentOption;
     bool mInit;
     int mThemeType;
+    bool mIsTokenized = true;
 };
 
 #endif // TOKENIZABLEITEMS_H

@@ -1,5 +1,6 @@
 #include "DialogOpener.h"
 
+#include "MessageDialogComponent.h"
 #include "MessageDialogData.h"
 #include "QmlDialogWrapper.h"
 
@@ -51,28 +52,43 @@ void DialogOpener::showMessageDialog(QPointer<QmlMessageDialogWrapper> wrapper,
 {
     if (wrapper)
     {
-        DialogBlocker* blocker(nullptr);
-
-#ifdef Q_OS_MACOS
-        // If the message dialog is not WindowModal, the parent is not greyed out.
-        // So, we use a dummy dialog WindowModal
-        if (msgInfo->parent())
+        auto showWrapper = [](QPointer<QmlMessageDialogWrapper> dialog, bool ignoreCloseAll)
         {
-            blocker = new DialogBlocker(wrapper->parentWidget());
-            qApp->setActiveWindow(wrapper);
-        }
+#ifdef Q_OS_MACOS
+            // If the message dialog is not WindowModal, the parent is not greyed out.
+            // So, we use a dummy dialog WindowModal
+            if (dialog && dialog->parentWidget())
+            {
+                auto blocker = new DialogBlocker(dialog->parentWidget());
+                dialog->connect(dialog.data(),
+                                &QmlDialogWrapperBase::finished,
+                                blocker,
+                                &QObject::deleteLater);
+                qApp->setActiveWindow(dialog);
+            }
 #endif
 
-        wrapper->setWindowModality(Qt::ApplicationModal);
+            if (!dialog)
+            {
+                return;
+            }
+
+            dialog->setWindowModality(Qt::ApplicationModal);
+            auto dialogInfo = showDialogImpl(dialog, false, false);
+            if (dialogInfo)
+            {
+                if (QmlDialogWrapperUtilities::isShowWhenCreated(dialog))
+                {
+                    emit dialog->wrapper()->dataReady();
+                }
+                dialogInfo->setIgnoreCloseAllAction(ignoreCloseAll);
+            }
+        };
+
         wrapper->connect(wrapper.data(),
                          &QmlDialogWrapperBase::finished,
-                         [msgInfo, wrapper, blocker]()
+                         [msgInfo, wrapper, showWrapper]()
                          {
-                             if (blocker)
-                             {
-                                 blocker->deleteLater();
-                             }
-
                              if (msgInfo->getFinishFunction())
                              {
                                  msgInfo->getFinishFunction()(msgInfo->result());
@@ -86,9 +102,8 @@ void DialogOpener::showMessageDialog(QPointer<QmlMessageDialogWrapper> wrapper,
                                          mDialogsQueue.dequeue());
                                  if (queueMsgBox)
                                  {
-                                     auto dialog =
-                                         showDialogImpl(queueMsgBox->getDialog(), false, false);
-                                     dialog->setIgnoreCloseAllAction(msgInfo->ignoreCloseAll());
+                                     showWrapper(queueMsgBox->getDialog(),
+                                                 queueMsgBox->ignoreCloseAllAction());
                                  }
                              }
                          });
@@ -100,21 +115,12 @@ void DialogOpener::showMessageDialog(QPointer<QmlMessageDialogWrapper> wrapper,
             auto info = std::make_shared<DialogInfo<QmlMessageDialogWrapper>>();
             info->setDialog(wrapper);
             info->setDialogClass(classType);
+            info->setIgnoreCloseAllAction(msgInfo->ignoreCloseAll());
             mDialogsQueue.enqueue(info);
-            info->raise();
         }
         else
         {
-            auto dialog = showDialogImpl(wrapper, false, false);
-            dialog->setIgnoreCloseAllAction(msgInfo->ignoreCloseAll());
-        }
-
-        if (msgInfo->getParentDialog())
-        {
-            QPoint parentCenter = msgInfo->getParentDialog()->geometry().center();
-            QSize dialogSize = wrapper->size();
-            wrapper->move(QPoint((parentCenter.x() - dialogSize.width() / 2),
-                                 (parentCenter.y() - dialogSize.height() / 2)));
+            showWrapper(wrapper, msgInfo->ignoreCloseAll());
         }
     }
 }

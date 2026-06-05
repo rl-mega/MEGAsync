@@ -10,6 +10,8 @@
 #include "QmlDialogWrapper.h"
 #include "ui_SyncSettingsUIBase.h"
 
+#include <memory>
+
 BackupSettingsUI::BackupSettingsUI(QWidget* parent):
     SyncSettingsUIBase(parent)
 {
@@ -25,7 +27,6 @@ BackupSettingsUI::BackupSettingsUI(QWidget* parent):
             });
 
     mElements.initElements(this);
-    ui->gSyncs->setUsePermissions(false);
 
     if (auto dialog = DialogOpener::findDialog<QmlDialogWrapper<Onboarding>>())
     {
@@ -49,7 +50,9 @@ BackupSettingsUI::~BackupSettingsUI() {}
 
 void BackupSettingsUI::addButtonClicked(mega::MegaHandle)
 {
-    CreateRemoveBackupsManager::addBackup(SyncInfo::SyncOrigin::SETTINGS_ORIGIN);
+    CreateRemoveBackupsManager::addBackup(SyncInfo::SyncOrigin::SETTINGS_ORIGIN,
+                                          QStringList(),
+                                          Utilities::getTopParent<SettingsDialog>(this));
 }
 
 bool BackupSettingsUI::event(QEvent* event)
@@ -88,10 +91,10 @@ QString BackupSettingsUI::getOperationFailTitle() const
 
 QString BackupSettingsUI::getOperationFailText(std::shared_ptr<SyncSettings> sync)
 {
+    std::unique_ptr<const char[]> syncErrorText(
+        mega::MegaSync::getMegaSyncErrorCode(sync->getError()));
     return tr("Operation on backup '%1' failed. Reason: %2")
-        .arg(sync->name(),
-             QCoreApplication::translate("MegaSyncError",
-                                         mega::MegaSync::getMegaSyncErrorCode(sync->getError())));
+        .arg(sync->name(), QCoreApplication::translate("MegaSyncError", syncErrorText.get()));
 }
 
 QString BackupSettingsUI::getErrorAddingTitle() const

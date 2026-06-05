@@ -12,7 +12,8 @@ NodeSelectorProxyModel::NodeSelectorProxyModel(QObject* parent):
     mSortColumn(NodeSelectorModel::Column::NODE),
     mOrder(Qt::AscendingOrder),
     mExpandMapped(true),
-    mForceInvalidate(false)
+    mForceInvalidate(false),
+    mPendingSortIsLevelLoad(false)
 {
     mCollator.setCaseSensitivity(Qt::CaseInsensitive);
     mCollator.setNumericMode(true);
@@ -63,6 +64,19 @@ void NodeSelectorProxyModel::sort(int column, Qt::SortOrder order)
             });
         mFilterWatcher.setFuture(filtered);
     }
+}
+
+Qt::ItemFlags NodeSelectorProxyModel::flags(const QModelIndex& index) const
+{
+    auto flags = Qt::ItemFlags();
+    if (sourceModel())
+    {
+        flags = sourceModel()->flags(mapToSource(index));
+    }
+
+    applyProxyModelFlags(flags, index);
+
+    return flags;
 }
 
 mega::MegaHandle NodeSelectorProxyModel::getHandle(const QModelIndex& index)
@@ -189,7 +203,8 @@ void NodeSelectorProxyModel::setSourceModel(QAbstractItemModel* sourceModel)
         connect(nodeSelectorModel,
                 &NodeSelectorModel::levelsAdded,
                 this,
-                &NodeSelectorProxyModel::invalidateModel);
+                &NodeSelectorProxyModel::invalidateModel,
+                Qt::UniqueConnection);
         nodeSelectorModel->firstLoad();
     }
 }
@@ -302,6 +317,8 @@ void NodeSelectorProxyModel::invalidateModel(
     const QList<QPair<mega::MegaHandle, QModelIndex>>& parents,
     bool force)
 {
+    mPendingSortIsLevelLoad = true;
+
     foreach(auto parent, parents)
     {
         mItemsToMap.append(parent.second);
@@ -312,6 +329,11 @@ void NodeSelectorProxyModel::invalidateModel(
 
 void NodeSelectorProxyModel::onModelSortedFiltered()
 {
+    // Consume the flag atomically so a re-entry while emitting signals
+    // cannot leave it stuck in an inconsistent state.
+    const bool sortFromLevelLoad = mPendingSortIsLevelLoad;
+    mPendingSortIsLevelLoad = false;
+
     if (mForceInvalidate)
     {
         if (auto nodeSelectorModel = dynamic_cast<NodeSelectorModel*>(sourceModel()))
@@ -335,15 +357,58 @@ void NodeSelectorProxyModel::onModelSortedFiltered()
         mExpandMapped = true;
     }
 
-    emit modelSorted();
+    // If the sort was caused by a new level loaded
+    if (sortFromLevelLoad)
+    {
+        emit levelLoaded();
+    }
+    // If the sort was caused by a filter or a column sort
+    else
+    {
+        emit modelSorted();
+    }
 
     getMegaModel()->sendBlockUiSignal(false);
     mItemsToMap.clear();
 }
 
-NodeSelectorProxyModelSearch::NodeSelectorProxyModelSearch(QObject* parent):
+NodeSelectorProxyModelStream::NodeSelectorProxyModelStream(QObject* parent):
+    NodeSelectorProxyModel(parent)
+{}
+
+void NodeSelectorProxyModelStream::applyProxyModelFlags(Qt::ItemFlags& flags,
+                                                        const QModelIndex& index) const
+{
+    NodeSelectorProxyModel::applyProxyModelFlags(flags, index);
+
+    if (index.isValid() && !index.data(toInt(NodeSelectorModelRoles::IS_FILE_ROLE)).toBool())
+    {
+        flags &= ~(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    }
+}
+
+NodeSelectorProxyModelSync::NodeSelectorProxyModelSync(QObject* parent):
+    NodeSelectorProxyModel(parent)
+{}
+
+void NodeSelectorProxyModelSync::applyProxyModelFlags(Qt::ItemFlags& flags,
+                                                      const QModelIndex& index) const
+{
+    NodeSelectorProxyModel::applyProxyModelFlags(flags, index);
+
+    if (index.isValid() &&
+        !index.data(toInt(NodeSelectorModelRoles::IS_SYNCABLE_FOLDER_ROLE)).toBool())
+    {
+        flags &= ~(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    }
+}
+
+NodeSelectorProxyModelSearch::NodeSelectorProxyModelSearch(
+    std::shared_ptr<NodeSelectorProxyModel> mainProxyModel,
+    QObject* parent):
     NodeSelectorProxyModel(parent),
-    mMode(NodeSelectorModelItemSearch::Type::NONE)
+    mMode(NodeSelectorModelItemSearch::Type::NONE),
+    mMainProxyModel(mainProxyModel)
 {}
 
 void NodeSelectorProxyModelSearch::setMode(NodeSelectorModelItemSearch::Types mode,
@@ -374,6 +439,18 @@ bool NodeSelectorProxyModelSearch::canBeDeleted() const
         return false;
     }
     return NodeSelectorProxyModel::canBeDeleted();
+}
+
+Qt::ItemFlags NodeSelectorProxyModelSearch::flags(const QModelIndex& index) const
+{
+    auto flags = NodeSelectorProxyModel::flags(index);
+
+    if (mMainProxyModel)
+    {
+        mMainProxyModel->applyProxyModelFlags(flags, index);
+    }
+
+    return flags;
 }
 
 bool NodeSelectorProxyModelSearch::filterAcceptsRow(int sourceRow,

@@ -21,11 +21,6 @@ ProxySettings::ProxySettings(MegaApplication* app, QWidget* parent):
 
     mUi->eProxyPort->setValidator(new QIntValidator(0, std::numeric_limits<uint16_t>::max(), this));
 
-    mProxyAuto = new QRadioButton(this);
-    mProxyAuto->setText(tr("Auto-detect"));
-    mProxyAuto->setCursor(Qt::PointingHandCursor);
-    mUi->verticalLayout->addWidget(mProxyAuto);
-
     mUi->wErrorBanner->setType(BannerWidget::Type::BANNER_ERROR);
 
     initialize();
@@ -34,7 +29,17 @@ ProxySettings::ProxySettings(MegaApplication* app, QWidget* parent):
             this, &ProxySettings::onProxyTestFinished);
 
     connect(mUi->rProxyManual, &QRadioButton::clicked, this, [this]{setManualMode(true);});
-    connect(mUi->cProxyRequiresPassword, &QCheckBox::toggled, this, [this]{setManualMode(true);});
+    connect(mUi->cProxyRequiresPassword,
+            &QCheckBox::toggled,
+            this,
+            [this](bool checked)
+            {
+                setManualMode(true);
+                if (checked)
+                {
+                    mUi->eProxyUsername->setFocus();
+                }
+            });
     connect(mUi->rNoProxy,
             &QRadioButton::clicked,
             this,
@@ -42,7 +47,7 @@ ProxySettings::ProxySettings(MegaApplication* app, QWidget* parent):
             {
                 setManualMode(false);
             });
-    connect(mProxyAuto,
+    connect(mUi->rProxyAuto,
             &QRadioButton::clicked,
             this,
             [this]
@@ -77,7 +82,7 @@ ProxySettings::~ProxySettings()
 void ProxySettings::initialize()
 {
     mUi->rNoProxy->setChecked(mPreferences->proxyType() == Preferences::PROXY_TYPE_NONE);
-    mProxyAuto->setChecked(mPreferences->proxyType() == Preferences::PROXY_TYPE_AUTO);
+    mUi->rProxyAuto->setChecked(mPreferences->proxyType() == Preferences::PROXY_TYPE_AUTO);
     mUi->rProxyManual->setChecked(mPreferences->proxyType() == Preferences::PROXY_TYPE_CUSTOM);
     mUi->cProxyType->setCurrentIndex(mPreferences->proxyProtocol());
     mUi->eProxyServer->setText(mPreferences->proxyServer());
@@ -93,12 +98,14 @@ void ProxySettings::initialize()
 void ProxySettings::setManualMode(bool enabled)
 {
     mUi->cProxyType->setEnabled(enabled);
+    mUi->lProxyType->setEnabled(enabled);
     mUi->eProxyServer->setEnabled(enabled);
+    mUi->lProxyServer->setEnabled(enabled);
     mUi->eProxyPort->setEnabled(enabled);
+    mUi->lProxyPortSeparator->setEnabled(enabled);
     mUi->cProxyRequiresPassword->setEnabled(enabled);
     mUi->wErrorBanner->setTitle(QString());
     mUi->wErrorBanner->setVisible(false);
-
     if (mUi->cProxyRequiresPassword->isEnabled())
     {
         mUi->eProxyUsername->setEnabled(mUi->cProxyRequiresPassword->isChecked());
@@ -109,6 +116,8 @@ void ProxySettings::setManualMode(bool enabled)
         mUi->eProxyUsername->setEnabled(false);
         mUi->eProxyPassword->setEnabled(false);
     }
+    mUi->lProxyUsername->setEnabled(mUi->eProxyUsername->isEnabled());
+    mUi->lProxyPassword->setEnabled(mUi->eProxyPassword->isEnabled());
 }
 
 void ProxySettings::onProxyTestFinished(bool success)
@@ -121,7 +130,7 @@ void ProxySettings::onProxyTestFinished(bool success)
         {
             mPreferences->setProxyType(Preferences::PROXY_TYPE_NONE);
         }
-        else if (mProxyAuto->isChecked())
+        else if (mUi->rProxyAuto->isChecked())
         {
             mPreferences->setProxyType(Preferences::PROXY_TYPE_AUTO);
         }
@@ -183,7 +192,7 @@ void ProxySettings::on_bUpdate_clicked()
             proxy.setPassword(mUi->eProxyPassword->text());
         }
     }
-    else if (mProxyAuto->isChecked())
+    else if (mUi->rProxyAuto->isChecked())
     {
         std::unique_ptr<MegaProxy> proxySettings(mApp->getMegaApi()->getAutoProxySettings());
         if (proxySettings->getProxyType() == MegaProxy::PROXY_CUSTOM)

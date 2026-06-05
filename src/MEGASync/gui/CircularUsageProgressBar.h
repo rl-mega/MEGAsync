@@ -47,7 +47,8 @@ public:
                    setLightFullProgressBarColor NOTIFY colorChanged)
     Q_PROPERTY(QString darkFullProgressBarColors READ getDarkFullProgressBarColor WRITE
                    setDarkFullProgressBarColor NOTIFY colorChanged)
-    Q_PROPERTY(QFont::Weight fontWeigth WRITE setFontWeigth NOTIFY fontWeigthChanged)
+    Q_PROPERTY(
+        QFont::Weight fontWeigth READ getFontWeigth WRITE setFontWeigth NOTIFY fontWeigthChanged)
 
 signals:
     void colorChanged();
@@ -132,6 +133,11 @@ private:
     }
 
     void setFontWeigth(QFont::Weight weight);
+
+    QFont::Weight getFontWeigth() const
+    {
+        return mFontWeight.value_or(QFont::Normal);
+    }
 
     int     mPbValue;
     double  mPenWidth;

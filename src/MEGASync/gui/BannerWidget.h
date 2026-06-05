@@ -41,6 +41,7 @@ protected:
 
 private:
     void checkLayoutOrientation();
+    void updateTitleWeight();
 
     Ui::BannerWidget* mUi;
     Type mType;

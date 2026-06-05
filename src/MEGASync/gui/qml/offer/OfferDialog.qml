@@ -356,6 +356,8 @@ QmlDialog {
                             }
 
                             Row {
+                                id: countdownTimeRow
+
                                 spacing: 16
                                 layoutDirection: Qt.application.layoutDirection
                                 Repeater {
@@ -371,26 +373,46 @@ QmlDialog {
                     }
 
                     Buttons.PrimaryButton {
-                        id: dealButton
+                        id: dealButtonMeasure
 
-                        anchors.verticalCenter: contentRow.verticalCenter
-                        anchors.verticalCenterOffset:11
-                        anchors.right: parent.right
-                        anchors.rightMargin: -4
-
+                        visible: false
                         text: OfferStrings.offerButton
                         sizes: Buttons.LargeSizes{}
-                        colors.background:  isDisabled ? ColorTheme.buttonDisabled : ColorTheme.buttonBrand
-                        colors.pressed:     isDisabled ? ColorTheme.buttonDisabled : ColorTheme.buttonBrandPressed
-                        colors.hover:       isDisabled ? ColorTheme.buttonDisabled : ColorTheme.buttonBrandHover
+                    }
 
-                        colors.text:        isDisabled ? ColorTheme.textDisabled : ColorTheme.textOnColor
-                        colors.textPressed: isDisabled ? ColorTheme.textDisabled : ColorTheme.textOnColor
-                        colors.textHover:   isDisabled ? ColorTheme.textDisabled : ColorTheme.textOnColor
+                    Item {
+                        id: dealButtonContainer
 
-                        onClicked: {
-                            offerComponentAccess.onGrabDeal();
-                            accept();
+                        readonly property real availableWidth: Math.max(0,
+                                                                       parent.width - countdownTimeRow.implicitWidth - 12)
+
+                        anchors.verticalCenter: contentRow.verticalCenter
+                        anchors.verticalCenterOffset: 11
+                        anchors.right: parent.right
+                        anchors.rightMargin: -4
+                        width: Math.max(0, Math.min(dealButtonMeasure.implicitWidth, availableWidth))
+                        height: dealButton.height
+
+                        Buttons.PrimaryButton {
+                            id: dealButton
+
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+
+                            text: OfferStrings.offerButton
+                            sizes: Buttons.LargeSizes { fillWidth: true }
+                            colors.background:  isDisabled ? ColorTheme.buttonDisabled : ColorTheme.buttonBrand
+                            colors.pressed:     isDisabled ? ColorTheme.buttonDisabled : ColorTheme.buttonBrandPressed
+                            colors.hover:       isDisabled ? ColorTheme.buttonDisabled : ColorTheme.buttonBrandHover
+
+                            colors.text:        isDisabled ? ColorTheme.textDisabled : ColorTheme.textOnColor
+                            colors.textPressed: isDisabled ? ColorTheme.textDisabled : ColorTheme.textOnColor
+                            colors.textHover:   isDisabled ? ColorTheme.textDisabled : ColorTheme.textOnColor
+
+                            onClicked: {
+                                offerComponentAccess.onGrabDeal();
+                                accept();
+                            }
                         }
                     }
 

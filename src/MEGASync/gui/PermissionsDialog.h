@@ -25,6 +25,8 @@ private:
 
 private slots:
     void permissionsChanged();
+    void on_lFolderPermissions_textEdited(const QString& text);
+    void on_lFilePermissions_textEdited(const QString& text);
     void on_bUpdate_clicked();
     void on_bCancel_clicked();
 };

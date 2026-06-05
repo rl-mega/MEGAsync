@@ -57,7 +57,8 @@ QString SyncController::getErrorString(int errorCode, int syncErrorCode) const
     QString errorMsg;
     if (syncErrorCode != MegaSync::NO_SYNC_ERROR)
     {
-        errorMsg = QCoreApplication::translate("MegaSyncError", MegaSync::getMegaSyncErrorCode(syncErrorCode));
+        std::unique_ptr<const char[]> syncErrorText(MegaSync::getMegaSyncErrorCode(syncErrorCode));
+        errorMsg = QCoreApplication::translate("MegaSyncError", syncErrorText.get());
     }
     else if (errorCode != MegaError::API_OK)
     {
@@ -272,13 +273,15 @@ void SyncController::setSyncToRun(std::shared_ptr<SyncSettings> syncSetting)
 
             if (syncSetting && syncErrorCode != MegaSync::NO_SYNC_ERROR)
             {
+                std::unique_ptr<const char[]> syncErrorText(
+                    MegaSync::getMegaSyncErrorCode(syncErrorCode));
                 QString errorMsg =
                     QString::fromUtf8("Error enabling sync (%1) \"%2\" for \"%3\" to \"%4\": %5")
                         .arg(getSyncTypeString(syncSetting->getType()),
                              syncSetting->name(),
                              syncSetting->getLocalFolder(),
                              syncSetting->getMegaFolder(),
-                             QString::fromUtf8(MegaSync::getMegaSyncErrorCode(syncErrorCode)));
+                             QString::fromUtf8(syncErrorText.get()));
                 MegaApi::log(MegaApi::LOG_LEVEL_ERROR, errorMsg.toUtf8().constData());
 
                 emit signalSyncOperationError(syncSetting);
@@ -398,12 +401,16 @@ void SyncController::setSyncToDisabled(std::shared_ptr<SyncSettings> syncSetting
 
                 if (syncErrorCode != MegaSync::NO_SYNC_ERROR)
                 {
-                    QString logMsg = QString::fromUtf8("Error disabling sync (%1) \"%2\" for \"%3\" to \"%4\": %5").arg(
-                        getSyncTypeString(syncSetting->getType()),
-                        syncSetting->name(),
-                        syncSetting->getLocalFolder(),
-                        syncSetting->getMegaFolder(),
-                        QString::fromUtf8(MegaSync::getMegaSyncErrorCode(syncErrorCode)));
+                    std::unique_ptr<const char[]> syncErrorText(
+                        MegaSync::getMegaSyncErrorCode(syncErrorCode));
+                    QString logMsg =
+                        QString::fromUtf8(
+                            "Error disabling sync (%1) \"%2\" for \"%3\" to \"%4\": %5")
+                            .arg(getSyncTypeString(syncSetting->getType()),
+                                 syncSetting->name(),
+                                 syncSetting->getLocalFolder(),
+                                 syncSetting->getMegaFolder(),
+                                 QString::fromUtf8(syncErrorText.get()));
                     MegaApi::log(MegaApi::LOG_LEVEL_ERROR, logMsg.toUtf8().constData());
                 }
                 else if (!syncSetting || errorCode != mega::API_OK)
@@ -458,6 +465,8 @@ void SyncController::resetSync(std::shared_ptr<SyncSettings> syncSetting,
 
                 if (syncSetting && syncErrorCode != MegaSync::NO_SYNC_ERROR)
                 {
+                    std::unique_ptr<const char[]> syncErrorText(
+                        MegaSync::getMegaSyncErrorCode(syncErrorCode));
                     QString logMsg =
                         QString::fromUtf8(
                             "Error resetting sync (%1) \"%2\" for \"%3\" to \"%4\": %5")
@@ -465,7 +474,7 @@ void SyncController::resetSync(std::shared_ptr<SyncSettings> syncSetting,
                                  syncSetting->name(),
                                  syncSetting->getLocalFolder(),
                                  syncSetting->getMegaFolder(),
-                                 QString::fromUtf8(MegaSync::getMegaSyncErrorCode(syncErrorCode)));
+                                 QString::fromUtf8(syncErrorText.get()));
                     MegaApi::log(MegaApi::LOG_LEVEL_ERROR, logMsg.toUtf8().constData());
                 }
                 else if (!syncSetting || errorCode != mega::API_OK)

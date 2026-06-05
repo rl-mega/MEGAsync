@@ -6,6 +6,7 @@
 #include "BlockingStageProgressController.h"
 #include "DesktopNotifications.h"
 #include "DownloadFromMegaDialog.h"
+#include "DuplicatedNodeDialog.h"
 #include "DuplicatedNodeInfo.h"
 #include "gui/TrayIconManager.h"
 #include "HTTPServer.h"
@@ -61,7 +62,6 @@ Q_DECLARE_METATYPE(QQueue<QString>)
 
 class LogoutController;
 class TransferMetadata;
-class DuplicatedNodeDialog;
 class LoginController;
 class AccountStatusController;
 class StatsEventHandler;
@@ -648,6 +648,9 @@ private:
     void removeSyncsAndBackupsMenus();
 
     void initStyleAndResources();
+
+    void addFont(const QString& fontPath);
+    void addFonts();
 
 private slots:
     void onFolderTransferUpdate(FolderTransferUpdateEvent event);

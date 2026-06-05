@@ -4,6 +4,7 @@
 #include "HighDpiResize.h"
 #include "megaapi.h"
 #include "Platform.h"
+#include "QmlDialogWrapperUtilities.h"
 #include "TokenParserWidgetManager.h"
 
 #include <QApplication>
@@ -12,7 +13,7 @@
 #include <QMessageBox>
 #include <QPointer>
 #include <QQueue>
-#include <QScreen>
+#include <QRect>
 #include <QWindow>
 
 #include <functional>
@@ -63,6 +64,7 @@ private:
         virtual bool isVisible() = 0;
         virtual bool isActive() = 0;
         virtual bool isParent(QObject* parent) = 0;
+        virtual QRect frameGeometry() const = 0;
         virtual void applyCurrentTheme() = 0;
 
         bool ignoreCloseAllAction() const {return mIgnoreCloseAllAction;}
@@ -137,6 +139,11 @@ private:
             return mDialog->parent() == parent;
         }
 
+        QRect frameGeometry() const override
+        {
+            return mDialog->frameGeometry();
+        }
+
         bool operator==(const DialogInfo &info)
         {
             return (info.mDialog == mDialog);
@@ -153,12 +160,22 @@ private:
 
     struct GeometryInfo
     {
-        bool maximized;
+        bool maximized = false;
         QRect geometry;
         bool isEmpty() const {return geometry.isEmpty();}
     };
 
 public:
+    static QPoint initialDialogPosition(const QSize& dialogSize)
+    {
+        return Platform::getInstance()->initialDialogPosition(dialogSize);
+    }
+
+    static QPoint initialDialogPosition(const QSize& dialogSize, const QRect& parentGeometry)
+    {
+        return Platform::getInstance()->initialDialogPosition(dialogSize, parentGeometry);
+    }
+
     template <class DialogType>
     static std::shared_ptr<DialogInfo<DialogType>> findDialog()
     {
@@ -379,7 +396,7 @@ public:
 
             if(dialog->parent())
             {
-                qApp->setActiveWindow(dialog->parentWidget());
+                dialog->parentWidget()->activateWindow();
             }
 
             dialog->deleteLater();
@@ -467,22 +484,27 @@ private:
             QString classType = className<DialogType>();
             auto info = findSiblingDialogInfo<DialogType>(classType);
 
+            bool isQML(QmlDialogWrapperUtilities::isQML(dialog));
+
+            bool ignoreGeometry(isQML && QmlDialogWrapperUtilities::isShowWhenCreated(dialog));
+            QRect geometry;
+            QByteArray siblingGeometryState;
+
             if(info)
             {
                 if(removeSiblings && info->getDialog() != dialog)
                 {
-                    QRect siblingGeometry = info->getDialog()->geometry();
+                    siblingGeometryState = info->getDialog()->saveGeometry();
                     dialog->setWindowFlags(info->getDialog()->windowFlags());
                     removeDialog(info->getDialog());
                     info->setDialog(dialog);
                     info->setDialogClass(classType);
 
                     initDialog(dialog);
-
-                    if (siblingGeometry.isValid())
-                    {
-                        dialog->setGeometry(siblingGeometry);
-                    }
+                }
+                else if (info->getDialog() == dialog)
+                {
+                    ignoreGeometry = true;
                 }
             }
             else
@@ -511,7 +533,10 @@ private:
                 return nullptr;
             }
 
-            TokenParserWidgetManager::instance()->applyCurrentTheme(dialog);
+            if (!isQML)
+            {
+                TokenParserWidgetManager::instance()->applyCurrentTheme(dialog);
+            }
 
             // Use to reload the widget stylesheet. Without this line, the new stylesheet is not
             // correctly applied.
@@ -522,51 +547,73 @@ private:
                 dialog->setWindowModality(Qt::WindowModal);
             }
 
-            auto geoInfo = mSavedGeometries.value(classType, GeometryInfo());
-            if(!geoInfo.isEmpty())
+            // For QML dialog wrappers, the setParent() above can recreate the
+            // native handle and drop the inner QQuickWindow's transient parent
+            // binding. Re-bind it via the public slot.
+            if (isQML && dialog && dialog->parent())
             {
-                //First time this is used
-                if(geoInfo.maximized)
-                {
-                    auto dialogGeo = dialog->geometry();
-                    dialogGeo.moveCenter(geoInfo.geometry.center());
-                    dialog->move(dialogGeo.topLeft());
-                    dialog->showMaximized();
-                }
-                else
-                {
-                    dialog->setGeometry(geoInfo.geometry);
-                    dialog->show();
-                }
+                QMetaObject::invokeMethod(dialog, "attachQmlToParentWindow", Qt::DirectConnection);
+            }
+
+            if (ignoreGeometry)
+            {
+                dialog->show();
             }
             else
             {
-                // If we don´t have parent, the dialog is not attached to any windows, so we should
-                // show it in a conveniente place
-                if (!dialog->parent())
+                QRect parentGeo;
+                // QML dialogs with parent are centered on its parent
+                if (isQML)
                 {
-                    QPoint pos;
-                    QPoint mousePos = QCursor::pos();
-                    QScreen* screen = QGuiApplication::screenAt(mousePos);
-
-                    if (screen)
-                    {
-                        QRect screenGeometry = screen->geometry();
-
-                        int dialogWidth = dialog->geometry().width();
-                        int dialogHeight = dialog->geometry().height();
-                        pos.setX(screenGeometry.x() + (screenGeometry.width() - dialogWidth) / 2);
-                        pos.setY(screenGeometry.y() + (screenGeometry.height() - dialogHeight) / 2);
-                    }
-                    else
-                    {
-                        pos = mousePos;
-                    }
-
-                    dialog->move(pos);
+                    parentGeo = QmlDialogWrapperUtilities::getParentGeometry(dialog);
                 }
 
-                dialog->show();
+                if (parentGeo.isValid())
+                {
+                    dialog->move(initialDialogPosition(dialog->geometry().size(), parentGeo));
+                    dialog->show();
+                }
+                else
+                {
+                    auto savedGeo = mSavedGeometries.value(classType, GeometryInfo());
+                    if (!savedGeo.isEmpty())
+                    {
+                        geometry = savedGeo.geometry;
+                    }
+
+                    if (!dialog->isVisible())
+                    {
+                        if (!siblingGeometryState.isEmpty())
+                        {
+                            // Reopening over a still-open sibling: restoreGeometry
+                            // round-trips the frame position exactly on every platform,
+                            // avoiding the upward drift that setGeometry() causes on macOS.
+                            dialog->restoreGeometry(siblingGeometryState);
+                            dialog->show();
+                        }
+                        else if (geometry.isValid())
+                        {
+                            // First time this is used
+                            if (savedGeo.maximized)
+                            {
+                                dialog->showMaximized();
+                            }
+                            else
+                            {
+                                dialog->setGeometry(geometry);
+                                dialog->show();
+                            }
+                        }
+                        else
+                        {
+                            auto pos(initialDialogPosition(dialog->geometry().size()));
+                            auto size(dialog->geometry().size());
+                            dialog->setGeometry(
+                                QRect(pos.x(), pos.y(), size.width(), size.height()));
+                            dialog->show();
+                        }
+                    }
+                }
             }
 
             if (dialog->parent())

@@ -80,6 +80,7 @@ public:
     static QUrl getAccountNotificationsUrl();
     static QUrl getIncomingPendingContactUrl();
     static QUrl getSyncDebrisHelpLink();
+    static QUrl getDisputeTakenDownLink();
 
     QUrl getProUrl() const;
     QUrl getProFlexiUrl() const;

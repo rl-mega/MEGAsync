@@ -11,7 +11,7 @@ StatsEventHandler::StatsEventHandler(mega::MegaApi* megaApi, QObject* parent)
 {
     if(megaApi)
     {
-        mViewID = mMegaApi->generateViewId();
+        mViewID.reset(mMegaApi->generateViewId());
     }
 }
 

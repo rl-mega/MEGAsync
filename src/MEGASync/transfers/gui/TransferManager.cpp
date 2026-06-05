@@ -552,11 +552,9 @@ void TransferManager::refreshStateStats()
         {
             mUi->bScanning->setState(StatusInfo::TRANSFERS_STATES::STATE_INDEXING);
         }
-        else if (!MegaSyncApp->getStalledIssuesModel()->isEmpty())
+        else if (failedNumber != 0 || !MegaSyncApp->getStalledIssuesModel()->isEmpty())
         {
             mUi->bScanning->setState(StatusInfo::TRANSFERS_STATES::STATE_FAILED);
-            // Don´t show any message
-            leftFooterWidget = nullptr;
         }
         else
         {
@@ -639,6 +637,9 @@ void TransferManager::onTransfersDataUpdated()
 void TransferManager::onStorageStateChanged(int storageState)
 {
     mStorageQuotaState = storageState;
+
+    mUi->bScanning->setOverQuotaState(storageState == MegaApi::STORAGE_STATE_RED ||
+                                      storageState == MegaApi::STORAGE_STATE_PAYWALL);
 
     mUi->pStatusHeaderInfo->setStorageQuotaState(storageState);
     mUi->pStatusHeaderInfo->updateStorageBannerText();

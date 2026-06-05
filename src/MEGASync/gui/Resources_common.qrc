@@ -80,27 +80,6 @@
         <file alias="images/Shield_big.png">images/Shield_big.png</file>
         <file alias="images/Shield_big@2x.png">images/Shield_big@2x.png</file>
         <file alias="images/Shield_big@3x.png">images/Shield_big@3x.png</file>
-        <file alias="images/Small_Business.png">images/Small_Business.png</file>
-        <file alias="images/Small_Business@2x.png">images/Small_Business@2x.png</file>
-        <file alias="images/Small_Business@3x.png">images/Small_Business@3x.png</file>
-        <file alias="images/Small_Free.png">images/Small_Free.png</file>
-        <file alias="images/Small_Free@2x.png">images/Small_Free@2x.png</file>
-        <file alias="images/Small_Free@3x.png">images/Small_Free@3x.png</file>
-        <file alias="images/Small_Lite.png">images/Small_Lite.png</file>
-        <file alias="images/Small_Lite@2x.png">images/Small_Lite@2x.png</file>
-        <file alias="images/Small_Lite@3x.png">images/Small_Lite@3x.png</file>
-        <file alias="images/Small_Pro_Flexi.png">images/Small_Pro_Flexi.png</file>
-        <file alias="images/Small_Pro_Flexi@2x.png">images/Small_Pro_Flexi@2x.png</file>
-        <file alias="images/Small_Pro_Flexi@3x.png">images/Small_Pro_Flexi@3x.png</file>
-        <file alias="images/Small_Pro_I.png">images/Small_Pro_I.png</file>
-        <file alias="images/Small_Pro_I@2x.png">images/Small_Pro_I@2x.png</file>
-        <file alias="images/Small_Pro_I@3x.png">images/Small_Pro_I@3x.png</file>
-        <file alias="images/Small_Pro_II.png">images/Small_Pro_II.png</file>
-        <file alias="images/Small_Pro_II@2x.png">images/Small_Pro_II@2x.png</file>
-        <file alias="images/Small_Pro_II@3x.png">images/Small_Pro_II@3x.png</file>
-        <file alias="images/Small_Pro_III.png">images/Small_Pro_III.png</file>
-        <file alias="images/Small_Pro_III@2x.png">images/Small_Pro_III@2x.png</file>
-        <file alias="images/Small_Pro_III@3x.png">images/Small_Pro_III@3x.png</file>
         <file alias="images/StalledIssues/ic-open-outside.png">images/StalledIssues/ic-open-outside.png</file>
         <file alias="images/StalledIssues/ic-open-outside@2x.png">images/StalledIssues/ic-open-outside@2x.png</file>
         <file alias="images/StalledIssues/ic-open-outside@3x.png">images/StalledIssues/ic-open-outside@3x.png</file>
@@ -323,9 +302,9 @@
         <file alias="images/icons/folder/folder-mono_24.png">images/icons/folder/folder-mono_24.png</file>
         <file alias="images/icons/folder/folder-mono_24@2x.png">images/icons/folder/folder-mono_24@2x.png</file>
         <file alias="images/icons/folder/folder-mono_24@3x.png">images/icons/folder/folder-mono_24@3x.png</file>
-        <file alias="images/icons/folder/synced-folder.png">images/icons/folder/synced-folder.png</file>
-        <file alias="images/icons/folder/synced-folder@2x.png">images/icons/folder/synced-folder@2x.png</file>
-        <file alias="images/icons/folder/synced-folder@3x.png">images/icons/folder/synced-folder@3x.png</file>
+        <file alias="synced-folder">images/icons/folder/synced-folder.png</file>
+        <file alias="synced-folder@2x">images/icons/folder/synced-folder@2x.png</file>
+        <file alias="synced-folder@3x">images/icons/folder/synced-folder@3x.png</file>
         <file alias="images/icons/ico_add_sync.png">images/icons/ico_add_sync.png</file>
         <file alias="images/icons/ico_add_sync@2x.png">images/icons/ico_add_sync@2x.png</file>
         <file alias="images/icons/ico_add_sync@3x.png">images/icons/ico_add_sync@3x.png</file>
@@ -1649,5 +1628,12 @@
         <file alias="reddish/tray_icon_logging_frame_3.svg">images/system_tray/reddish/tray_icon_logging_frame_3.svg</file>
         <file alias="reddish/tray_icon_logging_frame_2.svg">images/system_tray/reddish/tray_icon_logging_frame_2.svg</file>
         <file alias="reddish/tray_icon_logging_frame_1.svg">images/system_tray/reddish/tray_icon_logging_frame_1.svg</file>
+        <file alias="folder-sync_small_thin_outline">images/themed/tokenizable/folder-sync_small_thin_outline.svg</file>
+        <file alias="images/mega_info_background.png">images/mega_info_background.png</file>
+        <file alias="images/mega_info_background@2x.png">images/mega_info_background@2x.png</file>
+        <file alias="images/mega_info_background@3x.png">images/mega_info_background@3x.png</file>
+        <file alias="images/mega_rec_icon.svg">images/mega_rec_icon.svg</file>
+        <file alias="images/mega_icon.svg">images/mega_icon.svg</file>
+        <file alias="message-alert_small_thin_outline">images/themed/tokenizable/message-alert_small_thin_outline.svg</file>
     </qresource>
 </RCC>

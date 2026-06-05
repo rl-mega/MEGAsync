@@ -68,7 +68,7 @@ void UnknownDownloadIssue::fillIssue(const mega::MegaSyncStall* stall)
     if (mTrack)
     {
         connectTrack();
-        setIsSolved(SolveType::BEING_SOLVED);
+        setIsSolved(ResolutionState::BEING_SOLVED);
     }
 }
 
@@ -79,7 +79,7 @@ bool UnknownDownloadIssue::canBeRetried() const
     return isBeingSolvedByDownload(info);
 }
 
-bool UnknownDownloadIssue::checkForExternalChanges()
+bool UnknownDownloadIssue::checkForExternalChanges(QObject*)
 {
     return !canBeRetried();
 }
@@ -117,7 +117,7 @@ void UnknownDownloadIssue::onTrackedTransferStarted(TransferItem transfer)
 {
     if (consultCloudData()->getPathHandle() == transfer.getTransferData()->mNodeHandle)
     {
-        setIsSolved(SolveType::BEING_SOLVED);
+        setIsSolved(ResolutionState::BEING_SOLVED);
     }
 }
 
@@ -133,7 +133,7 @@ void UnknownDownloadIssue::onTrackedTransferFinished(TransferItem transfer)
 
 void UnknownDownloadIssue::onReportStarted()
 {
-    setCustomMessage(tr("Reporting issue"), SolveType::BEING_SOLVED);
+    setCustomMessage(tr("Reporting issue"), ResolutionState::BEING_SOLVED);
     resetUIUpdated();
 }
 
@@ -141,7 +141,7 @@ void UnknownDownloadIssue::onReportFinished()
 {
     // Even if the report is submitted correctly, the issue is not fixed
     // But the message will use the SOLVED style
-    setCustomMessage(tr("Reporting successful"), SolveType::SOLVED);
+    setCustomMessage(tr("Reporting successful"), ResolutionState::SOLVED);
     mReportController.reset();
     resetUIUpdated();
 }
@@ -150,7 +150,7 @@ void UnknownDownloadIssue::onReportFailed()
 {
     // Even if the report submit failed, the issue is not failed
     // But the message will use the FAILED style
-    setCustomMessage(tr("Reporting failed"), SolveType::FAILED);
+    setCustomMessage(tr("Reporting failed"), ResolutionState::FAILED);
     mReportController.reset();
     resetUIUpdated();
 }

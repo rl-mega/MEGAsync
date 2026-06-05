@@ -11,7 +11,7 @@ bool FolderMatchedAgainstFileIssue::solveIssue() {
     mResult = StalledIssuesUtilities::KeepBothSides(getCloudData()->getNode(), getLocalData()->getNativeFilePath());
     if(mResult.error != nullptr)
     {
-        setIsSolved(SolveType::FAILED);
+        setIsSolved(ResolutionState::FAILED);
         return false;
     }
     else

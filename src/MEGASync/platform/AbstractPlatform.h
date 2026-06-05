@@ -7,6 +7,9 @@
 
 #include <QDialog>
 #include <QMenu>
+#include <QPoint>
+#include <QRect>
+#include <QSize>
 #include <QString>
 #include <QWindow>
 
@@ -48,6 +51,9 @@ public:
     virtual bool startOnStartup(bool value) = 0;
     virtual bool isStartOnStartupActive() = 0;
     virtual bool isTilingWindowManager();
+    virtual QPoint initialDialogPosition(const QSize& dialogSize) const;
+    virtual QPoint initialDialogPosition(const QSize& dialogSize,
+                                         const QRect& parentGeometry) const;
     virtual bool showInFolder(QString pathIn) = 0;
     virtual void startShellDispatcher(MegaApplication *receiver) = 0;
     virtual void stopShellDispatcher() = 0;

@@ -1,5 +1,7 @@
 #include "QmlDialogWrapper.h"
 
+#include "QmlDialogWrapperUtilities.h"
+
 #include <QQmlProperty>
 #include <QWindow>
 
@@ -52,7 +54,10 @@ QmlDialogWrapperBase::QmlDialogWrapperBase(QWidget* parent):
 
 QmlDialogWrapperBase::~QmlDialogWrapperBase()
 {
-    mWindow->deleteLater();
+    if (mWindow)
+    {
+        mWindow->deleteLater();
+    }
 }
 
 Qt::WindowModality QmlDialogWrapperBase::windowModality()
@@ -265,6 +270,40 @@ void QmlDialogWrapperBase::reject()
     close();
 }
 
+void QmlDialogWrapperBase::attachQmlToParentWindow()
+{
+    if (!mWindow)
+    {
+        return;
+    }
+
+    QWidget* pw = this->parentWidget();
+    if (!pw)
+    {
+        return;
+    }
+
+    QWindow* parentWindow = nullptr;
+
+    // QML->QML: parent is another QmlDialogWrapperBase whose visible window
+    // is its inner QQuickWindow. Avoid creating a native window for the
+    // never-shown wrapper QWidget (that creates a stray empty frame).
+    if (auto* qmlBase = qobject_cast<QmlDialogWrapperBase*>(pw))
+    {
+        parentWindow = qmlBase->windowHandle();
+    }
+    else if (QWidget* topLevel = pw->window())
+    {
+        topLevel->createWinId();
+        parentWindow = topLevel->windowHandle();
+    }
+
+    if (parentWindow)
+    {
+        mWindow->attachToParentWindow(parentWindow);
+    }
+}
+
 void QmlDialogWrapperBase::onWindowFinished()
 {
     if (mResult == QDialog::Accepted)
@@ -276,4 +315,9 @@ void QmlDialogWrapperBase::onWindowFinished()
         emit rejected();
     }
     emit finished(mResult);
+}
+
+QPointer<QmlDialog> QmlDialogWrapperBase::getQmlWindow() const
+{
+    return mWindow;
 }

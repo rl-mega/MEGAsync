@@ -170,6 +170,7 @@ public:
         CONTACT_ESTABLISHED,
         INFO_MESSAGES,
         COMPLETED_UPLOADS_DOWNLOADS,
+        SYNC_ISSUES,
         LAST
     };
     Q_ENUM(NotificationsTypes)
@@ -606,6 +607,7 @@ protected:
     QRecursiveMutex mutex;
     void login(QString account);
     void logout();
+    bool syncSettingsLocked(const char* reason);
 
     // sync related:
     void readFolders(); //read sync stored configuration

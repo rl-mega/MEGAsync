@@ -16,7 +16,7 @@ public:
     ~ChangeLogDialog();
 
 private:
-    Ui::ChangeLogDialog *ui;
+    Ui::ChangeLogDialog* ui;
 
     void setChangeLogNotes(QString notes);
 

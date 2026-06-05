@@ -11,51 +11,37 @@ import components.texts 1.0
 import SyncInfo 1.0
 import ServiceUrls 1.0
 
-FooterButtonsPage {
+Item {
     id: root
 
+    readonly property int textSpacings: 8
+    readonly property int foldersFolderSpacing: 12
+    readonly property int localFolderChooserMinHeight: 82
+    readonly property int remoteFolderChooserMinHeight: 98
+    property alias footerButtons: footerButtonsItem
     property alias localFolderChooser: localFolder
     property alias remoteFolderChooser: remoteFolder
     property alias helpLink: helpLinkItem
 
-    readonly property int textSpacings: 8
-
-    footerButtons {
-        rightPrimary {
-            text: SyncsStrings.sync
-            icons.source: Images.syncIcon
-        }
-
-        rightSecondary {
-            text: syncsDataAccess.syncOrigin === SyncInfo.ONBOARDING_ORIGIN ? Strings.previous : Strings.cancel
-            visible : true
-        }
-    }
+    implicitHeight: layoutItem.height + Constants.defaultComponentSpacing
 
     ColumnLayout {
-        id: column
+        id: layoutItem
 
         anchors {
-            top: parent.top
             left: parent.left
             right: parent.right
-            margins: 0
+            top: parent.top
         }
 
-        spacing: Constants.defaultComponentSpacing
-                 - (localFolder.folderField.hint.visible + remoteFolder.folderField.hint.visible)
-                    * Constants.defaultComponentSpacing / 3
-
-
         ColumnLayout {
-            Layout.preferredWidth: parent.width
-            spacing: (localFolder.folderField.hint.visible && remoteFolder.folderField.hint.visible) ?
-                         textSpacings / 4
-                       : textSpacings
+            id: textColumn
+
+            spacing: root.textSpacings
+
             HeaderTexts {
                 id: header
 
-                Layout.preferredWidth: parent.width
                 title: SyncsStrings.selectiveSyncTitle
                 description: SyncsStrings.selectiveSyncDescription
             }
@@ -72,11 +58,14 @@ FooterButtonsPage {
             }
         }
 
+        Item {
+            Layout.preferredHeight: root.foldersFolderSpacing
+        }
+
         ColumnLayout {
-            Layout.preferredWidth: parent.width
-            spacing: Constants.defaultComponentSpacing
-                     - (localFolder.folderField.hint.visible + remoteFolder.folderField.hint.visible)
-                        * Constants.defaultComponentSpacing / 2.5
+            id: foldersColumn
+
+            Layout.preferredWidth: parent.width + 2 * Constants.focusBorderWidth
 
             ChooseSyncFolder {
                 id: localFolder
@@ -84,8 +73,9 @@ FooterButtonsPage {
                 title: SyncsStrings.selectLocalFolder
                 leftIconSource: Images.pc
                 chosenPath: syncsDataAccess.defaultLocalFolder
-                Layout.preferredWidth: parent.width + 8
-                Layout.leftMargin: -4
+                Layout.fillWidth: true
+                Layout.leftMargin: -Constants.focusBorderWidth
+                Layout.preferredHeight: Math.max(root.localFolderChooserMinHeight, folderField.height)
             }
 
             ChooseSyncFolder {
@@ -94,10 +84,35 @@ FooterButtonsPage {
                 title: SyncsStrings.selectMEGAFolder
                 leftIconSource: Images.megaOutline
                 chosenPath: syncsDataAccess.defaultRemoteFolder
-                Layout.preferredWidth: parent.width + 8
-                Layout.leftMargin: -4
+                Layout.fillWidth: true
+                Layout.leftMargin: -Constants.focusBorderWidth
+                Layout.preferredHeight: Math.max(root.remoteFolderChooserMinHeight, folderField.height)
             }
         }
-    }
 
+        Item { // trick: wrapper to avoid the anchoring colision (inside the footerbuttons) with the layout manager. that's the only purpose.
+            Layout.fillWidth: true
+            Layout.preferredHeight: footerButtonsItem.implicitHeight
+
+            FooterButtons {
+                id: footerButtonsItem
+
+                anchors.bottomMargin: 0
+
+                rightPrimary {
+                    text: SyncsStrings.sync
+                    icons.source: Images.syncIcon
+                }
+
+                rightSecondary {
+                    text: syncsDataAccess.syncOrigin === SyncInfo.ONBOARDING_ORIGIN ? Strings.previous : Strings.cancel
+                    visible : true
+                }
+            }
+        }
+
+        Item {
+            Layout.preferredHeight: Constants.defaultComponentSpacing
+        }
+    }
 }

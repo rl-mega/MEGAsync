@@ -241,7 +241,7 @@ void StalledIssue::fillIssue(const mega::MegaSyncStall* stall)
         // Check if transfer already exists
         if (isBeingSolvedByDownload(info))
         {
-            setIsSolved(StalledIssue::SolveType::SOLVED);
+            setIsSolved(StalledIssue::ResolutionState::SOLVED);
         }
     }
 }
@@ -438,25 +438,25 @@ void StalledIssue::resetDelegateSize()
 
 bool StalledIssue::isSolved() const
 {
-    return mIsSolved >= SolveType::POTENTIALLY_SOLVED;
+    return mIsSolved >= ResolutionState::POTENTIALLY_SOLVED;
 }
 
 bool StalledIssue::isPotentiallySolved() const
 {
-    return mIsSolved == SolveType::POTENTIALLY_SOLVED;
+    return mIsSolved == ResolutionState::POTENTIALLY_SOLVED;
 }
 
 bool StalledIssue::isBeingSolved() const
 {
-    return mIsSolved == SolveType::BEING_SOLVED;
+    return mIsSolved == ResolutionState::BEING_SOLVED;
 }
 
 bool StalledIssue::isFailed() const
 {
-    return mIsSolved == SolveType::FAILED;
+    return mIsSolved == ResolutionState::FAILED;
 }
 
-void StalledIssue::setIsSolved(SolveType type)
+void StalledIssue::setIsSolved(ResolutionState type)
 {
     if(mIsSolved != type)
     {
@@ -533,7 +533,8 @@ bool StalledIssue::isBeingSolvedByDownload(std::shared_ptr<DownloadTransferInfo>
 
 void StalledIssue::performFinishAsyncIssueSolving(bool hasFailed)
 {
-    hasFailed ? setIsSolved(StalledIssue::SolveType::FAILED) : setIsSolved(StalledIssue::SolveType::SOLVED);
+    hasFailed ? setIsSolved(StalledIssue::ResolutionState::FAILED) :
+                setIsSolved(StalledIssue::ResolutionState::SOLVED);
     emit asyncIssueSolvingFinished(this);
 }
 
@@ -550,10 +551,10 @@ bool StalledIssue::hasCustomMessage() const
 void StalledIssue::resetCustomMessage()
 {
     mCustomMessage.customMessage.clear();
-    mCustomMessage.customType = SolveType::UNSOLVED;
+    mCustomMessage.customType = ResolutionState::UNSOLVED;
 }
 
-void StalledIssue::setCustomMessage(const QString& newCustomMessage, SolveType type)
+void StalledIssue::setCustomMessage(const QString& newCustomMessage, ResolutionState type)
 {
     mCustomMessage.customMessage = newCustomMessage;
     mCustomMessage.customType = type;
@@ -581,7 +582,7 @@ bool StalledIssue::isExpandable() const
 
 void StalledIssue::startAsyncIssueSolving()
 {
-    setIsSolved(StalledIssue::SolveType::BEING_SOLVED);
+    setIsSolved(StalledIssue::ResolutionState::BEING_SOLVED);
     emit asyncIssueSolvingStarted();
 }
 
@@ -623,7 +624,7 @@ const QExplicitlySharedDataPointer<CloudStalledIssueData>& StalledIssue::getClou
     return mCloudData;
 }
 
-bool StalledIssue::checkForExternalChanges()
+bool StalledIssue::checkForExternalChanges(QObject*)
 {
     if(!isSolved())
     {
@@ -633,7 +634,7 @@ bool StalledIssue::checkForExternalChanges()
             //Issues without fingerprint may contain
             if(!fileInfo.exists() && !missingFingerprint())
             {
-                setIsSolved(StalledIssue::SolveType::POTENTIALLY_SOLVED);
+                setIsSolved(StalledIssue::ResolutionState::POTENTIALLY_SOLVED);
             }
         }
 
@@ -648,7 +649,7 @@ bool StalledIssue::checkForExternalChanges()
                    currentNode->getParentHandle() != node->getParentHandle() ||
                    (missingFingerprint() && (node->getFingerprint() != nullptr)))
                 {
-                    setIsSolved(StalledIssue::SolveType::POTENTIALLY_SOLVED);
+                    setIsSolved(StalledIssue::ResolutionState::POTENTIALLY_SOLVED);
                 }
             }
         }
@@ -819,7 +820,7 @@ void StalledIssue::updateIssue(const mega::MegaSyncStall* stallIssue)
     mLocalData.reset();
     mCloudData.reset();
 
-    mIsSolved = SolveType::UNSOLVED;
+    mIsSolved = ResolutionState::UNSOLVED;
 
     fillIssue(stallIssue);
     endFillingIssue();
@@ -827,7 +828,7 @@ void StalledIssue::updateIssue(const mega::MegaSyncStall* stallIssue)
 
 bool StalledIssue::isUnsolved() const
 {
-    return mIsSolved == SolveType::UNSOLVED;
+    return mIsSolved == ResolutionState::UNSOLVED;
 }
 
 StalledIssueFilterCriterion StalledIssue::getCriterionByReason(mega::MegaSyncStall::SyncStallReason reason)

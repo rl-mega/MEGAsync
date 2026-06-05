@@ -121,9 +121,6 @@ background-color: #ffffff; /*colorToken.page-background*/
            <height>72</height>
           </size>
          </property>
-         <property name="pixmap" stdset="0">
-          <pixmap/>
-         </property>
          <property name="scaledContents" stdset="0">
           <bool>true</bool>
          </property>

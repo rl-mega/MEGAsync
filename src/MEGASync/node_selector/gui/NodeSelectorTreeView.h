@@ -53,6 +53,8 @@ public:
         COPY,
         PASTE,
         SEPARATOR_5,
+        DISPUTE_TAKEDOWN,
+        SEPARATOR_6,
         DELETE_RUBBISH,
         DELETE_PERMANENTLY,
         LEAVE_SHARE
@@ -60,10 +62,10 @@ public:
     Q_ENUM(ActionsOrder)
 
     void setAllowContextMenu(bool newAllowContextMenu);
-
     void setAllowNewFolderContextMenuItem(bool newAllowNewFolderContextMenuItem);
-
     void contextMenuEvent(QContextMenuEvent* event) override;
+
+    bool containsTakenDownItem(const QModelIndexList& selectedIndexes) const;
 
 protected:
     void drawBranches(QPainter* painter,
@@ -92,7 +94,7 @@ signals:
     void pasteNodesClicked();
     void getMegaLinkClicked(const QList<MegaHandle>& handles);
     void restoreClicked(const QList<MegaHandle>& handles);
-    void nodeSelected();
+    void enterKeyPressed();
     void newFolderClicked();
     void uploadClicked();
 
@@ -147,6 +149,7 @@ private:
     void addSyncMenuActions(QMap<int, QAction*>& actions,
                             const QModelIndex& index,
                             MegaHandle selectedHandle);
+    void addDisputeTakedownMenuAction(QMap<int, QAction*>& actions);
     void addDeleteMenuAction(QMap<int, QAction*>& actions,
                              QList<mega::MegaHandle> selectionHandles);
     void addDeletePermanently(QMap<int, QAction*>& actions,

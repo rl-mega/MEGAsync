@@ -50,6 +50,14 @@
     </message>
 </context>
 <context>
+    <name>AccountStateQuickWidget</name>
+    <message>
+        <source>Available[BR]%1</source>
+        <translatorcomment>Tooltip text shown when hovering the remaining available area in the Account pane usage bar. Keep the [BR] line break tag. %1 will be replaced with the available storage or transfer amount. DSN-2975</translatorcomment>
+        <translation>Dostępne[BR]%1</translation>
+    </message>
+</context>
+<context>
     <name>AccountStatusController</name>
     <message>
         <source>Your account has been disabled by your administrator. Please contact your business account administrator for further details.</source>
@@ -628,6 +636,11 @@
         <translation>Opisz problem</translation>
     </message>
     <message>
+        <source>Describe the problem *</source>
+        <translatorcomment>Label to indicate the description input field of form bug report. The user will fill it with a description of the bug and any specific detail that wants to be included.  SNC-6268</translatorcomment>
+        <translation>Opisz problem *</translation>
+    </message>
+    <message>
         <source>Error on submitting bug report</source>
         <translatorcomment>Error message shown when some error occurs during uploading a bug report.</translatorcomment>
         <translation>Błąd podczas przesyłania zgłoszonego problemu.</translation>
@@ -643,6 +656,11 @@
         <translation>Wyraźnie opisz napotkany problem. Im więcej szczegółów podasz, tym łatwiej będzie nam je rozwiązać. Twoje zgłoszenie zostanie sprawdzone przez nasz zespół programistów.</translation>
     </message>
     <message>
+        <source>Please describe your issue in detail. Must be at least 30 characters.</source>
+        <translatorcomment>Validation error shown when the reported issue description does not reach the minimum required length. SNC-6268</translatorcomment>
+        <translation>Proszę opisać szczegółowo swój problem. Musi zawierać co najmniej 30 znaków.</translation>
+    </message>
+    <message>
         <source>Please try again later or contact our support team via [A]support@mega.co.nz[/A] if the problem persists.</source>
         <translatorcomment>Warning informative message shown when the user tries to send two bug reports in under 10 mins.con-364</translatorcomment>
         <translation>Spróbuj ponownie później lub skontaktuj się z naszym zespołem pomocy technicznej pod adresem [A]support@mega.io[/A] jeśli problem nie ustąpi.</translation>
@@ -651,6 +669,11 @@
         <source>Please wait until the current upload is completed.</source>
         <translatorcomment>Informative message shown to the user to inform that needs to wait until the current bug report upload is completed to start a new one bug report.</translatorcomment>
         <translation>Poczekaj, aż bieżące przesyłanie zostanie zakończone.</translation>
+    </message>
+    <message>
+        <source>Report issue</source>
+        <translatorcomment>Title of the dialog used to send bug reports to support team. SNC-6268</translatorcomment>
+        <translation>Zgłoś błąd</translation>
     </message>
     <message>
         <source>Submit</source>
@@ -4992,6 +5015,16 @@ Wprowadź inną nazwę.</translation>
         <translatorcomment>Secondary text of a messagebox when restoring some items (files and folders) in the Cloud Drive dialog failed. SNC-426</translatorcomment>
         <translation>Elementów nie można było przywrócić. Spróbuj ponownie później.</translation>
     </message>
+    <message>
+        <source>This file has been the subject of a takedown notice</source>
+        <translatorcomment>Tooltip to explain the user that the node (file) has been blocked due to a takedown notice. SNC-5350</translatorcomment>
+        <translation>Ten plik był przedmiotem zawiadomienia o usunięciu</translation>
+    </message>
+    <message>
+        <source>This folder has been the subject of a takedown notice</source>
+        <translatorcomment>Tooltip to explain the user that the node has been blocked due to a takedown notice. SNC-5350</translatorcomment>
+        <translation>Katalog został zgłoszony jako naruszenie praw autorskich</translation>
+    </message>
 </context>
 <context>
     <name>NodeSelectorTreeView</name>
@@ -4999,6 +5032,11 @@ Wprowadź inną nazwę.</translation>
         <source>Copy</source>
         <translatorcomment>Contextual menu text that appears when we right click on a folder/file on node selector. It copy the selected nodes (files or folders), waiting for the paste action. SAT-426</translatorcomment>
         <translation>Skopiuj</translation>
+    </message>
+    <message>
+        <source>Dispute takedown</source>
+        <translatorcomment>Contextual menu text that appears when we right click on a taken-down item on node selector. It opens the takedown dispute page. SNC-5350</translatorcomment>
+        <translation>Roztrzyganie sporów</translation>
     </message>
     <message>
         <source>Download</source>
@@ -5146,9 +5184,19 @@ Wprowadź inną nazwę.</translation>
         <translation>Nowy katalog</translation>
     </message>
     <message>
+        <source>No folders to select</source>
+        <translatorcomment>Title on the view when there are no syncable folders in a folder. SNC-6358</translatorcomment>
+        <translation>Brak folderów do wybrania</translation>
+    </message>
+    <message>
         <source>Ok</source>
         <translatorcomment>Button text to accept and close the dialog</translatorcomment>
         <translation>OK</translation>
+    </message>
+    <message>
+        <source>Only folders can be synced</source>
+        <translatorcomment>Message on the view when there are no syncable folders in a folder. SNC-6358</translatorcomment>
+        <translation>Tylko foldery mogą być synchronizowane</translation>
     </message>
     <message numerus="yes">
         <source>You are about to permanently delete %n file. Would you like to proceed?</source>
@@ -5314,6 +5362,11 @@ Wprowadź inną nazwę.</translation>
         <translation>Dodaj i usuń pliki</translation>
     </message>
     <message>
+        <source>Completed transfers</source>
+        <translatorcomment>Notification category for completed transfers notifications. SNC-6292</translatorcomment>
+        <translation>Zakończone transfery</translation>
+    </message>
+    <message>
         <source>Completed uploads and downloads</source>
         <translatorcomment>Title of a checkbox for disconnectig completed transfer notifications</translatorcomment>
         <translation>Zakończone wysyłanie i pobieranie</translation>
@@ -5322,6 +5375,11 @@ Wprowadź inną nazwę.</translation>
         <source>Contacts</source>
         <translatorcomment>Notification category for contact notifications</translatorcomment>
         <translation>Kontakty</translation>
+    </message>
+    <message>
+        <source>Desktop notifications</source>
+        <translatorcomment>Notification category for deskltop notifications. SNC-6292</translatorcomment>
+        <translation>Powiadomienia w przeglądarce</translation>
     </message>
     <message>
         <source>Info</source>
@@ -6271,6 +6329,16 @@ Wprowadź inną nazwę.</translation>
 - Drobne poprawki błędów i ulepszenia wydajności.
 </translation>
     </message>
+    <message>
+        <source>- Rename upload conflicts and duplicate same-folder items more easily.
+- Cloud Drive, sync, backup, and settings dialogs are clearer and more consistent.
+- Bug fixes and performance improvements.
+</source>
+        <translatorcomment>Change log for version 6.4.0. SNC-6468</translatorcomment>
+        <translation>- Konflikty z powodu zduplikowanych nazw folderów są teraz automatycznie rozwiązywane.
+- Okna dialogowe dotyczące dysku w chmurze, synchronizacji, kopii zapasowych i ustawień są jaśniejsze i bardziej spójne.
+- Naprawy błędów i usprawnienia wydajności.</translation>
+    </message>
 </context>
 <context>
     <name>ProgressIndicatorDialog</name>
@@ -6308,6 +6376,11 @@ Wprowadź inną nazwę.</translation>
         <translation>Brak proxy</translation>
     </message>
     <message>
+        <source>Password</source>
+        <translatorcomment>Section title for Password change in Security pane. SNC-6293</translatorcomment>
+        <translation>Hasło</translation>
+    </message>
+    <message>
         <source>Password:</source>
         <translatorcomment>Label to indicate the password of the proxy that is being configured.</translatorcomment>
         <translation>Hasło:</translation>
@@ -6341,6 +6414,11 @@ Wprowadź inną nazwę.</translation>
         <source>Server:</source>
         <translatorcomment>Label to indicate the server name/ip of the proxy that is being configured.</translatorcomment>
         <translation>Serwer:</translation>
+    </message>
+    <message>
+        <source>Username</source>
+        <translatorcomment>Label to indicate the username of the proxy that is being configured. SNC-6293</translatorcomment>
+        <translation>Nazwa użytkownika</translation>
     </message>
     <message>
         <source>Username:</source>
@@ -7029,6 +7107,16 @@ Czy mimo to chcesz je usunąć?</translation>
         <translation>%1 (lokalny cache)</translation>
     </message>
     <message>
+        <source>(Max. 90% of available bandwidth)</source>
+        <translatorcomment>Helper text shown when automatic upload rate limit is selected in Network pane. DSN-2979</translatorcomment>
+        <translation>(Maks. 90% dostępnego transferu)</translation>
+    </message>
+    <message>
+        <source>About MEGA</source>
+        <translatorcomment>Button label that opens the About MEGA dialog from the Settings window footer. Keep as short as possible. DSN-2976</translatorcomment>
+        <translation>O MEGA</translation>
+    </message>
+    <message>
         <source>Account</source>
         <translatorcomment>Tab label of Account dialog. Max 15 characters.</translatorcomment>
         <translation>Konto</translation>
@@ -7042,6 +7130,11 @@ Czy mimo to chcesz je usunąć?</translation>
         <source>Are you sure?</source>
         <translatorcomment>Warning message second part asking if you are sure about continuing with the logout.</translatorcomment>
         <translation>Chcesz się wylogować?</translation>
+    </message>
+    <message>
+        <source>Auto</source>
+        <translatorcomment>Label to indicate that management of the upload rate limit is automatic. DSN-2979</translatorcomment>
+        <translation>Auto</translation>
     </message>
     <message>
         <source>Backup</source>
@@ -7074,6 +7167,11 @@ Czy mimo to chcesz je usunąć?</translation>
         <translation>Zmień hasło</translation>
     </message>
     <message>
+        <source>Change Permissions</source>
+        <translatorcomment>Button label in File Management pane to open the dialog for changing default permissions for new folders and files. Keep as short as possible. DSN-2978</translatorcomment>
+        <translation>Zmień uprawnienia</translation>
+    </message>
+    <message>
         <source>Change Settings…</source>
         <translatorcomment>Button label text for Bandwidth and Proxy settings in Network pane.</translatorcomment>
         <translation>Zmień ustawienia…</translation>
@@ -7097,6 +7195,11 @@ Czy mimo to chcesz je usunąć?</translation>
         <source>Clear remote backup</source>
         <translatorcomment>Title label for the warning to the user before clearing the remote sync cache. Keep as short as possible.</translatorcomment>
         <translation>Wyczyść zdalny backup</translation>
+    </message>
+    <message>
+        <source>Control who can access new folders and files created in the app, whether it’s just you, your group, or everyone on this device.</source>
+        <translatorcomment>Descriptive text in File Management pane explaining the permissions section for new folders and files. DSN-2978</translatorcomment>
+        <translation>Kontroluj, kto ma dostęp do nowych folderów i plików utworzonych w aplikacji, czy to tylko ty, twoja grupa, czy wszyscy na tym urządzeniu.</translation>
     </message>
     <message>
         <source>Data temporarily unavailable</source>
@@ -7132,6 +7235,11 @@ Czy mimo to chcesz je usunąć?</translation>
         <source>Do you want to delete your remote backup now?</source>
         <translatorcomment>Confirmation prompt for the remote sync cache clear action message box.</translatorcomment>
         <translation>Czy na pewno chcesz usunąć swoją zdalną kopię zapasową?</translation>
+    </message>
+    <message>
+        <source>Download rate limit</source>
+        <translatorcomment>Section title for the download speed limit controls in Network pane. DSN-2979</translatorcomment>
+        <translation>Limit pobierania</translation>
     </message>
     <message>
         <source>Download rate limit:</source>
@@ -7179,6 +7287,11 @@ Czy mimo to chcesz je usunąć?</translation>
         <translation>Zapisanie klucza i przechowywanie go w bezpiecznym miejscu, umożliwi w przeszłości ustawienie nowego hasła bez ryzyka utraty danych.</translation>
     </message>
     <message>
+        <source>File management</source>
+        <translatorcomment>Title for the Settings -&gt; File Management pane tab button. Keep as short as possible. DSN-2978</translatorcomment>
+        <translation>Zarządzanie plikami</translation>
+    </message>
+    <message>
         <source>File versions</source>
         <translatorcomment>Section title label for File versions settings in General pane.</translatorcomment>
         <translation>Wersje plików</translation>
@@ -7219,6 +7332,11 @@ Czy mimo to chcesz je usunąć?</translation>
         <translation>Zgłoś błąd</translation>
     </message>
     <message>
+        <source>KB/s</source>
+        <translatorcomment>Unit label for kilobytes per second used in Network pane rate limit controls. DSN-2979</translatorcomment>
+        <translation>KB/s</translation>
+    </message>
+    <message>
         <source>Language</source>
         <translatorcomment>Label to let the user select the desired language for the application using a dropdown menu.</translatorcomment>
         <translation>Język</translation>
@@ -7232,6 +7350,11 @@ Czy mimo to chcesz je usunąć?</translation>
         <source>Learn more</source>
         <translatorcomment>Underline link label to open a help.mega.io article.CON-681</translatorcomment>
         <translation>Dowiedz się więcej</translation>
+    </message>
+    <message>
+        <source>Limit to:</source>
+        <translatorcomment>Label for the custom rate limit input in Network pane. DSN-2979</translatorcomment>
+        <translation>Ogranicz do:</translation>
     </message>
     <message>
         <source>Local folder with a backup of files deleted in MEGA</source>
@@ -7284,9 +7407,19 @@ Czy mimo to chcesz je usunąć?</translation>
         <translation>Powiadomienia</translation>
     </message>
     <message>
+        <source>Number of connections per transfer</source>
+        <translatorcomment>Section title for the setting that controls how many connections each transfer uses in Network pane. DSN-2979</translatorcomment>
+        <translation>Ilość połączeń na transfer</translation>
+    </message>
+    <message>
         <source>Password</source>
         <translatorcomment>Section title for Password change in Security pane.</translatorcomment>
         <translation>Hasło</translation>
+    </message>
+    <message>
+        <source>Permissions for new folders and files</source>
+        <translatorcomment>Section title for the file and folder permissions settings in File Management pane. DSN-2978</translatorcomment>
+        <translation>Uprawnienia dla nowych katalogów i plików</translation>
     </message>
     <message>
         <source>Please let us know if you encounter any issues. Help us by providing as much detail as possible.</source>
@@ -7301,6 +7434,11 @@ Czy mimo to chcesz je usunąć?</translation>
     <message>
         <source>Proxies</source>
         <translatorcomment>Section title text for the Proxy summary text and actions in Network pane.</translatorcomment>
+        <translation>Proxy</translation>
+    </message>
+    <message>
+        <source>Proxy</source>
+        <translatorcomment>Section title text for the Proxy summary text and actions in Network pane. DSN-2979</translatorcomment>
         <translation>Proxy</translation>
     </message>
     <message>
@@ -7332,6 +7470,11 @@ Czy mimo to chcesz je usunąć?</translation>
         <source>Session history</source>
         <translatorcomment>Button label text for opening account login history in MEGA online app in Security pane. Keep as short as possible.</translatorcomment>
         <translation>Historia sesji</translation>
+    </message>
+    <message>
+        <source>Sets the number of connections used for each transfer. Doesn’t affect how many transfers run in parallel.</source>
+        <translatorcomment>Descriptive text for the number of connections per transfer setting in Network pane. DSN-2979</translatorcomment>
+        <translation>Ustawia liczbę połączeń używanych dla każdego transferu. Nie wpływa na to, ile transferów uruchamianych jest równolegle.</translation>
     </message>
     <message>
         <source>Settings</source>
@@ -7404,6 +7547,11 @@ Czy mimo to chcesz je usunąć?</translation>
         <translation>Zmień</translation>
     </message>
     <message>
+        <source>Upload rate limit</source>
+        <translatorcomment>Section title for the upload speed limit controls in Network pane. DSN-2979</translatorcomment>
+        <translation>Zwiększ limit</translation>
+    </message>
+    <message>
         <source>Upload rate limit:</source>
         <translatorcomment>Form label text indicating the active upload rate limit.</translatorcomment>
         <translation>Limit szybkości wysyłania:</translation>
@@ -7471,6 +7619,94 @@ Czy mimo to chcesz je usunąć?</translation>
         <source>Auto</source>
         <translatorcomment>Label to indicate that proxy settings are on auto detec mode. SNC-3076</translatorcomment>
         <translation>Auto</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsStrings</name>
+    <message>
+        <source>Available[BR]%1</source>
+        <translatorcomment>Tooltip text shown when hovering the remaining available area in the Account pane usage bar. Keep the [BR] line break tag. %1 will be replaced with the available storage or transfer amount. DSN-2975</translatorcomment>
+        <translation>Dostępne[BR]%1</translation>
+    </message>
+    <message>
+        <source>Backups</source>
+        <translatorcomment>Legend label shown in the Account pane usage bar for the Backups segment. Keep as short as possible. DSN-2975</translatorcomment>
+        <translation>Kopie zapasowe</translation>
+    </message>
+    <message>
+        <source>Backups[BR]%1</source>
+        <translatorcomment>Tooltip text shown when hovering the Backups segment in the Account pane usage bar. Keep the [BR] line break tag. %1 will be replaced with the storage amount. DSN-2975</translatorcomment>
+        <translation>Kopie zapasowe[BR]%1</translation>
+    </message>
+    <message>
+        <source>Buy more storage</source>
+        <translatorcomment>Button label shown in the Account pane warning banner to let the user upgrade storage. Keep as short as possible. DSN-2975</translatorcomment>
+        <translation>Kup więcej pamięci masowej</translation>
+    </message>
+    <message>
+        <source>Cloud Drive</source>
+        <translatorcomment>Legend label shown in the Account pane usage bar for the Cloud Drive segment. Keep as short as possible. DSN-2975</translatorcomment>
+        <translation>Dysk w chmurze</translation>
+    </message>
+    <message>
+        <source>Cloud Drive[BR]%1</source>
+        <translatorcomment>Tooltip text shown when hovering the Cloud Drive segment in the Account pane usage bar. Keep the [BR] line break tag. %1 will be replaced with the storage amount. DSN-2975</translatorcomment>
+        <translation>Dysk w chmurze[BR]%1</translation>
+    </message>
+    <message>
+        <source>Consider upgrading to avoid interruptions to uploads and synchronisation.</source>
+        <translatorcomment>Warning description shown in the Account pane when the account storage is nearly full. DSN-2975</translatorcomment>
+        <translation>Rozważ aktualizację, aby uniknąć przerw w przesyłaniu plików i synchronizacji.</translation>
+    </message>
+    <message>
+        <source>File versions</source>
+        <translatorcomment>Legend label shown in the Account pane usage bar for the Versions segment. Keep as short as possible. DSN-2975</translatorcomment>
+        <translation>Wersje plików</translation>
+    </message>
+    <message>
+        <source>File versions[BR]%1</source>
+        <translatorcomment>Tooltip text shown when hovering the Versions segment in the Account pane usage bar. Keep the [BR] line break tag. %1 will be replaced with the storage amount. DSN-2975</translatorcomment>
+        <translation>Wersje pliku[BR]%1</translation>
+    </message>
+    <message>
+        <source>Rubbish Bin</source>
+        <translatorcomment>Legend label shown in the Account pane usage bar for the Rubbish Bin segment. Keep as short as possible. DSN-2975</translatorcomment>
+        <translation>Kosz</translation>
+    </message>
+    <message>
+        <source>Rubbish Bin[BR]%1</source>
+        <translatorcomment>Tooltip text shown when hovering the Rubbish Bin segment in the Account pane usage bar. Keep the [BR] line break tag. %1 will be replaced with the storage amount. DSN-2975</translatorcomment>
+        <translation>Kosz na śmieci[BR]%1</translation>
+    </message>
+    <message>
+        <source>Storage Space</source>
+        <translatorcomment>Section title for account storage details in the Account pane. DSN-2975</translatorcomment>
+        <translation>Pamięć</translation>
+    </message>
+    <message>
+        <source>Transfers</source>
+        <translatorcomment>Section title for transfer usage details in the Account pane. DSN-2975</translatorcomment>
+        <translation>Transfery</translation>
+    </message>
+    <message>
+        <source>Transfers[BR]%1</source>
+        <translatorcomment>Tooltip text shown when hovering the Transfers segment in the Account pane usage bar. Keep the [BR] line break tag. %1 will be replaced with the transfer amount. DSN-2975</translatorcomment>
+        <translation>Transfery[BR]%1</translation>
+    </message>
+    <message>
+        <source>Uploads are disabled and folder synchronisation is paused.</source>
+        <translatorcomment>Warning description shown in the Account pane when the account storage is full. DSN-2975</translatorcomment>
+        <translation>Przesyłanie plików jest wyłączone, a synchronizacja folderów jest wstrzymana.</translation>
+    </message>
+    <message>
+        <source>Your MEGA account is full</source>
+        <translatorcomment>Warning title shown in the Account pane when the account storage is full. DSN-2975</translatorcomment>
+        <translation>Twoje konto MEGA jest pełne</translation>
+    </message>
+    <message>
+        <source>Your MEGA account is nearly full</source>
+        <translatorcomment>Warning title shown in the Account pane when the account storage is close to full. DSN-2975</translatorcomment>
+        <translation>Twoje konto MEGA jest prawie pełne</translation>
     </message>
 </context>
 <context>

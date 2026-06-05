@@ -43,9 +43,12 @@ public:
 
     std::shared_ptr<mega::MegaNode> getNode() const;
     bool isSpecialNode() const;
+    bool isTakenDown() const;
     bool canBeRenamed() const;
 
-    void createChildItems(std::unique_ptr<mega::MegaNodeList> nodeList);
+    QList<QPointer<NodeSelectorModelItem>>
+        createChildItems(std::unique_ptr<mega::MegaNodeList> nodeList);
+    void initializeChildItems(const QList<QPointer<NodeSelectorModelItem>>& items);
     bool areChildrenInitialized() const;
 
     bool canFetchMore();
@@ -63,11 +66,15 @@ public:
     virtual bool isSyncable();
     virtual bool isMyBackupsFolder() const;
     virtual bool isDeviceFolder() const;
+    bool isFile() const;
     bool isInShare() const;
     bool isInVault() const;
     bool isCloudDrive() const;
     bool isRubbishBin() const;
     bool isInRubbishBin() const;
+    QList<QPointer<NodeSelectorModelItem>>
+        buildNodes(const QList<std::shared_ptr<mega::MegaNode>>& nodes);
+    void appendNodes(const QList<QPointer<NodeSelectorModelItem>>& items);
     QPointer<NodeSelectorModelItem> addNode(std::shared_ptr<mega::MegaNode> node);
     QList<QPointer<NodeSelectorModelItem>> addNodes(QList<std::shared_ptr<mega::MegaNode>> nodes);
     QPointer<NodeSelectorModelItem> findChildNode(std::shared_ptr<mega::MegaNode> node);

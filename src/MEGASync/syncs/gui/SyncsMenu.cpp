@@ -1,8 +1,12 @@
 #include "SyncsMenu.h"
 
 #include "DeviceNames.h"
+#include "DialogOpener.h"
+#include "MegaApplication.h"
 #include "MegaMenuItemAction.h"
 #include "MyBackupsHandle.h"
+#include "NodeSelector.h"
+#include "NodeSelectorSpecializations.h"
 #include "Preferences.h"
 #include "SyncController.h"
 #include "SyncInfo.h"
@@ -61,7 +65,10 @@ SyncsMenu::SyncsMenu(mega::MegaSync::SyncType type, int itemIndent, QWidget* par
 
 SyncsMenu::~SyncsMenu()
 {
-    mMenu->deleteLater();
+    if (mMenu)
+    {
+        mMenu->deleteLater();
+    }
 }
 
 SyncsMenu* SyncsMenu::newSyncsMenu(mega::MegaSync::SyncType type, QWidget* parent)
@@ -283,8 +290,6 @@ void BackupSyncsMenu::refresh()
         const auto actions (menu->actions());
         auto* const firstBackup (actions.isEmpty() ? nullptr : actions.first());
 
-        // Show device name
-        mDevNameAction->deleteLater();
         // Display device name before folders
         mDevNameAction =
             new MegaMenuItemAction(QString(),
@@ -295,7 +300,32 @@ void BackupSyncsMenu::refresh()
                                                             false),
                                    0,
                                    menu);
+        connect(mDevNameAction,
+                &MegaMenuItemAction::triggered,
+                this,
+                &BackupSyncsMenu::onDeviceRowTriggered);
         menu->insertAction(firstBackup, mDevNameAction);
         onDeviceNameSet(mDeviceNameRequest->getDeviceName());
     }
+}
+
+void BackupSyncsMenu::onDeviceRowTriggered()
+{
+    auto* api = MegaSyncApp->getMegaApi();
+    if (!api)
+    {
+        return;
+    }
+
+    std::shared_ptr<mega::MegaNode> myBackupsNode(
+        api->getNodeByHandle(mMyBackupsHandleRequest->getMyBackupsHandle()));
+    if (!myBackupsNode)
+    {
+        return;
+    }
+
+    auto* nodeSelector = new CloudDriveNodeSelector();
+    nodeSelector->init();
+    nodeSelector->setSelectedNodeHandle(myBackupsNode);
+    DialogOpener::showGeometryRetainerDialog<NodeSelector>(nodeSelector);
 }

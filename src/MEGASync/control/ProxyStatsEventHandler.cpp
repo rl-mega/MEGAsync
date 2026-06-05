@@ -20,7 +20,7 @@ void ProxyStatsEventHandler::sendTrackedEvent(AppStatsEvents::EventType type,
 
     updateTrackInfo(fromInfoDialog);
     const bool addJourneyId = true;
-    send(type, AppStatsEvents::getEventMessage(type), addJourneyId, mViewID);
+    send(type, AppStatsEvents::getEventMessage(type), addJourneyId, mViewID.get());
 }
 
 void ProxyStatsEventHandler::sendTrackedEventArg(AppStatsEvents::EventType type,
@@ -34,7 +34,7 @@ void ProxyStatsEventHandler::sendTrackedEventArg(AppStatsEvents::EventType type,
 
     updateTrackInfo(fromInfoDialog);
     const bool addJourneyId = true;
-    send(type, AppStatsEvents::getEventMessage(type, args), addJourneyId, mViewID);
+    send(type, AppStatsEvents::getEventMessage(type, args), addJourneyId, mViewID.get());
 }
 
 void ProxyStatsEventHandler::sendTrackedEvent(AppStatsEvents::EventType type,
@@ -116,7 +116,7 @@ void ProxyStatsEventHandler::updateTrackInfo(bool fromInfoDialog)
 
     if (!fromInfoDialog || mLastInfoDialogEventSent)
     {
-        mViewID = mMegaApi->generateViewId();
+        mViewID.reset(mMegaApi->generateViewId());
         mUpdateViewID = false;
     }
     else

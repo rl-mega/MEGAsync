@@ -59,6 +59,7 @@ public:
     mega::MegaHandle getSelectedNodeHandle();
     QList<mega::MegaHandle> getMultiSelectionNodeHandle();
     QModelIndexList getSelectedIndexes() const;
+    bool containsTakenDownSelected() const;
     void navigateToItem(const mega::MegaHandle& handle);
     void setSelectedNodeHandle(const mega::MegaHandle& selectedHandle);
 
@@ -111,7 +112,7 @@ public slots:
     void setLoadingSceneVisible(bool visible);
 
 signals:
-    void okBtnClicked();
+    void enterKeyPressed();
     void onCustomButtonClicked(uint id);
     void viewReady();
     void uiIsBlocked(bool state);
@@ -173,7 +174,7 @@ protected:
     virtual EmptyLabelInfo getEmptyLabel();
 
     Ui::NodeSelectorTreeViewWidget* ui;
-    std::unique_ptr<NodeSelectorProxyModel> mProxyModel;
+    std::shared_ptr<NodeSelectorProxyModel> mProxyModel;
     std::unique_ptr<NodeSelectorModel> mModel;
     Navigation mNavigationInfo;
     mega::MegaApi* mMegaApi;
@@ -183,8 +184,8 @@ protected slots:
     // Title
     void updateRootTitle();
 
-    // When the model has been filtered
-    virtual void onExpandReady();
+    // Invoked after the proxy finishes processing a level load
+    virtual void onLevelLoaded();
 
 private slots:
     void onbNewFolderClicked();
@@ -222,7 +223,7 @@ private:
     void checkButtonsVisibility();
     void addCustomButtons(NodeSelectorTreeViewWidget* wdg);
     virtual QString getRootText() = 0;
-    virtual std::unique_ptr<NodeSelectorProxyModel> createProxyModel();
+    virtual std::shared_ptr<NodeSelectorProxyModel> createProxyModel();
     virtual std::unique_ptr<NodeSelectorModel> createModel() = 0;
 
     virtual bool isCurrentRootIndexReadOnly()
@@ -332,8 +333,7 @@ public:
 
     virtual bool isAllowedToNavigateInside(const QModelIndex& index);
     virtual void init(NodeSelectorTreeViewWidget* wdg) = 0;
-    virtual bool okButtonEnabled(NodeSelectorTreeViewWidget* wdg,
-                                 const QModelIndexList& selected) = 0;
+    virtual bool okButtonEnabled(NodeSelectorTreeViewWidget* wdg, const QModelIndexList& selected);
 
     virtual void selectionHasChanged(NodeSelectorTreeViewWidget*) {}
 
@@ -354,6 +354,28 @@ public:
     }
 
     virtual void makeViewCustomConnections(NodeSelectorTreeView*, NodeSelectorTreeViewWidget*) {}
+
+    struct EmptyFolderPageInfo
+    {
+        QString title;
+        QString description;
+        QIcon icon;
+        bool iconTokenized = true;
+        QString descriptionLabelFontSize;
+
+        bool isValid()
+        {
+            return !title.isEmpty() && !description.isEmpty() && !icon.isNull() &&
+                   !descriptionLabelFontSize.isEmpty();
+        }
+    };
+
+    virtual EmptyFolderPageInfo getEmptyFolderPageInfo()
+    {
+        return EmptyFolderPageInfo();
+    }
+
+    virtual std::shared_ptr<NodeSelectorProxyModel> createProxyModel();
 
 protected:
     bool cloudDriveIsCurrentRootIndex(NodeSelectorTreeViewWidget* wdg);
@@ -381,6 +403,8 @@ public:
     void init(NodeSelectorTreeViewWidget* wdg) override;
     bool okButtonEnabled(NodeSelectorTreeViewWidget* wdg, const QModelIndexList& selected) override;
     NodeSelectorModelItemSearch::Types allowedTypes() override;
+    EmptyFolderPageInfo getEmptyFolderPageInfo() override;
+    std::shared_ptr<NodeSelectorProxyModel> createProxyModel() override;
 };
 
 class StreamType: public SelectType
@@ -391,6 +415,7 @@ public:
     void newFolderButtonVisibility(NodeSelectorTreeViewWidget* wdg) override;
     bool okButtonEnabled(NodeSelectorTreeViewWidget*, const QModelIndexList& selected) override;
     NodeSelectorModelItemSearch::Types allowedTypes() override;
+    std::shared_ptr<NodeSelectorProxyModel> createProxyModel() override;
 };
 
 class UploadType: public SelectType
@@ -441,6 +466,7 @@ class MoveBackupType: public UploadType
 {
 public:
     explicit MoveBackupType() = default;
+    bool okButtonEnabled(NodeSelectorTreeViewWidget* wdg, const QModelIndexList& selected) override;
     NodeSelectorModelItemSearch::Types allowedTypes() override;
 };
 

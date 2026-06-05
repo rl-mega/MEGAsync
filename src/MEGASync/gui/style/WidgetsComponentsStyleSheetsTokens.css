@@ -282,6 +282,7 @@ border-color: #ffd8d9db; /*colorToken.border-strong*/
 background-color: transparent;
 }
 
+
 QGroupBox::title[type="mega"]
 {
 color: #ff04101E; /*colorToken.text-accent*/
@@ -538,7 +539,7 @@ border-color: #ff494a4d; /*colorToken.border-disabled*/
 QAbstractButton[type="secondary"]
 {
 background-color: #ff04101E; /*colorToken.button-secondary*/
-color: #ffFAFAFB; /*colorToken.text-secondary*/
+color: #ffFAFAFB; /*colorToken.text-primary*/
 }
 
 QAbstractButton:hover[type="secondary"]

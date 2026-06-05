@@ -16,7 +16,7 @@ LocalOrRemoteUserMustChooseStalledIssue::LocalOrRemoteUserMustChooseStalledIssue
 {
 }
 
-StalledIssue::AutoSolveIssueResult LocalOrRemoteUserMustChooseStalledIssue::autoSolveIssue()
+StalledIssue::ResolutionState LocalOrRemoteUserMustChooseStalledIssue::autoSolveIssue()
 {
     setAutoResolutionApplied(true);
 
@@ -61,10 +61,10 @@ StalledIssue::AutoSolveIssueResult LocalOrRemoteUserMustChooseStalledIssue::auto
     {
         MegaSyncApp->getStatsEventHandler()->sendEvent(
             AppStatsEvents::EventType::SI_LOCALREMOTE_SOLVED_AUTOMATICALLY);
-        return StalledIssue::AutoSolveIssueResult::SOLVED;
+        return StalledIssue::ResolutionState::SOLVED;
     }
 
-    return StalledIssue::AutoSolveIssueResult::FAILED;
+    return StalledIssue::ResolutionState::FAILED;
 }
 
 bool LocalOrRemoteUserMustChooseStalledIssue::chooseLastMTimeSide()
@@ -127,7 +127,7 @@ bool LocalOrRemoteUserMustChooseStalledIssue::isAutoSolvable() const
     return result;
 }
 
-void LocalOrRemoteUserMustChooseStalledIssue::setIsSolved(SolveType type)
+void LocalOrRemoteUserMustChooseStalledIssue::setIsSolved(ResolutionState type)
 {
     StalledIssue::setIsSolved(type);
     if(isSolved())
@@ -136,18 +136,22 @@ void LocalOrRemoteUserMustChooseStalledIssue::setIsSolved(SolveType type)
     }
 }
 
-bool LocalOrRemoteUserMustChooseStalledIssue::checkForExternalChanges()
+bool LocalOrRemoteUserMustChooseStalledIssue::checkForExternalChanges(QObject* context)
 {
     QString localCRC;
     QString remoteCRC;
 
-    getLocalData()->getAttributes()->requestCRC(this, [&localCRC](const QString& crc){
-        localCRC = crc;
-    });
+    getLocalData()->getAttributes()->requestCRC(context,
+                                                [&localCRC](const QString& crc)
+                                                {
+                                                    localCRC = crc;
+                                                });
 
-    getCloudData()->getAttributes()->requestCRC(this, [&remoteCRC](const QString& crc){
-        remoteCRC = crc;
-    });
+    getCloudData()->getAttributes()->requestCRC(context,
+                                                [&remoteCRC](const QString& crc)
+                                                {
+                                                    remoteCRC = crc;
+                                                });
 
     if(localCRC.compare(mLocalCRCAtStart) != 0 || remoteCRC.compare(mRemoteCRCAtStart) != 0)
     {
@@ -166,7 +170,7 @@ void LocalOrRemoteUserMustChooseStalledIssue::fillIssue(const mega::MegaSyncStal
     //Check if transfer already exists
     if (isBeingSolvedByUpload(info, true))
     {
-        setIsSolved(StalledIssue::SolveType::SOLVED);
+        setIsSolved(StalledIssue::ResolutionState::SOLVED);
     }
 
 }

@@ -83,6 +83,11 @@ void TokenizableItem::forceUpdate()
     mThemeType = -1;
 }
 
+void TokenizableItem::setIsTokenized(bool state)
+{
+    mIsTokenized = state;
+}
+
 bool TokenizableItem::isInitialized() const
 {
     return mInit;
@@ -90,6 +95,11 @@ bool TokenizableItem::isInitialized() const
 
 void TokenizableItem::init(QAbstractButton* button)
 {
+    if (!mIsTokenized)
+    {
+        return;
+    }
+
     mBaseTokens.fillTokens(button);
     if (mBaseTokens.anyTokenHasChanged())
     {

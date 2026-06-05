@@ -11,7 +11,9 @@
 #include <QSharedData>
 #include <QSize>
 
+#include <chrono>
 #include <memory>
+#include <optional>
 
 enum class StalledIssueFilterCriterion
 {
@@ -304,7 +306,7 @@ public:
     virtual void updateHandle(mega::MegaHandle handle){if(getCloudData()){getCloudData()->setPathHandle(handle);}}
     virtual void updateName(){}
 
-    virtual bool checkForExternalChanges();
+    virtual bool checkForExternalChanges(QObject* context);
 
     mega::MegaSyncStall::SyncStallReason getReason() const;
     QString getFileName(bool preferCloud) const;
@@ -316,7 +318,7 @@ public:
 
     virtual void updateIssue(const mega::MegaSyncStall* stallIssue);
 
-    enum SolveType
+    enum ResolutionState
     {
         UNSOLVED,
         FAILED,
@@ -331,19 +333,16 @@ public:
     bool isBeingSolved() const;
     bool isFailed() const;
 
-    SolveType getIsSolved() const {return mIsSolved;}
-    virtual void setIsSolved(SolveType type);
-
-    enum class AutoSolveIssueResult
+    ResolutionState getIsSolved() const
     {
-        SOLVED,
-        ASYNC_SOLVED,
-        FAILED,
-    };
+        return mIsSolved;
+    }
 
-    virtual AutoSolveIssueResult autoSolveIssue()
+    virtual void setIsSolved(ResolutionState type);
+
+    virtual ResolutionState autoSolveIssue()
     {
-        return AutoSolveIssueResult::FAILED;
+        return ResolutionState::FAILED;
     }
     virtual bool isAutoSolvable() const;
     bool isBeingSolvedByUpload(std::shared_ptr<UploadTransferInfo> info, bool isSourcePath) const;
@@ -404,11 +403,16 @@ public:
         return false;
     }
 
-    // If we receive an issue with the same hash just after solving it, discard it.
-    // By default, we don´t discard it, just reimplement this method to change the behaviour
-    virtual bool shouldDiscardReappearingIssuesByResolvedHash() const
+    struct HashDiscardRule
     {
-        return false;
+        std::optional<std::chrono::steady_clock::duration> discardDuration;
+    };
+
+    using HashDiscardRuleOpt = std::optional<HashDiscardRule>;
+
+    virtual HashDiscardRuleOpt hashDiscardRuleForState(ResolutionState) const
+    {
+        return std::nullopt;
     }
 
     bool wasAutoResolutionApplied() const;
@@ -421,7 +425,7 @@ public:
     struct CustomMessage
     {
         QString customMessage;
-        SolveType customType;
+        ResolutionState customType;
     };
 
     const CustomMessage& getCustomMessage() const;
@@ -448,12 +452,12 @@ protected:
 
     void performFinishAsyncIssueSolving(bool hasFailed);
 
-    void setCustomMessage(const QString& newCustomMessage, SolveType type);
+    void setCustomMessage(const QString& newCustomMessage, ResolutionState type);
 
     std::shared_ptr<mega::MegaSyncStall> originalStall;
     mega::MegaSyncStall::SyncStallReason mReason = mega::MegaSyncStall::SyncStallReason::NoReason;
     QSet<mega::MegaHandle> mSyncIds;
-    mutable SolveType mIsSolved = SolveType::UNSOLVED;
+    mutable ResolutionState mIsSolved = ResolutionState::UNSOLVED;
     CustomMessage mCustomMessage;
     uint8_t mFiles = 0;
     uint8_t mFolders = 0;

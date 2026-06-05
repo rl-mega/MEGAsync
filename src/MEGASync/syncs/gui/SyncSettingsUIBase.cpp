@@ -8,7 +8,6 @@
 #include "ui_SyncSettingsUIBase.h"
 #ifndef Q_OS_WIN
 #include "MegaApplication.h"
-#include "PermissionsDialog.h"
 #endif
 
 #include <QDateTime>
@@ -35,13 +34,6 @@ SyncSettingsUIBase::SyncSettingsUIBase(QWidget* parent):
             &SyncSettingsUIBase::onOpenMegaIgnoreFinished);
 
     connect(ui->gSyncs, &RemoteItemUi::addClicked, this, &SyncSettingsUIBase::addButtonClicked);
-
-#ifndef Q_OS_WINDOWS
-    connect(ui->gSyncs,
-            &RemoteItemUi::permissionsClicked,
-            this,
-            &SyncSettingsUIBase::onPermissionsClicked);
-#endif
 
     connect(mSyncInfo, &SyncInfo::syncStateChanged, this, &SyncSettingsUIBase::onSyncStateChanged);
 }
@@ -149,47 +141,19 @@ void SyncSettingsUIBase::setAddButtonEnabled(bool enabled)
     ui->gSyncs->setAddButtonEnabled(enabled);
 }
 
-#ifndef Q_OS_WIN
-void SyncSettingsUIBase::onPermissionsClicked()
-{
-    MegaSyncApp->getStatsEventHandler()->sendTrackedEvent(
-        AppStatsEvents::EventType::SETTINGS_PERMISSIONS_CLICKED);
-    MegaSyncApp->getMegaApi()->setDefaultFolderPermissions(
-        Preferences::instance()->folderPermissionsValue());
-    int folderPermissions = MegaSyncApp->getMegaApi()->getDefaultFolderPermissions();
-    MegaSyncApp->getMegaApi()->setDefaultFilePermissions(
-        Preferences::instance()->filePermissionsValue());
-    int filePermissions = MegaSyncApp->getMegaApi()->getDefaultFilePermissions();
-
-    QPointer<PermissionsDialog> dialog = new PermissionsDialog(this);
-    dialog->setFolderPermissions(folderPermissions);
-    dialog->setFilePermissions(filePermissions);
-    DialogOpener::showDialog<PermissionsDialog>(
-        dialog,
-        [dialog]()
-        {
-            if (dialog->result() == QDialog::Accepted)
-            {
-                const auto filePermissions = dialog->filePermissions();
-                const auto folderPermissions = dialog->folderPermissions();
-
-                if (filePermissions != Preferences::instance()->filePermissionsValue() ||
-                    folderPermissions != Preferences::instance()->folderPermissionsValue())
-                {
-                    Preferences::instance()->setFilePermissionsValue(filePermissions);
-                    MegaSyncApp->getMegaApi()->setDefaultFilePermissions(filePermissions);
-
-                    Preferences::instance()->setFolderPermissionsValue(folderPermissions);
-                    MegaSyncApp->getMegaApi()->setDefaultFolderPermissions(folderPermissions);
-                }
-            }
-        });
-}
-#endif
-
 void SyncSettingsUIBase::setDisabledSyncsText()
 {
     ui->lDisabledSyncs->setText(disableString());
+}
+
+bool SyncSettingsUIBase::event(QEvent* event)
+{
+    if (event->type() == QEvent::LanguageChange)
+    {
+        setDisabledSyncsText();
+    }
+
+    return QWidget::event(event);
 }
 
 void SyncSettingsUIBase::openExclusionsDialog(std::shared_ptr<SyncSettings> sync)
@@ -198,7 +162,8 @@ void SyncSettingsUIBase::openExclusionsDialog(std::shared_ptr<SyncSettings> sync
     if (syncDir.exists())
     {
         QPointer<QmlDialogWrapper<SyncExclusions>> exclusions =
-            new QmlDialogWrapper<SyncExclusions>(this, sync->getLocalFolder());
+            new QmlDialogWrapper<SyncExclusions>(Utilities::getTopParent<SettingsDialog>(this),
+                                                 sync->getLocalFolder());
         DialogOpener::showDialog(exclusions);
     }
     else
@@ -231,7 +196,7 @@ void SyncSettingsUIBase::initTable()
 void SyncSettingsUIBase::showOpenMegaIgnoreError()
 {
     MessageDialogInfo msgInfo;
-    msgInfo.parent = this;
+    msgInfo.parent = Utilities::getTopParent<SettingsDialog>(this);
     msgInfo.descriptionText = tr("Error opening megaignore file");
     MessageDialogOpener::warning(msgInfo);
 }

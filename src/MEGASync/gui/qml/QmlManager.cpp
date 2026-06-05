@@ -1,6 +1,7 @@
 #include "QmlManager.h"
 
 #include "AccountInfoData.h"
+#include "AccountStateQuickWidget.h"
 #include "ApiEnums.h"
 #include "AppStatsEvents.h"
 #include "ChooseFile.h"
@@ -57,8 +58,18 @@ void QmlManager::registerCommonQmlElements()
 
     qmlRegisterUncreatableType<LoginController>("LoginController", 1, 0, "LoginController",
                                                 QString::fromUtf8("Cannot create WarningLevel in QML"));
-    qmlRegisterUncreatableType<AppStatsEvents>("AppStatsEvents", 1, 0, "AppStatsEvents",
-                                               QString::fromUtf8("Not creatable as it is an enum type"));
+    qmlRegisterUncreatableType<AccountStateQuickWidget>(
+        "AccountStateQuickWidget",
+        1,
+        0,
+        "AccountStateQuickWidget",
+        QString::fromUtf8("Cannot create AccountStateQuickWidget in QML"));
+    qmlRegisterUncreatableMetaObject(AppStatsEvents::staticMetaObject,
+                                     "AppStatsEvents",
+                                     1,
+                                     0,
+                                     "AppStatsEvents",
+                                     QString::fromUtf8("Not creatable as it is an enum type"));
     qmlRegisterUncreatableType<SyncInfo>(
         "SyncInfo",
         1,

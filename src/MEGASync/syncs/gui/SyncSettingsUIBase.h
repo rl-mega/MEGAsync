@@ -137,7 +137,7 @@ public:
                     auto it = messageBoxTitle.begin();
                     (*it) = it->toUpper();
                     MessageDialogInfo msgInfo;
-                    msgInfo.parent = this;
+                    msgInfo.parent = Utilities::getTopParent<QDialog>(this);
                     msgInfo.titleText = messageBoxTitle;
                     msgInfo.descriptionText = getOperationFailText(sync);
                     msgInfo.textFormat = Qt::RichText;
@@ -171,7 +171,7 @@ public:
                         if (errorCode != mega::MegaError::API_OK)
                         {
                             MessageDialogInfo msgInfo;
-                            msgInfo.parent = this;
+                            msgInfo.parent = Utilities::getTopParent<QDialog>(this);
                             msgInfo.titleText = title;
                             msgInfo.textFormat = Qt::RichText;
                             msgInfo.descriptionText =
@@ -189,7 +189,7 @@ public:
                 [this](std::shared_ptr<mega::MegaError> err)
                 {
                     MessageDialogInfo msgInfo;
-                    msgInfo.parent = this;
+                    msgInfo.parent = Utilities::getTopParent<QDialog>(this);
                     msgInfo.titleText = getErrorRemovingTitle();
                     msgInfo.descriptionText = getErrorRemovingText(err);
                     msgInfo.textFormat = Qt::RichText;
@@ -214,14 +214,13 @@ public:
 
 public slots:
     virtual void addButtonClicked(mega::MegaHandle = mega::INVALID_HANDLE) = 0;
-#ifndef Q_OS_WINDOWS
-    void onPermissionsClicked();
-#endif
 
 signals:
     void disableParentDialog(bool state);
 
 protected:
+    bool event(QEvent* event) override;
+
     Ui::SyncSettingsUIBase* ui;
     SyncTableView* mTable;
     QDialog* mParentDialog;

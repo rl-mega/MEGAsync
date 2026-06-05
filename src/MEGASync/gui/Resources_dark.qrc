@@ -15,9 +15,6 @@
         <file alias="switch_off_pressed">images/themed/dark/switch_off_pressed.svg</file>
         <file alias="switch_off_hover">images/themed/dark/switch_off_hover.svg</file>
         <file alias="switch_off">images/themed/dark/switch_off.svg</file>
-        <file alias="images/Small_Free.png">images/Small_Free.png</file>
-        <file alias="images/Small_Free@2x.png">images/Small_Free@2x.png</file>
-        <file alias="images/Small_Free@3x.png">images/Small_Free@3x.png</file>
         <file alias="images/help-icon.svg">images/help-icon.svg</file>
         <file alias="radio_unchecked">images/themed/dark/radio_unchecked.svg</file>
         <file alias="radio_unchecked_pressed">images/themed/dark/radio_unchecked_pressed.svg</file>
@@ -156,7 +153,7 @@
         <file alias="arrow-up-small-thin-outline-support-success.svg">images/themed/dark/arrow-up-small-thin-outline-support-success.svg</file>
         <file alias="app-icon">images/themed/dark/app-icon.svg</file>
         <file alias="scanning_icon">images/themed/dark/scanning_icon.svg</file>
-        <file alias="settings">images/themed/dark/settings.svg</file>
+        <file alias="settings-icon">images/themed/dark/settings.svg</file>
         <file alias="arrow_corner_right">images/themed/dark/Stalled Issues/Path/arrow_corner_right.svg</file>
         <file alias="x_square_small_thin_outline_secondary">images/themed/dark/x_square_small_thin_outline_secondary.svg</file>
         <file alias="pause_square_small_thin_outline_secondary">images/themed/dark/pause_square_small_thin_outline_secondary.svg</file>

@@ -58,7 +58,6 @@
 
 #lLearnMore {
   text-decoration: underline;
-  color: #2C5BEB; /*colorToken.link-primary*/
 }
 </string>
   </property>

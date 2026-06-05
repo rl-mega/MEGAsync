@@ -7,6 +7,7 @@
 #include <QDate>
 
 #include <algorithm>
+#include <memory>
 
 SyncModel::SyncModel(QObject* parent):
     QAbstractListModel(parent)
@@ -246,9 +247,9 @@ QString SyncModel::getErrorMessage(int row) const
                        "%1 was stopped because you logged out. Resume the %1 to re-enable.")
                 .arg(typeStr);
         }
-        return QCoreApplication::translate(
-            "MegaSyncError",
+        std::unique_ptr<const char[]> syncErrorText(
             mega::MegaSync::getMegaSyncErrorCode(syncSetting->getError()));
+        return QCoreApplication::translate("MegaSyncError", syncErrorText.get());
     }
     else
     {

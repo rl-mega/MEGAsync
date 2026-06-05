@@ -1,14 +1,12 @@
 #include "AvatarWidget.h"
 
-#include "Utilities.h"
-#include "MegaApplication.h"
 #include "Avatar.h"
-#include "StatsEventHandler.h"
 
+#include <QFileInfo>
 #include <QLinearGradient>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QWindow>
-#include <QMouseEvent>
 
 static const int AVATAR_DIAMETER (60);
 static const int AVATAR_LETTER_SIZE_PT_FULL (60);
@@ -65,8 +63,7 @@ void AvatarWidget::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
     {
-        MegaSyncApp->openSettings(SettingsDialog::ACCOUNT_TAB);
-        MegaSyncApp->getStatsEventHandler()->sendTrackedEvent(AppStatsEvents::EventType::AVATAR_CLICKED, true);
+        emit clicked();
     }
 }
 

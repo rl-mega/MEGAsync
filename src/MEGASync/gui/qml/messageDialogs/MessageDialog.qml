@@ -20,7 +20,7 @@ QmlDialog {
 
     property MessageDialogMediumSizes sizes: MessageDialogMediumSizes {}
 
-    property real totalWidth: Math.max(sizes.defaultMinimumWidth, contentColum.implicitWidth + sizes.leftContentMargin + sizes.rightContentMargin)
+    property real totalWidth: Math.min(sizes.defaultMaximumWidth, Math.max(sizes.defaultMinimumWidth, contentColum.implicitWidth + sizes.leftContentMargin + sizes.rightContentMargin))
     property real totalHeight: Math.max(sizes.defaultMinimumHeight, contentColum.implicitHeight + sizes.topContentMargin + sizes.bottomContentMargin)
 
     width: window.totalWidth
@@ -97,7 +97,6 @@ QmlDialog {
             id: topContentRow
 
             Layout.fillWidth: true
-            Layout.fillHeight: true
             spacing: sizes.topContentRowSpacing
 
             SvgImage {
@@ -112,7 +111,7 @@ QmlDialog {
                 visible: imageItem.source !== ""
             }
 
-            Column {
+            ColumnLayout {
                 id: textColumn
 
                 Layout.fillWidth: true
@@ -141,7 +140,6 @@ QmlDialog {
 
         Row {
             Layout.fillWidth: true
-            Layout.fillHeight: true
             spacing: sizes.topContentRowSpacing
 
             Item {
@@ -169,7 +167,6 @@ QmlDialog {
             id: bottomButtonsRow
 
             Layout.fillWidth: true
-            Layout.fillHeight: true
             spacing: sizes.bottomButtonsRowSpacing - 2 * Constants.focusBorderWidth
             layoutDirection: Qt.RightToLeft
 

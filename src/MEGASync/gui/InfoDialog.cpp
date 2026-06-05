@@ -117,9 +117,9 @@ InfoDialog::InfoDialog(MegaApplication* app, QWidget* parent, InfoDialog* olddia
 
     connect(ui->bTransferManager, SIGNAL(pauseResumeClicked()), this, SLOT(pauseResumeClicked()));
     connect(ui->bTransferManager,
-            SIGNAL(transferManagerClicked()),
+            &TransfersSummaryQuickWidget::transferManagerClicked,
             this,
-            SLOT(on_bTransferManager_clicked()));
+            &InfoDialog::onTransferManagerClicked);
 
     connect(ui->wSortNotifications, SIGNAL(clicked()), this, SLOT(onActualFilterClicked()));
 
@@ -149,6 +149,17 @@ InfoDialog::InfoDialog(MegaApplication* app, QWidget* parent, InfoDialog* olddia
             });
 
     connect(ui->bCreateSync, &QAbstractButton::clicked, this, &InfoDialog::onAddSyncClicked);
+
+    connect(ui->bAvatar,
+            &AvatarWidget::clicked,
+            this,
+            []()
+            {
+                MegaSyncApp->openSettings(SettingsDialog::ACCOUNT_TAB);
+                MegaSyncApp->getStatsEventHandler()->sendTrackedEvent(
+                    AppStatsEvents::EventType::AVATAR_CLICKED,
+                    true);
+            });
 
     // Set window properties
 #ifdef Q_OS_LINUX
@@ -1106,9 +1117,9 @@ void InfoDialog::on_bSettings_clicked()
 
 void InfoDialog::on_bUpgrade_clicked()
 {
-    auto discountInfo = mDiscountPolicy ? mDiscountPolicy->getDiscountInfo() : nullptr;
+    auto hasOffer = mDiscountPolicy && mDiscountPolicy->isCampaignActive();
 
-    if (!discountInfo)
+    if (!hasOffer)
     {
         MegaSyncApp->getStatsEventHandler()->sendTrackedEvent(
             AppStatsEvents::EventType::UPGRADE_CLICKED_INFO_DIALOG,
@@ -1156,7 +1167,7 @@ void InfoDialog::onOverlayClicked()
     app->uploadActionClicked(AppStatsEvents::EventType::INFO_DIALOG_UPLOAD_CLICKED);
 }
 
-void InfoDialog::on_bTransferManager_clicked()
+void InfoDialog::onTransferManagerClicked()
 {
     emit userActivity();
     app->transferManagerActionClicked();
@@ -1275,7 +1286,7 @@ bool InfoDialog::eventFilter(QObject *obj, QEvent *e)
 {
     if (obj == ui->wStorageUsage && e->type() == QEvent::MouseButtonPress)
     {
-        on_bStorageDetails_clicked();
+        onStorageDetailsClicked();
         return true;
     }
 
@@ -1337,7 +1348,7 @@ bool InfoDialog::eventFilter(QObject *obj, QEvent *e)
     return QDialog::eventFilter(obj, e);
 }
 
-void InfoDialog::on_bStorageDetails_clicked()
+void InfoDialog::onStorageDetailsClicked()
 {
     MegaSyncApp->getStatsEventHandler()->sendTrackedEvent(
         AppStatsEvents::EventType::STORAGE_USAGE_CLICKED_INFO_DIALOG);
@@ -1863,10 +1874,8 @@ void InfoDialog::updateUpgradeButtonState()
     if (hasOffer)
     {
         ui->bUpgrade->setText(tr("%1% off %2")
-                                  .arg(mDiscountPolicy->getDiscountInfo()->getPercentageDiscount())
-                                  .arg(Utilities::getReadablePlanFromId(
-                                      mDiscountPolicy->getDiscountInfo()->getAccountLevel(),
-                                      false)));
+                                  .arg(mDiscountPolicy->getPercentage())
+                                  .arg(mDiscountPolicy->getPlanName(false)));
     }
     else
     {

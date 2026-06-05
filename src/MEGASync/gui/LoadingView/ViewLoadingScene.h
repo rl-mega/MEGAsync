@@ -357,17 +357,7 @@ public:
         mViewLayout(nullptr)
     {}
 
-    ~ViewLoadingScene()
-    {
-        if (mLoadingDelegate)
-        {
-            mLoadingDelegate->deleteLater();
-        }
-        if (mLoadingModel)
-        {
-            mLoadingModel->deleteLater();
-        }
-    }
+    ~ViewLoadingScene() {}
 
     bool isLoadingViewSet() const
     {
@@ -445,6 +435,14 @@ public:
             mLoadingDelegate = new LoadingSceneDelegate<DelegateWidget>(mLoadingView);
             mLoadingView->setModel(mLoadingModel);
             mLoadingView->setItemDelegate(mLoadingDelegate);
+
+            mLoadingView->setStyleSheet(
+                QLatin1String("QTreeView {\n"
+                              "  background-color: #000000; /*colorToken.page-background*/\n"
+                              "  color: #000000; /*colorToken.text-primary*/\n"
+                              "  border: none;\n"
+                              "}\n"));
+            TokenParserWidgetManager::instance()->registerWidgetForTheming(mLoadingView);
         }
 
         if (state)

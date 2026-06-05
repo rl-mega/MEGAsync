@@ -107,6 +107,7 @@ FocusScope {
         placeholderTextColor: colors.placeholder
         color: enabled ? colors.text : colors.textDisabled
         selectedTextColor: colors.textInverse
+        verticalAlignment: TextInput.AlignVCenter
 
         font {
             pixelSize: Texts.Text.Size.MEDIUM

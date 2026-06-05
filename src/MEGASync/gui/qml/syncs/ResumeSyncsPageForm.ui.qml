@@ -10,24 +10,19 @@ import components.pages 1.0
 
 import SyncInfo 1.0
 
-FooterButtonsPage {
+Item {
     id: root
 
+    readonly property int imageSpacing: 48
+    readonly property int textBottomSpacing: 60
+    readonly property int designLineHeight: 20
+
     property alias image : imageItem
+    property alias footerButtons: footerButtonsItem
 
-    footerButtons {
-        leftSecondary.visible: false
-        rightSecondary {
-            text: Strings.viewInSettings
-            visible: syncsDataAccess.syncOrigin  !== SyncInfo.MAIN_APP_ORIGIN
-        }
-        rightPrimary {
-            text: Strings.done
-            icons: Icon {}
-        }
-    }
+    implicitHeight: mainLayout.height + Constants.defaultComponentSpacing
 
-    ColumnLayout {
+    Column {
         id: mainLayout
 
         anchors {
@@ -35,7 +30,6 @@ FooterButtonsPage {
             left: parent.left
             right: parent.right
         }
-        spacing: 8
 
         Image {
             id: imageItem
@@ -44,11 +38,15 @@ FooterButtonsPage {
             sourceSize: Qt.size(120, 120)
         }
 
+        Item {
+            height: Constants.imageSpacing
+            width: parent.width
+        }
+
         Texts.Text {
             id: titleItem
 
-            Layout.preferredWidth: parent.width
-            Layout.topMargin: 40
+            width: parent.width
             text: SyncsStrings.finalStepSyncTitle
             font {
                 pixelSize: Texts.Text.Size.LARGE
@@ -57,18 +55,50 @@ FooterButtonsPage {
             wrapMode: Text.Wrap
         }
 
+        Item {
+            height: Constants.defaultComponentSpacing
+            width: parent.width
+        }
+
         Texts.SecondaryText {
             id: descriptionItem
 
-            Layout.topMargin: 30
-            Layout.preferredWidth: parent.width
+            width: parent.width
             text: SyncsStrings.finalStepSync
             font.pixelSize: Texts.Text.Size.MEDIUM
             wrapMode: Text.Wrap
-            lineHeight: 20
+            lineHeight: designLineHeight
             lineHeightMode: Text.FixedHeight
         }
 
-    } // ColumnLayout: mainLayout
+        Item {
+            height: root.textBottomSpacing
+            width: parent.width
+        }
 
+        Item { // trick: wrapper to avoid the anchoring colision (inside the footerbuttons) with the layout manager. that's the only purpose.
+            width: parent.width
+            height: footerButtonsItem.implicitHeight
+
+            FooterButtons {
+                id: footerButtonsItem
+
+                leftSecondary.visible: false
+                rightSecondary {
+                    text: Strings.viewInSettings
+                    visible: syncsDataAccess.syncOrigin  !== SyncInfo.MAIN_APP_ORIGIN
+                }
+
+                rightPrimary {
+                    text: Strings.done
+                    icons: Icon {}
+                }
+            }
+        }
+
+        Item {
+            height: Constants.defaultComponentSpacing
+            width: parent.width
+        }
+    }
 }

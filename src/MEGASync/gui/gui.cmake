@@ -64,6 +64,7 @@ set(DESKTOP_APP_GUI_HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlClipboard.h
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlDialog.h
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlDialogWrapper.h
+    ${CMAKE_CURRENT_LIST_DIR}/qml/QmlDialogWrapperUtilities.h
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlWidgetWrapper.h
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlInstancesManager.h
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlItem.h
@@ -76,6 +77,7 @@ set(DESKTOP_APP_GUI_HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/qml/ChooseFile.h
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlDeviceName.h
     ${CMAKE_CURRENT_LIST_DIR}/qml/AccountInfoData.h
+    ${CMAKE_CURRENT_LIST_DIR}/qml/AccountStateQuickWidget.h
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlUtils.h
     ${CMAKE_CURRENT_LIST_DIR}/qml/MegaQuickWidget.h
     ${CMAKE_CURRENT_LIST_DIR}/qml/TransfersSummaryQuickWidget.h
@@ -218,6 +220,7 @@ set(DESKTOP_APP_GUI_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/qml/ChooseFile.cpp
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlDeviceName.cpp
     ${CMAKE_CURRENT_LIST_DIR}/qml/AccountInfoData.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/qml/AccountStateQuickWidget.cpp
     ${CMAKE_CURRENT_LIST_DIR}/qml/QmlUtils.cpp
     ${CMAKE_CURRENT_LIST_DIR}/qml/MegaQuickWidget.cpp
     ${CMAKE_CURRENT_LIST_DIR}/qml/TransfersSummaryQuickWidget.cpp

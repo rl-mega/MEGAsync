@@ -31,21 +31,34 @@ void NodeSelectorDelegate::paint(QPainter* painter,
         pen.setWidth(1);
 
         // Text color
-        if (!index.flags().testFlag(Qt::ItemIsEnabled))
+        QColor textColor;
+
+        const auto isTakenDown(
+            index.data(toInt(NodeSelectorModelRoles::IS_TAKEN_DOWN_ROLE)).toBool());
+
+        if (isTakenDown)
         {
-            auxOpt.palette.setBrush(
-                QPalette::ColorRole::Text,
-                TokenParserWidgetManager::instance()->getColor(QLatin1String("text-disabled")));
+            textColor = TokenParserWidgetManager::instance()->getColor(QLatin1String("text-error"));
+
+            if (!index.flags().testFlag(Qt::ItemIsEnabled))
+            {
+                static constexpr double ALPHA_CORRECTION_FOR_ERROR_DISABLED = 0.5;
+                textColor.setAlphaF(ALPHA_CORRECTION_FOR_ERROR_DISABLED);
+            }
+        }
+        else if (!index.flags().testFlag(Qt::ItemIsEnabled))
+        {
+            textColor =
+                TokenParserWidgetManager::instance()->getColor(QLatin1String("text-disabled"));
         }
         else
         {
-            auxOpt.palette.setBrush(
-                QPalette::ColorRole::Text,
-                TokenParserWidgetManager::instance()->getColor(QLatin1String("text-primary")));
-            auxOpt.palette.setBrush(
-                QPalette::ColorRole::HighlightedText,
-                TokenParserWidgetManager::instance()->getColor(QLatin1String("text-primary")));
+            textColor =
+                TokenParserWidgetManager::instance()->getColor(QLatin1String("text-primary"));
         }
+
+        auxOpt.palette.setBrush(QPalette::ColorRole::Text, textColor);
+        auxOpt.palette.setBrush(QPalette::ColorRole::HighlightedText, textColor);
 
         // Separator
         {
@@ -151,7 +164,14 @@ QPixmap NodeRowDelegate::paintForDrag(const QModelIndex& index, QAbstractItemVie
 
     QStyleOptionViewItem option;
     option.initFrom(view);
+    option.widget = view;
     option.rect = QRect(0, 0, rect.width(), rect.height());
+    option.decorationPosition = QStyleOptionViewItem::Left;
+    option.decorationAlignment = Qt::AlignCenter;
+    option.displayAlignment = Qt::AlignVCenter | Qt::AlignLeft;
+    option.textElideMode = view->textElideMode();
+    option.showDecorationSelected =
+        view->style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, nullptr, view);
 
     QPainter painter(&pixmap);
 
@@ -216,6 +236,7 @@ QSize NodeRowDelegate::sizeHint(const QStyleOptionViewItem& option, const QModel
 void NodeRowDelegate::initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const
 {
     QStyledItemDelegate::initStyleOption(option, index);
+
     if (!index.flags().testFlag(Qt::ItemIsEnabled))
     {
         option->state &= ~QStyle::State_Enabled;

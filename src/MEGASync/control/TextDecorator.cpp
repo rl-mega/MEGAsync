@@ -1,5 +1,7 @@
 #include "TextDecorator.h"
 
+#include "TokenParserWidgetManager.h"
+
 #include <QDebug>
 
 namespace Text
@@ -40,25 +42,26 @@ void Link::process(QString &input) const
 {
     Decorator::process(input);
 
+    // QLabel honors `<a style="color:...">`, but QTextBrowser (e.g. WordWrapLabel) renders
+    // anchors with QPalette::Link and ignores inline style on the <a> itself. Wrapping the
+    // link text in <font color=...> applies the token color in both cases.
+    const QString linkColor =
+        TokenParserWidgetManager::instance()->getColor(QLatin1String("link-primary")).name();
+
     auto headerLength(headerTag.length());
     auto currentIndex(0);
     foreach(auto link, mLinkAddresses)
     {
         currentIndex = input.indexOf(headerTag, currentIndex);
-        if (link.isEmpty())
-        {
-            input.replace(currentIndex, headerLength, QString::fromUtf8("<a href=\"empty\">"));
-        }
-        else
-        {
-            input.replace(currentIndex,
-                          headerLength,
-                          QString::fromUtf8("<a href=\"%1\">").arg(link));
-        }
-        currentIndex += headerLength;
+        const QString href = link.isEmpty() ? QLatin1String("empty") : link;
+        const QString replacement =
+            QString::fromUtf8("<a href=\"%1\" style=\"color:%2;\"><font color=\"%2\">")
+                .arg(href, linkColor);
+        input.replace(currentIndex, headerLength, replacement);
+        currentIndex += replacement.length();
     }
 
-    input.replace(QLatin1String("[/A]"), QLatin1String("</a>"));
+    input.replace(QLatin1String("[/A]"), QLatin1String("</font></a>"));
 }
 
 ClearLink::ClearLink(QObject *parent) : Decorator(parent)

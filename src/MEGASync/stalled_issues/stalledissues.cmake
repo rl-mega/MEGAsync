@@ -29,6 +29,7 @@ set(DESKTOP_APP_STALLED_ISSUES_HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/model/StalledIssuesUtilities.h
     ${CMAKE_CURRENT_LIST_DIR}/model/StalledIssuesModel.h
     ${CMAKE_CURRENT_LIST_DIR}/model/StalledIssue.h
+    ${CMAKE_CURRENT_LIST_DIR}/model/StalledIssueHashDiscardTracker.h
     ${CMAKE_CURRENT_LIST_DIR}/model/StalledIssuesProxyModel.h
     ${CMAKE_CURRENT_LIST_DIR}/model/StalledIssuesFactory.h
     ${CMAKE_CURRENT_LIST_DIR}/model/MultiStepIssueSolver.h
@@ -63,6 +64,7 @@ set(DESKTOP_APP_STALLED_ISSUES_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/model/FolderMatchedAgainstFileIssue.cpp
     ${CMAKE_CURRENT_LIST_DIR}/model/StalledIssuesUtilities.cpp
     ${CMAKE_CURRENT_LIST_DIR}/model/StalledIssue.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/model/StalledIssueHashDiscardTracker.cpp
     ${CMAKE_CURRENT_LIST_DIR}/model/StalledIssuesModel.cpp
     ${CMAKE_CURRENT_LIST_DIR}/model/StalledIssuesProxyModel.cpp
     ${CMAKE_CURRENT_LIST_DIR}/model/StalledIssuesFactory.cpp

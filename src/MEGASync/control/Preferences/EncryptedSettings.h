@@ -24,6 +24,8 @@ public:
     void remove(const QString & key);
     void clear();
     void sync();
+    QSettings::Status status() const;
+    QString settingsFileName() const;
 
 protected:
     QByteArray XOR(const QByteArray &key, const QByteArray& data) const;

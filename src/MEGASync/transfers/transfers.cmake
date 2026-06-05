@@ -1,6 +1,7 @@
 
 set(DESKTOP_APP_TRANSFERS_HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/model/InfoDialogTransfersProxyModel.h
+    ${CMAKE_CURRENT_LIST_DIR}/gui/DuplicatedNodeDialogs/DuplicatedNodeConflictAutoResolution.h
     ${CMAKE_CURRENT_LIST_DIR}/gui/DuplicatedNodeDialogs/DuplicatedNodeDialog.h
     ${CMAKE_CURRENT_LIST_DIR}/gui/DuplicatedNodeDialogs/DuplicatedNodeInfo.h
     ${CMAKE_CURRENT_LIST_DIR}/gui/DuplicatedNodeDialogs/DuplicatedNodeItem.h
@@ -31,6 +32,7 @@ set(DESKTOP_APP_TRANSFERS_HEADERS
 
 set(DESKTOP_APP_TRANSFERS_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/model/TransfersModel.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/gui/DuplicatedNodeDialogs/DuplicatedNodeConflictAutoResolution.cpp
     ${CMAKE_CURRENT_LIST_DIR}/gui/DuplicatedNodeDialogs/DuplicatedNodeDialog.cpp
     ${CMAKE_CURRENT_LIST_DIR}/gui/DuplicatedNodeDialogs/DuplicatedNodeInfo.cpp
     ${CMAKE_CURRENT_LIST_DIR}/gui/DuplicatedNodeDialogs/DuplicatedNodeItem.cpp

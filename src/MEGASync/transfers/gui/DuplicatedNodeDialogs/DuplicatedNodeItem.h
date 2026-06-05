@@ -56,8 +56,12 @@ protected:
 protected slots:
     void on_bAction_clicked();
 
+private slots:
+    void rebuildLearnMore();
+
 private:
     Ui::DuplicatedNodeItem *ui;
+    QString mLearnMoreUrl;
 
     void setActionAndTitle(const QString& text);
 };

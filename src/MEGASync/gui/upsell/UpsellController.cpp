@@ -89,11 +89,13 @@ void UpsellController::onRequestFinish(mega::MegaRequest* request, mega::MegaErr
     {
         case mega::MegaRequest::TYPE_GET_PRICING:
         {
-            if (error->getErrorCode() == mega::MegaError::API_OK)
+            const bool requestSucceeded = error->getErrorCode() == mega::MegaError::API_OK;
+            if (requestSucceeded)
             {
                 processGetPricingRequest(request->getPricing(), request->getCurrency());
                 emit dataReady();
             }
+            emit pricingRequestFinished(requestSucceeded);
             break;
         }
         default:

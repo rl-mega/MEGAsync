@@ -22,6 +22,7 @@
 
 STDAPI DllRegisterServer(void);
 STDAPI DllUnregisterServer(void);
+STDAPI installPostUpdateContextMenus(void);
 
 // {0229E5E7-09E9-45CF-9228-0228EC7D5F17}
 const CLSID CLSID_ContextMenuExt = 
@@ -55,6 +56,51 @@ const TCHAR ShellExtNotFoundFriendlyName[] = L"\x01 MEGA (NotFound)";
 
 HINSTANCE   g_hInst     = NULL;
 long g_cDllRef = 0;
+
+namespace
+{
+HRESULT RegisterClassicContextMenu(PCWSTR pszModule)
+{
+    HRESULT hr = RegisterInprocServer(pszModule,
+                                      CLSID_ContextMenuExt,
+                                      ContextMenuExtFriendlyName,
+                                      L"Apartment");
+    if (!SUCCEEDED(hr))
+        return hr;
+
+    hr = RegisterShellExtContextMenuHandler(L"*", CLSID_ContextMenuExt, ContextMenuExtFriendlyName);
+    if (!SUCCEEDED(hr))
+        return hr;
+
+    hr = RegisterShellExtContextMenuHandler(L"AllFilesystemObjects",
+                                            CLSID_ContextMenuExt,
+                                            ContextMenuExtFriendlyName);
+    if (!SUCCEEDED(hr))
+        return hr;
+
+    hr = RegisterShellExtContextMenuHandler(L"Drive",
+                                            CLSID_ContextMenuExt,
+                                            ContextMenuExtFriendlyName);
+    if (!SUCCEEDED(hr))
+        return hr;
+
+    Utilities::updateExplorer();
+
+    return hr;
+}
+
+void UnregisterClassicContextMenu()
+{
+    UnregisterShellExtContextMenuHandler(L"*", CLSID_ContextMenuExt, ContextMenuExtFriendlyNameOld);
+    UnregisterShellExtContextMenuHandler(L"*", CLSID_ContextMenuExt, ContextMenuExtFriendlyName);
+    UnregisterShellExtContextMenuHandler(L"AllFilesystemObjects",
+                                         CLSID_ContextMenuExt,
+                                         ContextMenuExtFriendlyName);
+    UnregisterShellExtContextMenuHandler(L"Drive",
+                                         CLSID_ContextMenuExt,
+                                         ContextMenuExtFriendlyName);
+}
+}
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
@@ -95,13 +141,11 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
             hr = winrt::make<SimpleFactory<ContextMenuCommand>>().as(riid, ppv);
         }
     }
-    else
+
+    if (!Utilities::haveModernContextMenu() && IsEqualCLSID(CLSID_ContextMenuExt, rclsid))
     {
-        if (IsEqualCLSID(CLSID_ContextMenuExt, rclsid))
-        {
-            hr = E_OUTOFMEMORY;
-            pClassFactory = new (std::nothrow) ClassFactoryContextMenuExt();
-        }
+        hr = E_OUTOFMEMORY;
+        pClassFactory = new (std::nothrow) ClassFactoryContextMenuExt();
     }
 
     if (IsEqualCLSID(CLSID_ShellExtSynced, rclsid))
@@ -174,32 +218,9 @@ STDAPI DllRegisterServer(void)
         }
         else
         {
-            hr = RegisterInprocServer(szModule,
-                                      CLSID_ContextMenuExt,
-                                      ContextMenuExtFriendlyName,
-                                      L"Apartment");
+            hr = RegisterClassicContextMenu(szModule);
             if (!SUCCEEDED(hr))
                 return hr;
-
-            hr = RegisterShellExtContextMenuHandler(L"*",
-                                                    CLSID_ContextMenuExt,
-                                                    ContextMenuExtFriendlyName);
-            if (!SUCCEEDED(hr))
-                return hr;
-
-            hr = RegisterShellExtContextMenuHandler(L"AllFilesystemObjects",
-                                                    CLSID_ContextMenuExt,
-                                                    ContextMenuExtFriendlyName);
-            if (!SUCCEEDED(hr))
-                return hr;
-
-            hr = RegisterShellExtContextMenuHandler(L"Drive",
-                                                    CLSID_ContextMenuExt,
-                                                    ContextMenuExtFriendlyName);
-            if (!SUCCEEDED(hr))
-                return hr;
-
-            Utilities::updateExplorer();
         }
 
         hr = RegisterInprocServer(szModule,
@@ -280,12 +301,10 @@ STDAPI DllUnregisterServer(void)
         {
             SparsePackageManager::modifySparsePackage(SparsePackageManager::MODIFY_TYPE::UNINSTALL);
         }
-        else
-        {
-            hr = UnregisterInprocServer(CLSID_ContextMenuExt);
-            if (!SUCCEEDED(hr))
-                return hr;
-        }
+
+        hr = UnregisterInprocServer(CLSID_ContextMenuExt);
+        if (!SUCCEEDED(hr))
+            return hr;
 
         hr = UnregisterInprocServer(CLSID_ShellExtSynced);
         if (!SUCCEEDED(hr)) return hr;;
@@ -299,21 +318,7 @@ STDAPI DllUnregisterServer(void)
         hr = UnregisterInprocServer(CLSID_ShellExtNotFound);
         if (!SUCCEEDED(hr)) return hr;
 
-        if (!Utilities::haveModernContextMenu())
-        {
-            UnregisterShellExtContextMenuHandler(L"*",
-                                                 CLSID_ContextMenuExt,
-                                                 ContextMenuExtFriendlyNameOld);
-            UnregisterShellExtContextMenuHandler(L"*",
-                                                 CLSID_ContextMenuExt,
-                                                 ContextMenuExtFriendlyName);
-            UnregisterShellExtContextMenuHandler(L"AllFilesystemObjects",
-                                                 CLSID_ContextMenuExt,
-                                                 ContextMenuExtFriendlyName);
-            UnregisterShellExtContextMenuHandler(L"Drive",
-                                                 CLSID_ContextMenuExt,
-                                                 ContextMenuExtFriendlyName);
-        }
+        UnregisterClassicContextMenu();
         UnregisterShellExtOverlayHandler(CLSID_ShellExtSynced, ShellExtSyncedFriendlyNameOld);
         UnregisterShellExtOverlayHandler(CLSID_ShellExtSynced, ShellExtSyncedFriendlyName);
         UnregisterShellExtOverlayHandler(CLSID_ShellExtPending, ShellExtPendingFriendlyNameOld);
@@ -328,5 +333,29 @@ STDAPI DllUnregisterServer(void)
     __except(EXCEPTION_EXECUTE_HANDLER)
     {
     }
+    return E_UNEXPECTED;
+}
+
+STDAPI installPostUpdateContextMenus(void)
+{
+    __try
+    {
+        TCHAR szModule[MAX_PATH];
+        if (GetModuleFileName(g_hInst, szModule, MAX_PATH) == 0)
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        if (Utilities::haveModernContextMenu())
+        {
+            return SparsePackageManager::modifySparsePackage(
+                SparsePackageManager::MODIFY_TYPE::INSTALL);
+        }
+
+        return RegisterClassicContextMenu(szModule);
+    }
+    __except (EXCEPTION_EXECUTE_HANDLER)
+    {}
+
     return E_UNEXPECTED;
 }

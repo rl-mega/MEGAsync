@@ -4,6 +4,7 @@
 #include "DialogOpener.h"
 #include "megaapi.h"
 #include "QmlDialog.h"
+#include "QmlDialogWrapperUtilities.h"
 #include "QmlManager.h"
 #include "StatsEventHandler.h"
 
@@ -39,24 +40,26 @@ public:
     QString contextName() const;
 
     template<typename DialogType, typename... A>
-    static auto showDialog(A&&... args)
+    static auto showDialog(QmlDialog* parent, A&&... args)
     {
         return getDialog<DialogType>(
             [](auto& dialog)
             {
                 return DialogOpener::showDialog(dialog);
             },
+            parent,
             std::forward<A>(args)...);
     }
 
     template<typename DialogType, typename... A>
-    static auto addDialog(A&&... args)
+    static auto addDialog(QmlDialog* parent, A&&... args)
     {
         return getDialog<DialogType>(
             [](auto& dialog)
             {
                 return DialogOpener::addDialog(dialog);
             },
+            parent,
             std::forward<A>(args)...);
     }
 
@@ -65,7 +68,7 @@ signals:
 
 private:
     template<typename DialogType, typename... A>
-    static QPointer<QmlDialogWrapper<DialogType>> createOrGetDialog(A&&... args)
+    static QPointer<QmlDialogWrapper<DialogType>> createOrGetDialog(QmlDialog* parent, A&&... args)
     {
         QPointer<QmlDialogWrapper<DialogType>> dialog(nullptr);
         if (auto dialogInfo = DialogOpener::findDialog<QmlDialogWrapper<DialogType>>())
@@ -74,16 +77,16 @@ private:
         }
         else
         {
-            dialog = new QmlDialogWrapper<DialogType>(std::forward<A>(args)...);
+            dialog = new QmlDialogWrapper<DialogType>(parent, std::forward<A>(args)...);
         }
 
         return dialog;
     }
 
     template<typename DialogType, typename Operation, typename... A>
-    static auto getDialog(Operation operation, A&&... args)
+    static auto getDialog(Operation operation, QmlDialog* parent, A&&... args)
     {
-        auto dialog(createOrGetDialog<DialogType>(std::forward<A>(args)...));
+        auto dialog(createOrGetDialog<DialogType>(parent, std::forward<A>(args)...));
         return operation(dialog);
     }
 };
@@ -91,6 +94,7 @@ private:
 class QmlDialogWrapperBase : public QWidget
 {
     Q_OBJECT
+
 public:
     QmlDialogWrapperBase(QWidget *parent = 0);
     ~QmlDialogWrapperBase();
@@ -130,6 +134,13 @@ public:
     Q_INVOKABLE void accept();
     Q_INVOKABLE void reject();
 
+    // Re-bind the inner QML window to its current parent widget's native
+    // QWindow as transient parent. Idempotent. No-op if there is no
+    // parent widget or the inner window has not been created yet.
+    Q_INVOKABLE void attachQmlToParentWindow();
+
+    QPointer<QmlDialog> getQmlWindow() const;
+
 signals:
     void finished(int result);
     void requestClose();
@@ -147,12 +158,33 @@ private:
     QTimer mShowDelay;
 };
 
-
 template <class Type>
 class QmlDialogWrapper : public QmlDialogWrapperBase
 {
 
 public:
+    template<typename... A>
+    QmlDialogWrapper(QmlDialog* parent, A&&... args):
+        QmlDialogWrapper(static_cast<QWidget*>(nullptr), std::forward<A>(args)...)
+    {
+        if (parent)
+        {
+            // QML->QML: the QWidget-parent constructor delegated above runs
+            // with a null QWidget parent, so its attachToParentWindow path
+            // is skipped. Bind the inner QQuickWindow directly to the QML
+            // parent here so it still behaves as an embedded modal dialog.
+            if (mWindow)
+            {
+                mWindow->attachToParentWindow(parent);
+            }
+
+            const auto parentGeometry = parent->geometry();
+
+            // Set on QmlDialog to use for showWhenCreatedQMLs
+            QmlDialogWrapperUtilities::setParentGeometry(mWindow, parentGeometry);
+            QmlDialogWrapperUtilities::setParentGeometry(this, parentGeometry);
+        }
+    }
 
     template <typename... A>
     QmlDialogWrapper(QWidget* parent = nullptr, A&&... args)
@@ -201,8 +233,51 @@ public:
 
             if (mWindow)
             {
+                // Bind the inner QQuickWindow to the parent widget's native
+                // window so it behaves as a true child/modal dialog of it.
+                // Without this, QML dialogs with a parent show as standalone
+                // resizable top-level windows because Qt::WindowModal has no
+                // transient parent to apply to.
+                //
+                // IMPORTANT: for QML->QML the parent widget is a
+                // QmlDialogWrapperBase whose own QWidget is never shown; the
+                // visible window is its inner QQuickWindow (mWindow). We must
+                // use that inner QQuickWindow as transient parent. Otherwise
+                // QWidget::createWinId() materializes an empty native window
+                // and the WM renders it as a stray frame around the dialog.
+                if (QWidget* pw = this->parentWidget())
+                {
+                    QWindow* parentWindow = nullptr;
+                    if (auto* qmlBase = qobject_cast<QmlDialogWrapperBase*>(pw))
+                    {
+                        // Reach the visible inner QQuickWindow (overridden
+                        // windowHandle in QmlDialogWrapperBase returns mWindow).
+                        parentWindow = qmlBase->windowHandle();
+                    }
+                    else if (QWidget* topLevel = pw->window())
+                    {
+                        topLevel->createWinId();
+                        parentWindow = topLevel->windowHandle();
+                    }
+
+                    if (parentWindow)
+                    {
+                        mWindow->attachToParentWindow(parentWindow);
+                    }
+                }
+
                 mWrapper->setParent(mWindow);
                 mWindow->getInstancesManager()->initInstances(mWrapper);
+
+                if (parent)
+                {
+                    const auto parentGeometry = parent->frameGeometry();
+                    // Set on QmlDialog to use for showWhenCreatedQMLs
+                    QmlDialogWrapperUtilities::setParentGeometry(mWindow, parentGeometry);
+                    QmlDialogWrapperUtilities::setParentGeometry(this, parentGeometry);
+                }
+
+                QmlDialogWrapperUtilities::setIsQML(this);
             }
 
             connect(mWindow, &QmlDialog::finished, this, [this]()
@@ -267,20 +342,34 @@ public:
 
     void setShowWhenCreated()
     {
-        connect(
-            mWrapper,
-            &Type::dataReady,
-            this,
-            [this]()
-            {
-                mWindow->showNormal();
-                mWindow->centerAndRaise();
-            },
-            Qt::UniqueConnection);
+        connect(mWrapper,
+                &Type::dataReady,
+                this,
+                [this]()
+                {
+                    mWindow->readyToBeShow();
+                });
+
+        QmlDialogWrapperUtilities::setShowWhenCreated(mWindow, true);
     }
 
 private:
     QPointer<Type> mWrapper;
 };
+
+namespace QmlDialogWrapperUtilities
+{
+template<typename DialogType>
+static QmlDialog* getQmlDialog()
+{
+    auto dialog = DialogOpener::findDialog<QmlDialogWrapper<DialogType>>();
+    if (dialog)
+    {
+        return dialog->getDialog()->getQmlWindow();
+    }
+
+    return nullptr;
+}
+}
 
 #endif // QML_COMPONENT_WRAPPER_H

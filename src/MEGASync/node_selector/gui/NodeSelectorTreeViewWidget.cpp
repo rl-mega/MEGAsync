@@ -15,6 +15,10 @@
 #include "TokenizableItems/TokenPropertySetter.h"
 #include "ui_NodeSelectorTreeViewWidget.h"
 
+#include <QKeyEvent>
+
+#include <algorithm>
+
 const int CHECK_UPDATED_NODES_INTERVAL = 1000;
 const int IMMEDIATE_CHECK_UPDATES_NODES_THRESHOLD = 200;
 
@@ -81,6 +85,8 @@ NodeSelectorTreeViewWidget::NodeSelectorTreeViewWidget(SelectTypeSPtr mode, QWid
     // Empty pages
     ui->emptyPage->installEventFilter(this);
     ui->emptyFolderPage->installEventFilter(this);
+    ui->emptyPage->setFocusPolicy(Qt::StrongFocus);
+    ui->emptyFolderPage->setFocusPolicy(Qt::StrongFocus);
     // By default, the empty pages don´t allow drag and drop.
     // emptyFolderPage can accept drops if "enableDragAndDrop" is called with true
     ui->emptyFolderPage->setAcceptDrops(false);
@@ -115,13 +121,9 @@ void NodeSelectorTreeViewWidget::init()
     mProxyModel->setSourceModel(mModel.get());
 
     connect(mProxyModel.get(),
-            &NodeSelectorProxyModel::modelSorted,
+            &NodeSelectorProxyModel::levelLoaded,
             this,
-            &NodeSelectorTreeViewWidget::onExpandReady);
-    connect(mProxyModel.get(),
-            &NodeSelectorProxyModel::modelSorted,
-            this,
-            &NodeSelectorTreeViewWidget::viewReady);
+            &NodeSelectorTreeViewWidget::onLevelLoaded);
     connect(mProxyModel.get(),
             &NodeSelectorProxyModel::modelSorted,
             this,
@@ -195,6 +197,11 @@ bool NodeSelectorTreeViewWidget::event(QEvent* event)
         }
 
         initEmptyMessages();
+
+        if (mModel && mProxyModel && mSelectType)
+        {
+            setEmptyFolderPage();
+        }
     }
     else if (event->type() == QEvent::MouseButtonRelease)
     {
@@ -210,15 +217,18 @@ bool NodeSelectorTreeViewWidget::eventFilter(QObject* watched, QEvent* event)
     {
         if (auto dropEvent = static_cast<QDragEnterEvent*>(event))
         {
+            auto proxyIndex = ui->tMegaFolders->indexAt(dropEvent->pos());
+            auto sourceIndex = mProxyModel->mapToSource(proxyIndex);
+
             if (!dropEvent->mimeData()->urls().isEmpty())
             {
                 ui->tMegaFolders->dragEnterEvent(dropEvent);
             }
             else if (mModel->canDropMimeData(dropEvent->mimeData(),
                                              Qt::MoveAction,
-                                             -1,
-                                             -1,
-                                             mModel->index(0, 0, QModelIndex())))
+                                             sourceIndex.row(),
+                                             sourceIndex.column(),
+                                             sourceIndex.parent()))
             {
                 dropEvent->acceptProposedAction();
             }
@@ -226,11 +236,11 @@ bool NodeSelectorTreeViewWidget::eventFilter(QObject* watched, QEvent* event)
     }
     else if (event->type() == QEvent::DragMove)
     {
-        if (auto dropEvent = static_cast<QDragEnterEvent*>(event))
+        if (auto moveEvent = static_cast<QDragMoveEvent*>(event))
         {
-            if (!dropEvent->mimeData()->urls().isEmpty())
+            if (!moveEvent->mimeData()->urls().isEmpty())
             {
-                ui->tMegaFolders->dragMoveEvent(dropEvent);
+                ui->tMegaFolders->dragMoveEvent(moveEvent);
             }
         }
     }
@@ -244,6 +254,26 @@ bool NodeSelectorTreeViewWidget::eventFilter(QObject* watched, QEvent* event)
         if (watched == ui->tMegaFolders->viewport())
         {
             updateColumnsWidth(false);
+        }
+    }
+    // Propagate key events to the view
+    else if ((watched == ui->emptyPage || watched == ui->emptyFolderPage) &&
+             (event->type() == QEvent::ShortcutOverride || event->type() == QEvent::KeyPress))
+    {
+        if (auto keyEvent = static_cast<QKeyEvent*>(event); keyEvent->matches(QKeySequence::Paste))
+        {
+            if (event->type() == QEvent::ShortcutOverride)
+            {
+                event->accept();
+            }
+            else
+            {
+                QMetaObject::invokeMethod(ui->tMegaFolders,
+                                          "onPasteShortcutActivated",
+                                          Qt::DirectConnection);
+            }
+
+            return true;
         }
     }
     else if (watched == ui->emptyFolderPage && event->type() == QEvent::ContextMenu)
@@ -309,6 +339,7 @@ bool NodeSelectorTreeViewWidget::isEmpty() const
 void NodeSelectorTreeViewWidget::enableDragAndDrop(bool enable)
 {
     ui->emptyFolderPage->setAcceptDrops(enable);
+    ui->emptyPage->setAcceptDrops(enable);
     ui->tMegaFolders->setDragEnabled(enable);
     ui->tMegaFolders->viewport()->setAcceptDrops(enable);
     ui->tMegaFolders->setDropIndicatorShown(enable);
@@ -425,8 +456,9 @@ void NodeSelectorTreeViewWidget::checkNewFolderAdded(QPointer<NodeSelectorModelI
     }
 }
 
-void NodeSelectorTreeViewWidget::onExpandReady()
+void NodeSelectorTreeViewWidget::onLevelLoaded()
 {
+    // Initialise the view only the first time, but always refresh the empty/nav state below
     if (ui->tMegaFolders->model() == nullptr)
     {
         ui->tMegaFolders->setContextMenuPolicy(Qt::DefaultContextMenu);
@@ -443,7 +475,6 @@ void NodeSelectorTreeViewWidget::onExpandReady()
         ui->tMegaFolders->header()->setProperty("HeaderIconCenter", true);
 
         // those connects needs to be done after the model is set, do not move them
-
         connect(ui->tMegaFolders->selectionModel(),
                 &QItemSelectionModel::selectionChanged,
                 this,
@@ -473,9 +504,9 @@ void NodeSelectorTreeViewWidget::onExpandReady()
                 this,
                 &NodeSelectorTreeViewWidget::onItemDoubleClick);
         connect(ui->tMegaFolders,
-                &NodeSelectorTreeView::nodeSelected,
+                &NodeSelectorTreeView::enterKeyPressed,
                 this,
-                &NodeSelectorTreeViewWidget::okBtnClicked);
+                &NodeSelectorTreeViewWidget::enterKeyPressed);
         connect(ui->bForward,
                 &QPushButton::clicked,
                 this,
@@ -495,7 +526,13 @@ void NodeSelectorTreeViewWidget::onExpandReady()
         setRootIndex(mModel->hasTopRootIndex() ? mProxyModel->index(0, 0) : QModelIndex());
 
         setStyleSheet(styleSheet());
+
+        // View ready to work with it > View init and model loaded
+        emit viewReady();
     }
+
+    // Check empty view page and forward/backward navigation buttons
+    checkViewOnModelChange();
 }
 
 void NodeSelectorTreeViewWidget::onGoBackClicked()
@@ -639,7 +676,7 @@ void NodeSelectorTreeViewWidget::onItemDoubleClick(const QModelIndex& index)
     if (!isAllowedToEnterInIndex(index))
     {
         auto item = mModel->getItemByIndex(index);
-        if (item && item->getNode()->isFile())
+        if (item && item->getNode()->isFile() && !item->isTakenDown())
         {
             MegaSyncApp->downloadACtionClickedWithHandles(QList<mega::MegaHandle>()
                                                           << item->getNode()->getHandle());
@@ -679,9 +716,9 @@ void NodeSelectorTreeViewWidget::addCustomButtons(NodeSelectorTreeViewWidget* wd
     }
 }
 
-std::unique_ptr<NodeSelectorProxyModel> NodeSelectorTreeViewWidget::createProxyModel()
+std::shared_ptr<NodeSelectorProxyModel> NodeSelectorTreeViewWidget::createProxyModel()
 {
-    return std::unique_ptr<NodeSelectorProxyModel>(new NodeSelectorProxyModel);
+    return mSelectType->createProxyModel();
 }
 
 void NodeSelectorTreeViewWidget::setLoadingSceneVisible(bool blockUi)
@@ -768,7 +805,8 @@ void NodeSelectorTreeViewWidget::onRenameClicked()
     int access = mMegaApi->getAccess(node.get());
     // This is for an extra protection as we don´t show the rename action if one of this conditions
     // are not met
-    if (!node || access < MegaShare::ACCESS_FULL || !node->isNodeKeyDecrypted())
+    if (!node || node->isTakenDown() || access < MegaShare::ACCESS_FULL ||
+        !node->isNodeKeyDecrypted())
     {
         return;
     }
@@ -804,7 +842,7 @@ void NodeSelectorTreeViewWidget::onDeleteClicked(const QList<mega::MegaHandle>& 
     if (showConfirmationMessageBox)
     {
         MessageDialogInfo msgInfo;
-        msgInfo.parent = ui->tMegaFolders;
+        msgInfo.parent = Utilities::getTopParent<QDialog>(ui->tMegaFolders);
         msgInfo.buttons = QMessageBox::Yes | QMessageBox::No;
         msgInfo.defaultButton = QMessageBox::Yes;
         msgInfo.finishFunc = [this, handles, permanently](QPointer<MessageDialogResult> msg)
@@ -891,7 +929,7 @@ void NodeSelectorTreeViewWidget::onLeaveShareClicked(const QList<mega::MegaHandl
     }
 
     MessageDialogInfo msgInfo;
-    msgInfo.parent = ui->tMegaFolders;
+    msgInfo.parent = Utilities::getTopParent<QDialog>(ui->tMegaFolders);
     msgInfo.buttons = QMessageBox::Yes | QMessageBox::No;
     msgInfo.defaultButton = QMessageBox::Yes;
     msgInfo.buttonsText.insert(QMessageBox::Yes, tr("Leave"));
@@ -1068,7 +1106,8 @@ bool NodeSelectorTreeViewWidget::onNodesUpdate(mega::MegaApi*, mega::MegaNodeLis
                     mUpdatedButInvisibleNodes.append(UpdateNodesInfo(node, index));
                 }
             }
-            else if (node->getChanges() & MegaNode::CHANGE_TYPE_ATTRIBUTES)
+            else if (node->getChanges() &
+                     (MegaNode::CHANGE_TYPE_ATTRIBUTES | MegaNode::CHANGE_TYPE_PUBLIC_LINK))
             {
                 if (existenceType == NodeState::EXISTS)
                 {
@@ -1624,6 +1663,11 @@ QModelIndexList NodeSelectorTreeViewWidget::getSelectedIndexes() const
     return ui->tMegaFolders->selectedRows();
 }
 
+bool NodeSelectorTreeViewWidget::containsTakenDownSelected() const
+{
+    return ui->tMegaFolders->containsTakenDownItem(ui->tMegaFolders->selectedRows());
+}
+
 void NodeSelectorTreeViewWidget::checkBackForwardButtons()
 {
     ui->navigationButtons->setVisible(!mNavigationInfo.backwardHandles.isEmpty() ||
@@ -1685,10 +1729,25 @@ void NodeSelectorTreeViewWidget::setEmptyFolderPage()
     if (currentRootIndex != topRootIndex && mProxyModel->rowCount(currentRootIndex) == 0)
     {
         ui->stackedWidget->setCurrentWidget(ui->emptyFolderPage);
+        auto emptyFolderInfo = mSelectType->getEmptyFolderPageInfo();
+        if (emptyFolderInfo.isValid())
+        {
+            // By default, it is hidden
+            ui->titleEmptyFolderLabel->setVisible(true);
+            ui->titleEmptyFolderLabel->setText(emptyFolderInfo.title);
+            ui->descriptionEmptyFolderLabel->setText(emptyFolderInfo.description);
+            ui->emptyFolderIcon->setIcon(emptyFolderInfo.icon);
+            ui->emptyFolderIcon->setIsTokenized(emptyFolderInfo.iconTokenized);
+        }
     }
     else
     {
         setViewPage();
+    }
+
+    if (ui->stackedWidget->currentWidget() != ui->treeViewPage)
+    {
+        ui->stackedWidget->currentWidget()->setFocus(Qt::OtherFocusReason);
     }
 }
 
@@ -1790,6 +1849,17 @@ void NodeSelectorTreeViewWidget::Navigation::clear()
     forwardHandles.clear();
 }
 
+bool SelectType::okButtonEnabled(NodeSelectorTreeViewWidget*, const QModelIndexList& selected)
+{
+    return std::none_of(
+        selected.cbegin(),
+        selected.cend(),
+        [](const QModelIndex& index)
+        {
+            return index.data(toInt(NodeSelectorModelRoles::IS_TAKEN_DOWN_ROLE)).toBool();
+        });
+}
+
 bool SelectType::isAllowedToNavigateInside(const QModelIndex& index)
 {
     auto item = NodeSelectorModel::getItemByIndex(index);
@@ -1797,7 +1867,8 @@ bool SelectType::isAllowedToNavigateInside(const QModelIndex& index)
     {
         return false;
     }
-    return !(item->getNode()->isFile() || item->isCloudDrive() || item->isRubbishBin());
+    return !(item->getNode()->isFile() || item->isCloudDrive() || item->isRubbishBin() ||
+             item->isTakenDown());
 }
 
 void SelectType::newFolderButtonVisibility(NodeSelectorTreeViewWidget* wdg)
@@ -1830,6 +1901,11 @@ QPushButton* SelectType::createCustomButton(const QString& type,
     return button;
 }
 
+std::shared_ptr<NodeSelectorProxyModel> SelectType::createProxyModel()
+{
+    return std::make_shared<NodeSelectorProxyModel>();
+}
+
 void DownloadType::init(NodeSelectorTreeViewWidget* wdg)
 {
     wdg->ui->bNewFolder->hide();
@@ -1845,7 +1921,8 @@ void DownloadType::newFolderButtonVisibility(NodeSelectorTreeViewWidget* wdg)
 
 bool DownloadType::okButtonEnabled(NodeSelectorTreeViewWidget* wdg, const QModelIndexList& selected)
 {
-    return !selected.isEmpty() || cloudDriveIsCurrentRootIndex(wdg);
+    return SelectType::okButtonEnabled(wdg, selected) &&
+           (!selected.isEmpty() || cloudDriveIsCurrentRootIndex(wdg));
 }
 
 NodeSelectorModelItemSearch::Types DownloadType::allowedTypes()
@@ -1862,9 +1939,9 @@ void SyncType::init(NodeSelectorTreeViewWidget* wdg)
     wdg->mModel->showReadOnlyFolders(false);
 }
 
-bool SyncType::okButtonEnabled(NodeSelectorTreeViewWidget*, const QModelIndexList& selected)
+bool SyncType::okButtonEnabled(NodeSelectorTreeViewWidget* wdg, const QModelIndexList& selected)
 {
-    if (selected.size() == 1)
+    if (selected.size() == 1 && SelectType::okButtonEnabled(wdg, selected))
     {
         bool isSyncable =
             selected.first().data(toInt(NodeSelectorModelRoles::IS_SYNCABLE_FOLDER_ROLE)).toBool();
@@ -1879,6 +1956,22 @@ NodeSelectorModelItemSearch::Types SyncType::allowedTypes()
 {
     return NodeSelectorModelItemSearch::Type::CLOUD_DRIVE |
            NodeSelectorModelItemSearch::Type::INCOMING_SHARE;
+}
+
+SelectType::EmptyFolderPageInfo SyncType::getEmptyFolderPageInfo()
+{
+    EmptyFolderPageInfo info;
+    info.title = NodeSelectorTreeViewWidget::tr("No folders to select");
+    info.description = NodeSelectorTreeViewWidget::tr("Only folders can be synced");
+    info.icon = Utilities::getIcon(QLatin1String("synced-folder"), Utilities::AttributeType::NONE);
+    info.descriptionLabelFontSize = QLatin1String("body-1");
+    info.iconTokenized = false;
+    return info;
+}
+
+std::shared_ptr<NodeSelectorProxyModel> SyncType::createProxyModel()
+{
+    return std::make_shared<NodeSelectorProxyModelSync>();
 }
 
 bool SyncType::isAllowedToNavigateInside(const QModelIndex& index)
@@ -1904,9 +1997,9 @@ void StreamType::newFolderButtonVisibility(NodeSelectorTreeViewWidget* wdg)
     wdg->setNewFolderButtonVisibility(false);
 }
 
-bool StreamType::okButtonEnabled(NodeSelectorTreeViewWidget*, const QModelIndexList& selected)
+bool StreamType::okButtonEnabled(NodeSelectorTreeViewWidget* wdg, const QModelIndexList& selected)
 {
-    if (selected.size() == 1)
+    if (selected.size() == 1 && SelectType::okButtonEnabled(wdg, selected))
     {
         return selected.first().data(toInt(NodeSelectorModelRoles::IS_FILE_ROLE)).toBool();
     }
@@ -1921,6 +2014,11 @@ NodeSelectorModelItemSearch::Types StreamType::allowedTypes()
            NodeSelectorModelItemSearch::Type::BACKUP;
 }
 
+std::shared_ptr<NodeSelectorProxyModel> StreamType::createProxyModel()
+{
+    return std::make_shared<NodeSelectorProxyModelStream>();
+}
+
 void UploadType::init(NodeSelectorTreeViewWidget* wdg)
 {
     wdg->mModel->showFiles(false);
@@ -1930,15 +2028,15 @@ void UploadType::init(NodeSelectorTreeViewWidget* wdg)
 bool UploadType::okButtonEnabled(NodeSelectorTreeViewWidget* wdg, const QModelIndexList& selected)
 {
     auto itemsSelected(selected.size());
-    // If we have one or less items selected
     if (itemsSelected < 2)
     {
-        return itemsSelected == 1 ?
-                   !selected.first().data(toInt(NodeSelectorModelRoles::IS_FILE_ROLE)).toBool() :
-                   !wdg->isCurrentRootIndexReadOnly();
+        return itemsSelected == 1 ? SelectType::okButtonEnabled(wdg, selected) &&
+                                        !selected.first()
+                                             .data(toInt(NodeSelectorModelRoles::IS_FILE_ROLE))
+                                             .toBool() :
+                                    !wdg->isCurrentRootIndexReadOnly();
     }
 
-    // If we have more than one item selected, we cannot upload anything
     return false;
 }
 
@@ -2070,6 +2168,12 @@ void CloudDriveType::selectionHasChanged(NodeSelectorTreeViewWidget* wdg)
 }
 
 //////////////////
+bool MoveBackupType::okButtonEnabled(NodeSelectorTreeViewWidget* wdg,
+                                     const QModelIndexList& selected)
+{
+    return selected.size() == 1 && SelectType::okButtonEnabled(wdg, selected);
+}
+
 NodeSelectorModelItemSearch::Types MoveBackupType::allowedTypes()
 {
     return NodeSelectorModelItemSearch::Type::CLOUD_DRIVE;

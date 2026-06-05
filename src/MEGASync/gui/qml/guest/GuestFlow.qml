@@ -79,7 +79,6 @@ Item {
         },
         State {
             name: root.stateFetchNodesFinished
-            extend: root.stateLoggedOut
             StateChangeScript {
                 script: window.hide();
             }
@@ -263,15 +262,13 @@ Item {
             leftButton {
                 text: OnboardingStrings.signUp
                 onClicked: {
-                    loginControllerAccess.state = LoginController.SIGN_UP;
-                    guestContentAccess.onInitialPageButtonClicked();
+                    guestContentAccess.onSignUpClicked();
                 }
             }
             rightButton {
                 text: OnboardingStrings.login
                 onClicked: {
-                    loginControllerAccess.state = LoginController.LOGGED_OUT;
-                    guestContentAccess.onInitialPageButtonClicked();
+                    guestContentAccess.onLoginClicked();
                 }
             }
 

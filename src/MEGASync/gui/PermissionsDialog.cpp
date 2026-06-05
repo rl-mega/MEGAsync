@@ -3,6 +3,9 @@
 #include "ui_PermissionsDialog.h"
 
 #include <QDebug>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
+#include <QSignalBlocker>
 
 PermissionsDialog::PermissionsDialog(QWidget *parent) :
     QDialog(parent),
@@ -17,6 +20,17 @@ PermissionsDialog::PermissionsDialog(QWidget *parent) :
     connect(ui->wFilePublic, SIGNAL(onPermissionChanged()), this, SLOT(permissionsChanged()));
     connect(ui->wFolderGroup, SIGNAL(onPermissionChanged()), this, SLOT(permissionsChanged()));
     connect(ui->wFolderPublic, SIGNAL(onPermissionChanged()), this, SLOT(permissionsChanged()));
+
+    // Folder owner is fixed at 7; group and public are octal digits.
+    auto* folderValidator =
+        new QRegularExpressionValidator(QRegularExpression(QStringLiteral("7[0-7]{2}")), this);
+    ui->lFolderPermissions->setValidator(folderValidator);
+
+    // File owner has read+write locked on (only execute is user-toggleable, see
+    // configurePermissions(ENABLED_EXECUTION) above), so the owner digit must be 6 or 7.
+    auto* fileValidator =
+        new QRegularExpressionValidator(QRegularExpression(QStringLiteral("[67][0-7]{2}")), this);
+    ui->lFilePermissions->setValidator(fileValidator);
 }
 
 PermissionsDialog::~PermissionsDialog()
@@ -62,6 +76,45 @@ void PermissionsDialog::permissionsChanged()
     ui->lFilePermissions->setText(QString::fromUtf8("%1%2%3").arg(ui->wFileOwner->getCurrentPermissions())
                                                              .arg(ui->wFileGroup->getCurrentPermissions())
                                                              .arg(ui->wFilePublic->getCurrentPermissions()));
+}
+
+void PermissionsDialog::on_lFolderPermissions_textEdited(const QString& text)
+{
+    if (text.length() != 3)
+    {
+        return;
+    }
+
+    bool ok = false;
+    const int value = text.toInt(&ok, 8);
+    if (!ok)
+    {
+        return;
+    }
+
+    const QSignalBlocker blockGroup(ui->wFolderGroup);
+    const QSignalBlocker blockPublic(ui->wFolderPublic);
+    setFolderPermissions(value);
+}
+
+void PermissionsDialog::on_lFilePermissions_textEdited(const QString& text)
+{
+    if (text.length() != 3)
+    {
+        return;
+    }
+
+    bool ok = false;
+    const int value = text.toInt(&ok, 8);
+    if (!ok)
+    {
+        return;
+    }
+
+    const QSignalBlocker blockOwner(ui->wFileOwner);
+    const QSignalBlocker blockGroup(ui->wFileGroup);
+    const QSignalBlocker blockPublic(ui->wFilePublic);
+    setFilePermissions(value);
 }
 
 void PermissionsDialog::on_bUpdate_clicked()

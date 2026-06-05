@@ -9,6 +9,15 @@ import ServiceUrls 1.0
 SelectiveSyncPageForm {
     id: root
 
+    anchors {
+        left: parent.left
+        right: parent.right
+        top: parent.top
+    }
+
+    // added to avoid qml warning.
+    function setInitialFocusPosition() { }
+
     signal selectiveSyncMoveToBack
     signal selectiveSyncMoveToSuccess
     signal fullSyncMoveToSuccess

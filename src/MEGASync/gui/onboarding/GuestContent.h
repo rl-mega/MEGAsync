@@ -1,6 +1,7 @@
 #ifndef GUESTCONTENT_H
 #define GUESTCONTENT_H
 
+#include "LoginController.h"
 #include "QmlDialogWrapper.h"
 
 class GuestContent : public QMLComponent
@@ -17,7 +18,11 @@ public:
     Q_INVOKABLE void onExitClicked();
     Q_INVOKABLE void onVerifyEmailClicked();
     Q_INVOKABLE void onLogoutClicked();
-    Q_INVOKABLE void onInitialPageButtonClicked();
+    Q_INVOKABLE void onSignUpClicked();
+    Q_INVOKABLE void onLoginClicked();
+
+protected:
+    static void openOnboardingDialog(LoginController::State state);
 };
 
 #endif // GUESTCONTENT_H

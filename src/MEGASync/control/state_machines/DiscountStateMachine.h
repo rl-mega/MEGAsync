@@ -6,6 +6,7 @@
 #include <QElapsedTimer>
 #include <QObject>
 #include <QPointer>
+#include <QSignalTransition>
 #include <QStateMachine>
 #include <QTimer>
 

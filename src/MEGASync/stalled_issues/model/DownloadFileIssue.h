@@ -49,7 +49,7 @@ public:
 
     void fillIssue(const mega::MegaSyncStall* stall) override;
     bool canBeRetried() const;
-    bool checkForExternalChanges() override;
+    bool checkForExternalChanges(QObject* context) override;
 
     void sendFeedback();
     bool isSendingFeedback() const;

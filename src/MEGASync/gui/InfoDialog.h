@@ -88,7 +88,7 @@ public:
     void updateUiOnFolderTransferUpdate(const FolderTransferUpdateEvent& event);
     void setDiscountPolicy(QPointer<DiscountPolicy> policy);
 
-    void on_bStorageDetails_clicked();
+    void onStorageDetailsClicked();
     HighDpiResize<QDialog> highDpiResize;
 #ifdef _WIN32
     std::chrono::steady_clock::time_point lastWindowHideTime;
@@ -134,7 +134,7 @@ private slots:
     void on_bUpgradeOverDiskQuota_clicked();
     void openFolder(QString path);
     void onOverlayClicked();
-    void on_bTransferManager_clicked();
+    void onTransferManagerClicked();
     void onAddSyncClicked();
     void resetLoggedInMode();
 

@@ -31,14 +31,16 @@ void MessageDialogComponent::registerQmlModules()
 {
     if (!qmlRegistrationDone)
     {
-        qmlRegisterUncreatableType<MessageDialogButtonInfo>(
+        qmlRegisterUncreatableMetaObject(
+            MessageDialogButtonInfo::staticMetaObject,
             "MessageDialogButtonInfo",
             1,
             0,
             "MessageDialogButtonInfo",
             QString::fromLatin1("MessageDialogButtonInfo can only be used for the enum values"));
 
-        qmlRegisterUncreatableType<MessageDialogTextInfo>(
+        qmlRegisterUncreatableMetaObject(
+            MessageDialogTextInfo::staticMetaObject,
             "MessageDialogTextInfo",
             1,
             0,

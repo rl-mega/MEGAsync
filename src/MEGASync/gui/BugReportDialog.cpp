@@ -10,6 +10,7 @@
 
 #include <QCloseEvent>
 #include <QRegularExpression>
+#include <QStyle>
 
 using namespace mega;
 
@@ -20,11 +21,16 @@ BugReportDialog::BugReportDialog(QWidget* parent, MegaSyncLogger& logger):
 {
     ui->setupUi(this);
 
-    ui->lDescribeBug->setText(
-        ui->lDescribeBug->text() +
-        QString::fromUtf8("<span style=\"color:red; text-decoration:none;\">*</span>"));
     ui->bSubmit->setDefault(true);
-    ui->bSubmit->setEnabled(false);
+
+    // Description error is always there, even hidden
+    auto sizeP(ui->wDescriptionError->sizePolicy());
+    sizeP.setRetainSizeWhenHidden(true);
+    ui->wDescriptionError->setSizePolicy(sizeP);
+
+    // By default, hidden
+    setDescriptionErrorVisibility(false);
+    ui->bClearDescription->setVisible(false);
 
     mController->attachLogToReport(ui->cbAttachLogs->isChecked());
 
@@ -69,6 +75,10 @@ BugReportDialog::BugReportDialog(QWidget* parent, MegaSyncLogger& logger):
 
     connect(ui->bCancel, &QPushButton::clicked, this, &BugReportDialog::onCancelClicked);
     connect(ui->bSubmit, &QPushButton::clicked, this, &BugReportDialog::onSubmitClicked);
+    connect(ui->bClearDescription,
+            &QPushButton::clicked,
+            this,
+            &BugReportDialog::onClearDescriptionClicked);
     connect(ui->teDescribeBug,
             &QTextEdit::textChanged,
             this,
@@ -206,6 +216,13 @@ void BugReportDialog::onReportFailed()
 
 void BugReportDialog::onSubmitClicked()
 {
+    if (!isDescriptionValid())
+    {
+        setDescriptionErrorVisibility(true);
+        ui->teDescribeBug->setFocus();
+        return;
+    }
+
     mController->submitReport();
 }
 
@@ -249,13 +266,43 @@ void BugReportDialog::cancelSendReport()
 void BugReportDialog::onDescriptionChanged()
 {
     auto description(ui->teDescribeBug->toPlainText());
-    ui->bSubmit->setEnabled(!description.isEmpty());
     mController->setReportDescription(description);
+
+    const auto hasUserInput = !description.isEmpty();
+    ui->bClearDescription->setVisible(hasUserInput);
+
+    // Hide the error if visible
+    if (ui->wDescriptionError->isVisible())
+    {
+        setDescriptionErrorVisibility(false);
+    }
 }
 
 void BugReportDialog::onTitleChanged()
 {
     mController->setReportTitle(ui->leTitleBug->text());
+}
+
+void BugReportDialog::onClearDescriptionClicked()
+{
+    ui->teDescribeBug->clear();
+    ui->teDescribeBug->setFocus();
+}
+
+bool BugReportDialog::isDescriptionValid() const
+{
+    return ui->teDescribeBug->toPlainText().trimmed().length() >= mMinDescriptionLength;
+}
+
+void BugReportDialog::setDescriptionErrorVisibility(bool visible)
+{
+    ui->wDescriptionError->setVisible(visible);
+    // While the error is visible, we disable the button as the submit would fail again
+    ui->bSubmit->setEnabled(!visible);
+    ui->teDescribeBug->setProperty("error", visible);
+    ui->teDescribeBug->style()->unpolish(ui->teDescribeBug);
+    ui->teDescribeBug->style()->polish(ui->teDescribeBug);
+    ui->teDescribeBug->update();
 }
 
 void BugReportDialog::onDescribeBugTextChanged()

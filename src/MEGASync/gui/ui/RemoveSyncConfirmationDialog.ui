@@ -71,7 +71,7 @@ background-color: #FFFFFF;/*colorToken.page-background*/
        </property>
        <property name="icon">
         <iconset resource="../Resources_common.qrc">
-         <normaloff>:/images/icons/folder/synced-folder.png</normaloff>:/images/icons/folder/synced-folder.png</iconset>
+         <normaloff>:/synced-folder</normaloff>:/synced-folder</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -223,7 +223,7 @@ background-color: #FFFFFF;/*colorToken.page-background*/
   <customwidget>
    <class>TokenizableButton</class>
    <extends>QPushButton</extends>
-   <header>TokenizableItems/TokenizableButtons.h</header>
+   <header>tokenizer/TokenizableItems/TokenizableButtons.h</header>
   </customwidget>
   <customwidget>
    <class>IconLabel</class>

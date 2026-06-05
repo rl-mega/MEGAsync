@@ -59,10 +59,16 @@ bool NodeSelectorModelItem::isSpecialNode() const
     return (isCloudDrive() || isMyBackupsFolder() || isRubbishBin());
 }
 
+bool NodeSelectorModelItem::isTakenDown() const
+{
+    return mNode && mNode->isTakenDown();
+}
+
 bool NodeSelectorModelItem::canBeRenamed() const
 {
-    if (isCloudDrive() || isMyBackupsFolder() || isRubbishBin() || isInRubbishBin() ||
-        (mMegaApi->isInVault(mNode.get())) || (getNodeAccess() < mega::MegaShare::ACCESS_FULL))
+    if (isTakenDown() || isCloudDrive() || isMyBackupsFolder() || isRubbishBin() ||
+        isInRubbishBin() || (mMegaApi->isInVault(mNode.get())) ||
+        (getNodeAccess() < mega::MegaShare::ACCESS_FULL))
     {
         return false;
     }
@@ -70,8 +76,11 @@ bool NodeSelectorModelItem::canBeRenamed() const
     return true;
 }
 
-void NodeSelectorModelItem::createChildItems(std::unique_ptr<mega::MegaNodeList> nodeList)
+QList<QPointer<NodeSelectorModelItem>>
+    NodeSelectorModelItem::createChildItems(std::unique_ptr<mega::MegaNodeList> nodeList)
 {
+    QList<QPointer<NodeSelectorModelItem>> items;
+
     if (!mNode->isFile())
     {
         for (int i = 0; i < nodeList->size(); i++)
@@ -80,21 +89,35 @@ void NodeSelectorModelItem::createChildItems(std::unique_ptr<mega::MegaNodeList>
             auto child = createModelItem(std::move(node), mShowFiles, this);
             if (child->isValid())
             {
-                connect(child,
-                        &NodeSelectorModelItem::destroyed,
-                        this,
-                        &NodeSelectorModelItem::onChildDestroyed);
-                mChildItems.append(child);
+                items.append(child);
             }
             else
             {
                 child->deleteLater();
             }
         }
-
-        mRequestingChildren = false;
-        mChildrenAreInit = true;
     }
+
+    return items;
+}
+
+void NodeSelectorModelItem::initializeChildItems(
+    const QList<QPointer<NodeSelectorModelItem>>& items)
+{
+    for (const auto& item: items)
+    {
+        if (item)
+        {
+            connect(item,
+                    &NodeSelectorModelItem::destroyed,
+                    this,
+                    &NodeSelectorModelItem::onChildDestroyed);
+        }
+    }
+    mChildItems.append(items);
+    mChildrenCounter = static_cast<int>(mChildItems.size());
+    mRequestingChildren = false;
+    mChildrenAreInit = true;
 }
 
 bool NodeSelectorModelItem::areChildrenInitialized() const
@@ -260,7 +283,7 @@ QIcon NodeSelectorModelItem::getStatusIcons()
 {
     QIcon statusIcons; // first is selected state icon / second is normal state icon
 
-    if (mNode && !mNode->isNodeKeyDecrypted())
+    if (mNode && (mNode->isTakenDown() || !mNode->isNodeKeyDecrypted()))
     {
         statusIcons.addFile(QLatin1String("://images/node_selector/alert-circle-hover.png"),
                             QSize(),
@@ -311,33 +334,52 @@ NodeSelectorModelItem::Status NodeSelectorModelItem::getStatus() const
 
 bool NodeSelectorModelItem::isSyncable()
 {
-    return !isInRubbishBin() && mStatus != Status::SYNC && mStatus != Status::SYNC_PARENT &&
-           mStatus != Status::SYNC_CHILD && mStatus != Status::BACKUP &&
-           getNodeAccess() >= mega::MegaShare::ACCESS_FULL;
+    return !isTakenDown() && !isInRubbishBin() && mStatus != Status::SYNC &&
+           mStatus != Status::SYNC_PARENT && mStatus != Status::SYNC_CHILD &&
+           mStatus != Status::BACKUP && getNodeAccess() >= mega::MegaShare::ACCESS_FULL;
 }
 
 QList<QPointer<NodeSelectorModelItem>>
-    NodeSelectorModelItem::addNodes(QList<std::shared_ptr<MegaNode>> nodes)
+    NodeSelectorModelItem::buildNodes(const QList<std::shared_ptr<MegaNode>>& nodes)
 {
     QList<QPointer<NodeSelectorModelItem>> items;
-    foreach(auto& node, nodes)
+    foreach(const auto& node, nodes)
     {
         auto child = createModelItem(std::unique_ptr<MegaNode>(node->copy()), mShowFiles, this);
         if (child->isValid())
         {
             items.append(child);
-            connect(child,
-                    &NodeSelectorModelItem::destroyed,
-                    this,
-                    &NodeSelectorModelItem::onChildDestroyed);
-            mChildItems.append(child);
-            mChildrenCounter++;
         }
         else
         {
             child->deleteLater();
         }
     }
+
+    return items;
+}
+
+void NodeSelectorModelItem::appendNodes(const QList<QPointer<NodeSelectorModelItem>>& items)
+{
+    for (const auto& item: items)
+    {
+        if (item)
+        {
+            connect(item,
+                    &NodeSelectorModelItem::destroyed,
+                    this,
+                    &NodeSelectorModelItem::onChildDestroyed);
+        }
+    }
+    mChildItems.append(items);
+    mChildrenCounter += items.size();
+}
+
+QList<QPointer<NodeSelectorModelItem>>
+    NodeSelectorModelItem::addNodes(QList<std::shared_ptr<MegaNode>> nodes)
+{
+    auto items = buildNodes(nodes);
+    appendNodes(items);
     return items;
 }
 
@@ -458,6 +500,11 @@ bool NodeSelectorModelItem::isMyBackupsFolder() const
 bool NodeSelectorModelItem::isDeviceFolder() const
 {
     return false;
+}
+
+bool NodeSelectorModelItem::isFile() const
+{
+    return getNode() && getNode()->isFile();
 }
 
 bool NodeSelectorModelItem::isInShare() const

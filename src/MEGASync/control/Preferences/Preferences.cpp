@@ -6,10 +6,44 @@
 #include "StatsEventHandler.h"
 #include "Version.h"
 
+#include <QCryptographicHash>
 #include <QDesktopServices>
 #include <QDir>
 
 #include <cassert>
+
+namespace
+{
+QString sessionSummaryForLog(const QString& session)
+{
+    if (session.isEmpty())
+    {
+        return QString::fromUtf8("empty=1 len=0 sha256=-");
+    }
+
+    const auto utf8 = session.toUtf8();
+    const auto digest = QCryptographicHash::hash(utf8, QCryptographicHash::Sha256).toHex().left(12);
+
+    return QString::fromUtf8("empty=0 len=%1 sha256=%2")
+        .arg(utf8.size())
+        .arg(QString::fromLatin1(digest));
+}
+
+const char* settingsStatusToString(QSettings::Status status)
+{
+    switch (status)
+    {
+        case QSettings::NoError:
+            return "NoError";
+        case QSettings::AccessError:
+            return "AccessError";
+        case QSettings::FormatError:
+            return "FormatError";
+    }
+
+    return "UnknownError";
+}
+}
 
 using namespace mega;
 
@@ -456,6 +490,11 @@ void Preferences::setFileHash(const QString& filePath, const QString& fileHash)
 
 void Preferences::setSession(QString session)
 {
+    MegaApi::log(MegaApi::LOG_LEVEL_INFO,
+                 QString::fromUtf8("Session write requested. scope=general %1")
+                     .arg(sessionSummaryForLog(session))
+                     .toUtf8()
+                     .constData());
     mutex.lock();
     storeSessionInGeneral(session);
     mutex.unlock();
@@ -464,15 +503,24 @@ void Preferences::setSession(QString session)
 void Preferences::setSessionInUserGroup(QString session)
 {
     assert(logged());
-    setValueConcurrently(sessionKey, session);
+
+    QMutexLocker locker(&mutex);
+    mSettings->setValue(sessionKey, session);
+    MegaApi::log(MegaApi::LOG_LEVEL_INFO,
+                 QString::fromUtf8("Session write completed. scope=user %1")
+                     .arg(sessionSummaryForLog(session))
+                     .toUtf8()
+                     .constData());
+    syncSettingsLocked("setSessionInUserGroup");
 }
 
 void Preferences::storeSessionInGeneral(QString session)
 {
-    mutex.lock();
+    QMutexLocker locker(&mutex);
 
     QString currentAccount;
-    if (logged())
+    const bool storeInUserGroup = logged();
+    if (storeInUserGroup)
     {
         mSettings->setValue(sessionKey, session); //store in user group too (for backwards compatibility)
         mSettings->endGroup();
@@ -484,14 +532,22 @@ void Preferences::storeSessionInGeneral(QString session)
     {
         mSettings->beginGroup(currentAccount);
     }
-    mutex.unlock();
+
+    MegaApi::log(MegaApi::LOG_LEVEL_INFO,
+                 QString::fromUtf8("Session write completed. scope=general mirrorUserGroup=%1 %2")
+                     .arg(storeInUserGroup)
+                     .arg(sessionSummaryForLog(session))
+                     .toUtf8()
+                     .constData());
+    syncSettingsLocked("storeSessionInGeneral");
 }
 
 QString Preferences::getSessionInGeneral()
 {
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     QString currentAccount;
-    if (logged())
+    const bool readFromLoggedContext = logged();
+    if (readFromLoggedContext)
     {
         mSettings->endGroup();
         currentAccount = mSettings->value(currentAccountKey).toString();
@@ -502,26 +558,47 @@ QString Preferences::getSessionInGeneral()
     {
         mSettings->beginGroup(currentAccount);
     }
-    mutex.unlock();
+
+    MegaApi::log(
+        MegaApi::LOG_LEVEL_DEBUG,
+        QString::fromUtf8("Session read completed. scope=general requestedFromLoggedContext=%1 %2")
+            .arg(readFromLoggedContext)
+            .arg(sessionSummaryForLog(value))
+            .toUtf8()
+            .constData());
     return value;
 }
 
 
 QString Preferences::getSession()
 {
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     QString value;
-    if (logged())
+    bool usedUserGroup = false;
+    bool usedGeneralFallback = false;
+    const bool loggedAtRead = logged();
+
+    if (loggedAtRead)
     {
         value = mSettings->value(sessionKey).toString(); // for MEGAsync prior unfinished fetchnodes resumable sessions (<=4.3.1)
+        usedUserGroup = !value.isEmpty();
     }
 
     if (value.isEmpty() && needsFetchNodesInGeneral())
     {
         value = getSessionInGeneral(); // for MEGAsync with unfinished fetchnodes resumable sessions (>4.3.1)
+        usedGeneralFallback = !value.isEmpty();
     }
 
-    mutex.unlock();
+    MegaApi::log(MegaApi::LOG_LEVEL_INFO,
+                 QString::fromUtf8("Session read completed. scope=public logged=%1 source=%2 %3")
+                     .arg(loggedAtRead)
+                     .arg(usedUserGroup ? QString::fromUtf8("user") :
+                                          (usedGeneralFallback ? QString::fromUtf8("general") :
+                                                                 QString::fromUtf8("none")))
+                     .arg(sessionSummaryForLog(value))
+                     .toUtf8()
+                     .constData());
     return value;
 }
 
@@ -2355,6 +2432,8 @@ void Preferences::unlink()
     mutex.lock();
     assert(logged());
     mSettings->remove(sessionKey); // Remove session from specific account settings
+    MegaApi::log(MegaApi::LOG_LEVEL_INFO, "Session cleared. scope=user");
+    syncSettingsLocked("unlink-user-session");
     mSettings->endGroup();
     mutex.unlock();
 
@@ -2375,12 +2454,14 @@ void Preferences::resetGlobalSettings()
     mSettings->remove(needsFetchNodesKey);
     mSettings->remove(currentAccountStatusKey);
     mSettings->remove(sessionKey); // Remove session from global settings
+    MegaApi::log(MegaApi::LOG_LEVEL_INFO, "Session cleared. scope=general");
     clearTemporalBandwidth();
 
     if (!currentAccount.isEmpty())
     {
         mSettings->beginGroup(currentAccount);
     }
+    syncSettingsLocked("resetGlobalSettings");
     mutex.unlock();
 
     emit stateChanged();
@@ -2571,7 +2652,28 @@ void Preferences::clearAll()
     }
 
     mSettings->clear();
+    MegaApi::log(MegaApi::LOG_LEVEL_INFO, "Session cleared. scope=all-settings");
+    syncSettingsLocked("clearAll");
     mutex.unlock();
+}
+
+bool Preferences::syncSettingsLocked(const char* reason)
+{
+    mSettings->sync();
+
+    const auto status = mSettings->status();
+    const auto logLevel =
+        status == QSettings::NoError ? MegaApi::LOG_LEVEL_DEBUG : MegaApi::LOG_LEVEL_WARNING;
+
+    MegaApi::log(logLevel,
+                 QString::fromUtf8("Preferences sync completed. reason=%1 status=%2 file=%3")
+                     .arg(QString::fromUtf8(reason ? reason : "unknown"))
+                     .arg(QString::fromUtf8(settingsStatusToString(status)))
+                     .arg(QDir::toNativeSeparators(mSettings->settingsFileName()))
+                     .toUtf8()
+                     .constData());
+
+    return status == QSettings::NoError;
 }
 
 void Preferences::sync()

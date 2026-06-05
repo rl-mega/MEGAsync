@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>524</width>
-    <height>608</height>
+    <height>550</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -36,6 +36,11 @@
 {
 background-color: #FFFFFF; /*colorToken.page-background*/
 }
+
+#fFolderPermissionsLine, #fFilePermissionsLine
+{
+background-color: #D8D9DB; /*colorToken.border-strong*/
+}
 </string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -43,16 +48,16 @@ background-color: #FFFFFF; /*colorToken.page-background*/
     <number>24</number>
    </property>
    <property name="leftMargin">
-    <number>48</number>
+    <number>24</number>
    </property>
    <property name="topMargin">
-    <number>48</number>
+    <number>32</number>
    </property>
    <property name="rightMargin">
-    <number>48</number>
+    <number>24</number>
    </property>
    <property name="bottomMargin">
-    <number>48</number>
+    <number>24</number>
    </property>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -112,234 +117,376 @@ background-color: #FFFFFF; /*colorToken.page-background*/
     </layout>
    </item>
    <item>
-    <widget class="QGroupBox" name="wFolderPermissions">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+    <layout class="QVBoxLayout" name="vFolderPermissionsSection">
+     <property name="spacing">
+      <number>10</number>
      </property>
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
+     <property name="leftMargin">
+      <number>0</number>
      </property>
-     <property name="title">
-      <string>Folders</string>
+     <property name="topMargin">
+      <number>0</number>
      </property>
-     <property name="type" stdset="0">
-      <string notr="true">mega</string>
+     <property name="rightMargin">
+      <number>0</number>
      </property>
-     <layout class="QFormLayout" name="formLayout">
-      <property name="verticalSpacing">
-       <number>12</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="lGroupFolders">
-        <property name="text">
-         <string>Group permissions:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="PermissionsWidget" name="wFolderGroup" native="true"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="lPublicFolders">
-        <property name="text">
-         <string>Public permissions:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="PermissionsWidget" name="wFolderPublic" native="true">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="lFolderPermissionsDesc">
-        <property name="text">
-         <string>Numeric value:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <spacer name="horizontalSpacer_3">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Preferred</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>10</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="lFolderPermissions">
-          <property name="minimumSize">
-           <size>
-            <width>50</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>36</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="type" stdset="0">
-           <string notr="true">mega</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_4">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </widget>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <layout class="QVBoxLayout" name="vFolderPermissionsTitleLine">
+       <property name="spacing">
+        <number>4</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="lFolderPermissionsTitle">
+         <property name="text">
+          <string>Folders</string>
+         </property>
+         <property name="font-size" stdset="0">
+          <string notr="true">caption</string>
+         </property>
+         <property name="semibold" stdset="0">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="fFolderPermissionsLine">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>1</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>1</height>
+          </size>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QFormLayout" name="formLayout">
+       <property name="fieldGrowthPolicy">
+        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+       </property>
+       <property name="formAlignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+       </property>
+       <property name="labelAlignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="verticalSpacing">
+        <number>12</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="lGroupFolders">
+         <property name="text">
+          <string>Group permissions:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="PermissionsWidget" name="wFolderGroup" native="true"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="lPublicFolders">
+         <property name="text">
+          <string>Public permissions:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="PermissionsWidget" name="wFolderPublic" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="lFolderPermissionsDesc">
+         <property name="text">
+          <string>Numeric value:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="hFolderNumericLayout">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>17</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLineEdit" name="lFolderPermissions">
+           <property name="minimumSize">
+            <size>
+             <width>50</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>50</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="type" stdset="0">
+            <string notr="true">mega</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="hFolderNumericSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
    </item>
    <item>
-    <widget class="QGroupBox" name="wFilePermissions">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+    <layout class="QVBoxLayout" name="vFilePermissionsSection">
+     <property name="spacing">
+      <number>10</number>
      </property>
-     <property name="title">
-      <string>Files</string>
+     <property name="leftMargin">
+      <number>0</number>
      </property>
-     <property name="type" stdset="0">
-      <string notr="true">mega</string>
+     <property name="topMargin">
+      <number>0</number>
      </property>
-     <layout class="QFormLayout" name="formLayout_2">
-      <property name="verticalSpacing">
-       <number>12</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="lOwnerFiles">
-        <property name="styleSheet">
-         <string notr="true">font: normal;</string>
-        </property>
-        <property name="text">
-         <string>Owner permissions:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="PermissionsWidget" name="wFileOwner" native="true"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="lGroupFiles">
-        <property name="text">
-         <string>Group permissions:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="PermissionsWidget" name="wFileGroup" native="true"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="lPublicFiles">
-        <property name="text">
-         <string>Public permissions:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="PermissionsWidget" name="wFilePublic" native="true"/>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="lFilePermissionsDesc">
-        <property name="text">
-         <string>Numeric value:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Preferred</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>10</width>
-            <height>14</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="lFilePermissions">
-          <property name="minimumSize">
-           <size>
-            <width>50</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>36</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="type" stdset="0">
-           <string notr="true">mega</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_5">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </item>
-     </layout>
-     <zorder>lFilePermissionsDesc</zorder>
-     <zorder>lGroupFiles</zorder>
-     <zorder>lPublicFiles</zorder>
-     <zorder>wFileGroup</zorder>
-     <zorder>wFilePublic</zorder>
-     <zorder>lOwnerFiles</zorder>
-     <zorder>wFileOwner</zorder>
-    </widget>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <layout class="QVBoxLayout" name="vFilePermissionsTitleLine">
+       <property name="spacing">
+        <number>4</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="lFilePermissionsTitle">
+         <property name="text">
+          <string>Files</string>
+         </property>
+         <property name="font-size" stdset="0">
+          <string notr="true">caption</string>
+         </property>
+         <property name="semibold" stdset="0">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="fFilePermissionsLine">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>1</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>1</height>
+          </size>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QFormLayout" name="formLayout_2">
+       <property name="fieldGrowthPolicy">
+        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+       </property>
+       <property name="formAlignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+       </property>
+       <property name="labelAlignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="verticalSpacing">
+        <number>12</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="lOwnerFiles">
+         <property name="styleSheet">
+          <string notr="true">font: normal;</string>
+         </property>
+         <property name="text">
+          <string>Owner permissions:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="PermissionsWidget" name="wFileOwner" native="true"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="lGroupFiles">
+         <property name="text">
+          <string>Group permissions:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="PermissionsWidget" name="wFileGroup" native="true"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="lPublicFiles">
+         <property name="text">
+          <string>Public permissions:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="PermissionsWidget" name="wFilePublic" native="true"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="lFilePermissionsDesc">
+         <property name="text">
+          <string>Numeric value:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <layout class="QHBoxLayout" name="hFileNumericLayout">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>17</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLineEdit" name="lFilePermissions">
+           <property name="minimumSize">
+            <size>
+             <width>50</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>50</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="type" stdset="0">
+            <string notr="true">mega</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="hFileNumericSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">

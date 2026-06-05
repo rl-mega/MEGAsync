@@ -272,53 +272,6 @@ void uninstall()
     freeStaticResources();
 }
 
-void addFonts()
-{
-#if !defined(__APPLE__) && !defined (_WIN32)
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/OpenSans-Regular.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/OpenSans-Semibold.ttf"));
-
-    QFont font(QString::fromUtf8("Open Sans"), 8);
-    theapp->setFont(font);
-#endif
-
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/SourceSansPro-Semibold.ttf"));
-
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Lato-Light.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Lato-Bold.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Lato-Regular.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Lato-Semibold.ttf"));
-
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-Black.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-BlackItalic.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-Bold.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-BoldItalic.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-ExtraBold.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-ExtraBoldItalic.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-ExtraLight.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-ExtraLightItalic.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-Italic.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-Light.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-LightItalic.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-Medium.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-MediumItalic.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-Regular.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-SemiBold.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-SemiBoldItalic.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-Thin.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Poppins-ThinItalic.ttf"));
-
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Inter-Bold.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Inter-Black.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Inter-ExtraBold.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Inter-ExtraLight.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Inter-Light.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Inter-Medium.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Inter-Regular.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Inter-SemiBold.ttf"));
-    QFontDatabase::addApplicationFont(QString::fromUtf8("://fonts/Inter-Thin.ttf"));
-}
-
 int main(int argc, char *argv[])
 {
     QCoreApplication::setOrganizationName(QString::fromUtf8("Mega Limited"));
@@ -648,8 +601,6 @@ int main(int argc, char *argv[])
         return 0;
     }
     Platform::getInstance()->initialize(argc, argv);
-
-    addFonts();
 
     app.setWindowIcon(QIcon(QString::fromUtf8(":/images/app_ico.ico")));
     app.initialize();

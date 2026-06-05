@@ -400,9 +400,11 @@ void NodeSelectorTreeViewWidgetSearch::stopSearch()
     mHasRows = false;
 }
 
-std::unique_ptr<NodeSelectorProxyModel> NodeSelectorTreeViewWidgetSearch::createProxyModel()
+std::shared_ptr<NodeSelectorProxyModel> NodeSelectorTreeViewWidgetSearch::createProxyModel()
 {
-    auto proxy = std::unique_ptr<NodeSelectorProxyModelSearch>(new NodeSelectorProxyModelSearch);
+    auto proxy =
+        std::make_shared<NodeSelectorProxyModelSearch>(getSelectType()->createProxyModel());
+
     // The search view is the only one with a real proxy model (in terms on filterAcceptsRow)
     connect(proxy.get(),
             &QAbstractItemModel::rowsInserted,
@@ -579,7 +581,7 @@ void NodeSelectorTreeViewWidgetSearch::resetChipsVisibility()
     ui->searchButtonsWidget->setVisible(true);
 }
 
-void NodeSelectorTreeViewWidgetSearch::onExpandReady()
+void NodeSelectorTreeViewWidgetSearch::onLevelLoaded()
 {
     if (mNewSearch)
     {
@@ -646,14 +648,14 @@ void NodeSelectorTreeViewWidgetSearch::onExpandReady()
 
         mNewSearch = false;
 
-        NodeSelectorTreeViewWidget::onExpandReady();
+        NodeSelectorTreeViewWidget::onLevelLoaded();
 
         // Do it after setting the model to the view, otherwise it won´t work
         changeColumnsVisibility(tabSelected);
     }
     else
     {
-        NodeSelectorTreeViewWidget::onExpandReady();
+        NodeSelectorTreeViewWidget::onLevelLoaded();
     }
 }
 

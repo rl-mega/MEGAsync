@@ -78,7 +78,6 @@ void NodeSelectorModelCloudDrive::onRootItemCreated()
     {
         fetchItemChildren(rootIndex);
         mIndexesToBeExpanded.append(qMakePair(MegaSyncApp->getRootNode()->getHandle(), rootIndex));
-        loadLevelFinished();
     }
     else
     {
@@ -146,8 +145,6 @@ bool NodeSelectorModelIncomingShares::rootNodeUpdated(mega::MegaNode* node)
             auto folderIndex = findIndexByNodeHandle(node->getHandle(), QModelIndex());
             if (!folderIndex.isValid())
             {
-                auto totalRows = rowCount(QModelIndex());
-                beginInsertRows(QModelIndex(), totalRows, totalRows);
                 emit addIncomingSharesRoot(std::shared_ptr<mega::MegaNode>(node->copy()));
             }
             else
@@ -191,8 +188,8 @@ bool NodeSelectorModelIncomingShares::rootNodeUpdated(mega::MegaNode* node)
 
 bool NodeSelectorModelIncomingShares::canDropMimeData(const QMimeData* data,
                                                       Qt::DropAction action,
-                                                      int,
-                                                      int,
+                                                      int row,
+                                                      int column,
                                                       const QModelIndex& parent) const
 {
     if (action == Qt::CopyAction || action == Qt::MoveAction)
@@ -214,7 +211,8 @@ bool NodeSelectorModelIncomingShares::canDropMimeData(const QMimeData* data,
                         }
                         else
                         {
-                            return checkDraggedMimeData(data);
+                            auto dropIndex(index(row, column));
+                            return checkDraggedMimeData(data, dropIndex);
                         }
                     }
                 }
@@ -419,25 +417,29 @@ bool NodeSelectorModelBackups::addToLoadingList(const std::shared_ptr<MegaNode> 
 
 void NodeSelectorModelBackups::loadLevelFinished()
 {
-    if (mIndexesToBeExpanded.size() == 1 && mIndexesToBeExpanded.at(0).second == index(0, 0))
+    const QModelIndex backupsRootIndex(index(0, 0));
+    const bool finishingBackupsRoot =
+        mIndexesToBeExpanded.size() == 1 && mIndexesToBeExpanded.at(0).second == backupsRootIndex;
+
+    if (finishingBackupsRoot)
     {
-        QModelIndex rootIndex(index(0, 0));
-        int rowcount = rowCount(rootIndex);
+        mBackupDevicesSize = 0;
+
+        const int rowcount = rowCount(backupsRootIndex);
         for (int i = 0; i < rowcount; i++)
         {
-            auto idx = index(i, 0, rootIndex);
-            if (canFetchMore(idx))
+            const auto idx = index(i, 0, backupsRootIndex);
+            if (canFetchMore(idx) && fetchItemChildren(idx))
             {
-                mBackupDevicesSize++;
-                fetchItemChildren(idx);
+                ++mBackupDevicesSize;
             }
         }
     }
-
-    if (mBackupDevicesSize > 0)
+    else if (mBackupDevicesSize > 0)
     {
-        mBackupDevicesSize--;
+        --mBackupDevicesSize;
     }
+
     if (mBackupDevicesSize == 0)
     {
         NodeSelectorModel::loadLevelFinished();
@@ -536,8 +538,7 @@ QVariant NodeSelectorModelSearch::data(const QModelIndex& index, int role) const
 bool NodeSelectorModelSearch::addNodes(QList<std::shared_ptr<mega::MegaNode>> nodes,
                                        const QModelIndex& parent)
 {
-    auto totalRows = rowCount(parent);
-    beginInsertRows(QModelIndex(), totalRows, static_cast<int>(totalRows + nodes.size() - 1));
+    Q_UNUSED(parent)
     emit requestAddSearchRootItem(nodes, mAllowedTypes);
     return true;
 }
@@ -551,8 +552,6 @@ bool NodeSelectorModelSearch::rootNodeUpdated(mega::MegaNode* node)
             auto index = findIndexByNodeHandle(node->getHandle(), QModelIndex());
             if (!index.isValid())
             {
-                auto totalRows = rowCount(QModelIndex());
-                beginInsertRows(QModelIndex(), totalRows, totalRows);
                 QList<std::shared_ptr<mega::MegaNode>> nodes;
                 emit requestAddSearchRootItem(nodes
                                                   << std::shared_ptr<mega::MegaNode>(node->copy()),

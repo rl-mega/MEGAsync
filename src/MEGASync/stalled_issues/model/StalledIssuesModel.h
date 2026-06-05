@@ -6,6 +6,7 @@
 #include "QTMegaGlobalListener.h"
 #include "QTMegaRequestListener.h"
 #include "StalledIssue.h"
+#include "StalledIssueHashDiscardTracker.h"
 #include "StalledIssuesFactory.h"
 #include "StalledIssuesUtilities.h"
 #include "TextDecorator.h"
@@ -101,7 +102,7 @@ public:
     ~StalledIssuesReceiver(){}
 
     bool multiStepIssueSolveActive() const;
-    void rememberResolvedIssueHash(size_t hash);
+    void setHashDiscardTracker(std::shared_ptr<StalledIssueHashDiscardTracker> tracker);
 
     template <class ISSUE_TYPE>
     void addMultiStepIssueSolver(MultiStepIssueSolverBase* solver)
@@ -123,13 +124,9 @@ protected:
     void onRequestFinish(::mega::MegaApi*, ::mega::MegaRequest* request, ::mega::MegaError*);
 
 private:
-    void flushPendingResolvedIssueHashes();
-
     QMutex mCacheMutex;
-    QMutex mPendingResolvedIssueHashesMutex;
     ReceivedStalledIssues mStalledIssues;
     StalledIssuesCreator mIssueCreator;
-    QSet<size_t> mPendingResolvedIssueHashes;
     std::atomic<UpdateType> mUpdateType {UpdateType::NONE};
     std::atomic_int mUpdateRequests {0};
 };
@@ -189,7 +186,7 @@ public:
     void stopSolvingIssues(MessageInfo::ButtonType buttonType);
     bool isSolvingIssues() const;
 
-    bool checkForExternalChanges(const QModelIndex& index);
+    bool checkForExternalChanges(const QModelIndex& index, QObject* context = nullptr);
 
     //Name conflicts
     bool solveLocalConflictedNameByRemove(int conflictIndex, const QModelIndex& index);
@@ -274,6 +271,9 @@ private:
     void checkActiveIssues(StalledIssuesVariantList& receivedIssues);
     void checkAutoSolvedIssues(StalledIssuesVariantList& receivedIssues);
     void checkFailedAutoSolvedIssues(StalledIssuesVariantList& receivedIssues);
+    void prepareTrackedIssuesForUpdate();
+    StalledIssuesVariantList failedStalledIssuesSnapshot() const;
+    StalledIssuesVariantList solvedStalledIssuesSnapshot() const;
 
     void needsUpdate();
     void setIssuesRequested(bool state);
@@ -341,6 +341,8 @@ private:
     mutable StalledIssuesVariantList mFailedStalledIssues;
     mutable QHash<const StalledIssue*, int> mStalledIssuesByOrder;
     mutable QMultiHash<unsigned long long, const StalledIssue*> mStalledIssueRowByHash;
+
+    std::shared_ptr<StalledIssueHashDiscardTracker> mHashDiscardTracker;
 
     QHash<int, int> mCountByFilterCriterion;
 

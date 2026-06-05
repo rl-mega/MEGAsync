@@ -9,6 +9,7 @@
 
 #include <QAbstractTransition>
 #include <QDebug>
+#include <QFinalState>
 #include <QState>
 #include <QTimer>
 

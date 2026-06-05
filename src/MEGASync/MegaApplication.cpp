@@ -13,7 +13,6 @@
 #include "DateTimeFormatter.h"
 #include "DeviceCentre.h"
 #include "DialogOpener.h"
-#include "DuplicatedNodeDialog.h"
 #include "EmailRequester.h"
 #include "EphemeralCredentials.h"
 #include "EventUpdater.h"
@@ -401,8 +400,10 @@ void MegaApplication::showInterface(QString)
             {
                 // clearing the file content will cause the instance that asked us to show the dialog to exit
                 showFile.close();
-                showFile.open(QIODevice::WriteOnly | QIODevice::Truncate);
-                showFile.close();
+                if (showFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
+                {
+                    showFile.close();
+                }
             }
         }
     }
@@ -421,9 +422,70 @@ void MegaApplication::showInterface(QString)
 
 bool gCrashableForTesting = false;
 
+void MegaApplication::addFont(const QString& fontPath)
+{
+    const auto fontId = QFontDatabase::addApplicationFont(fontPath);
+#if defined(DEBUG)
+    if (fontId == -1)
+    {
+        throw std::runtime_error(
+            QString::fromUtf8("couldn't load the font : %1").arg(fontPath).toStdString());
+    }
+#else
+    Q_UNUSED(fontId);
+#endif
+}
+
+void MegaApplication::addFonts()
+{
+    addFont(QString::fromUtf8("://fonts/SourceSansPro-Semibold.ttf"));
+    addFont(QString::fromUtf8("://fonts/Lato-Light.ttf"));
+    addFont(QString::fromUtf8("://fonts/Lato-Bold.ttf"));
+    addFont(QString::fromUtf8("://fonts/Lato-Regular.ttf"));
+    addFont(QString::fromUtf8("://fonts/Lato-Semibold.ttf"));
+
+    addFont(QString::fromUtf8("://fonts/Poppins-Black.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-BlackItalic.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-Bold.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-BoldItalic.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-ExtraBold.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-ExtraBoldItalic.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-ExtraLight.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-ExtraLightItalic.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-Italic.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-Light.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-LightItalic.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-Medium.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-MediumItalic.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-Regular.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-SemiBold.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-SemiBoldItalic.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-Thin.ttf"));
+    addFont(QString::fromUtf8("://fonts/Poppins-ThinItalic.ttf"));
+
+    addFont(QString::fromUtf8("://fonts/Inter-Bold.ttf"));
+    addFont(QString::fromUtf8("://fonts/Inter-Black.ttf"));
+    addFont(QString::fromUtf8("://fonts/Inter-ExtraBold.ttf"));
+    addFont(QString::fromUtf8("://fonts/Inter-ExtraLight.ttf"));
+    addFont(QString::fromUtf8("://fonts/Inter-Light.ttf"));
+    addFont(QString::fromUtf8("://fonts/Inter-Medium.ttf"));
+    addFont(QString::fromUtf8("://fonts/Inter-Regular.ttf"));
+    addFont(QString::fromUtf8("://fonts/Inter-SemiBold.ttf"));
+    addFont(QString::fromUtf8("://fonts/Inter-Thin.ttf"));
+
+#ifdef Q_OS_LINUX
+    addFont(QString::fromUtf8("://fonts/OpenSans-Regular.ttf"));
+    addFont(QString::fromUtf8("://fonts/OpenSans-Semibold.ttf"));
+
+    QFont font(QString::fromUtf8("Inter"), 8);
+    qApp->setFont(font);
+#endif
+}
+
 void MegaApplication::initStyleAndResources()
 {
     ThemeManager::instance()->init();
+    addFonts();
 
     setStyle(new MegaProxyStyle());
     QFile file(QLatin1String(":/style/WidgetsComponentsStyleSheetsSizes.css"));
@@ -634,6 +696,11 @@ void MegaApplication::initialize()
             {
                 requestUserDiscounts(true);
             });
+
+    connect(AccountDetailsManager::instance(),
+            &AccountDetailsManager::storageBreakdownLocalUpdated,
+            this,
+            &MegaApplication::refreshStorageUIs);
 
     delegateListener = new QTMegaListener(megaApi, this);
     megaApi->addListener(delegateListener);
@@ -907,13 +974,12 @@ void MegaApplication::updateTrayIcon()
     }
     else if (showPromoAnimation)
     {
-        auto discountInfo = mDiscountPolicy ? mDiscountPolicy->getDiscountInfo() : nullptr;
-        if (discountInfo)
+        auto hasDiscount = mDiscountPolicy && mDiscountPolicy->isCampaignActive();
+        if (hasDiscount)
         {
-            tooltipState =
-                QCoreApplication::translate("InfoDialog", "%1% off %2")
-                    .arg(discountInfo->getPercentageDiscount())
-                    .arg(Utilities::getReadablePlanFromId(discountInfo->getAccountLevel(), false));
+            tooltipState = QCoreApplication::translate("InfoDialog", "%1% off %2")
+                               .arg(mDiscountPolicy->getPercentage())
+                               .arg(mDiscountPolicy->getPlanName(false));
         }
         animation = TrayIconManager::Animation::Promo;
     }
@@ -1115,7 +1181,6 @@ void MegaApplication::start()
     }
 
     applyProxySettings();
-    Platform::getInstance()->startShellDispatcher(this);
 #ifdef Q_OS_MACOS
     if (!preferences->isOneTimeActionDone(Preferences::ONE_TIME_ACTION_ACTIVE_FINDER_EXT))
     {
@@ -1132,26 +1197,27 @@ void MegaApplication::start()
 
     mDiscountStateMachine = new DiscountStateMachine(mDiscountPolicy);
 
-    connect(infoDialog,
-            &InfoDialog::requestShowDiscountDialog,
-            mDiscountStateMachine,
-            &DiscountStateMachine::onDiscountButtonClicked,
-            Qt::UniqueConnection);
-
     connect(mDiscountStateMachine,
             &DiscountStateMachine::requestShowDialog,
+            this,
             [this]()
             {
-                auto dialog = QMLComponent::showDialog<OfferComponent>();
-                dialog->getDialog()->wrapper()->setDiscountInfo(mDiscountPolicy->getDiscountInfo());
+                auto dialog = QMLComponent::showDialog<OfferComponent>(nullptr);
+                dialog->getDialog()->wrapper()->setDiscountPolicy(mDiscountPolicy);
 
                 mDiscountPolicy->recordShown();
+
+                auto closingDueToExpiry = std::make_shared<bool>(false);
 
                 QObject::connect(dialog->getDialog(),
                                  &QmlDialogWrapper<OfferComponent>::rejected,
                                  this,
-                                 [this]()
+                                 [this, closingDueToExpiry]()
                                  {
+                                     if (*closingDueToExpiry)
+                                     {
+                                         return;
+                                     }
                                      mDiscountPolicy->recordDismissed();
                                      emit mDiscountStateMachine->discountDismissed();
                                  });
@@ -1162,6 +1228,22 @@ void MegaApplication::start()
                                  {
                                      mDiscountPolicy->recordAccepted();
                                      emit mDiscountStateMachine->discountAccepted();
+                                 });
+
+                // Campaign expiry clears the policy's data; closing the dialog
+                // here prevents a later binding re-evaluation (e.g. language
+                // change) from rendering it with empty placeholders.
+                QPointer<QmlDialogWrapper<OfferComponent>> dialogPtr(dialog->getDialog());
+                QObject::connect(mDiscountPolicy.data(),
+                                 &DiscountPolicy::campaignDeactivated,
+                                 dialog->getDialog(),
+                                 [dialogPtr, closingDueToExpiry]()
+                                 {
+                                     if (dialogPtr)
+                                     {
+                                         *closingDueToExpiry = true;
+                                         dialogPtr->close();
+                                     }
                                  });
             });
 
@@ -1536,6 +1618,7 @@ void MegaApplication::onFetchNodesFinished()
 void MegaApplication::onLogout()
 {
     mPendingGetUserDataRequests = 0;
+    const auto logoutSessionSnapshot = preferences ? preferences->getSession() : QString();
 
     MegaApi::log(
         MegaApi::LOG_LEVEL_INFO,
@@ -1566,73 +1649,93 @@ void MegaApplication::onLogout()
     // Eg: transfers added to data model after a logout
     MegaApi::log(MegaApi::LOG_LEVEL_INFO,
                  "Logout diagnostics: onLogout() scheduling deferred cleanup.");
-    mThreadPool->push([this]()
-    {
-        Utilities::queueFunctionInAppThread([this]()
+    mThreadPool->push(
+        [this, logoutSessionSnapshot]()
         {
-            if (preferences)
-            {
-                MegaApi::log(MegaApi::LOG_LEVEL_INFO,
-                             QString::fromUtf8("Logout diagnostics: deferred logout cleanup "
-                                               "running. logged=%1 sessionEmpty=%2")
-                                 .arg(preferences->logged())
-                                 .arg(preferences->getSession().isEmpty())
-                                 .toUtf8()
-                                 .constData());
-
-                if (preferences->logged())
+            Utilities::queueFunctionInAppThread(
+                [this, logoutSessionSnapshot]()
                 {
-                    MegaApi::log(
-                        MegaApi::LOG_LEVEL_INFO,
-                        "Logout diagnostics: deferred cleanup branch -> preferences->unlink().");
-                    clearUserAttributes();
-                    preferences->unlink();
-                    preferences->setFirstStartDone();
-                }
-                else
-                {
-                    MegaApi::log(
-                        MegaApi::LOG_LEVEL_INFO,
-                        "Logout diagnostics: deferred cleanup branch -> resetGlobalSettings().");
-                    preferences->resetGlobalSettings();
-                }
+                    if (preferences)
+                    {
+                        const auto currentSession = preferences->getSession();
+                        if (!currentSession.isEmpty() && currentSession != logoutSessionSnapshot)
+                        {
+                            MegaApi::log(
+                                MegaApi::LOG_LEVEL_WARNING,
+                                QString::fromUtf8(
+                                    "Logout diagnostics: skipping deferred cleanup because "
+                                    "a different session is already active. "
+                                    "previousLen=%1 currentLen=%2")
+                                    .arg(logoutSessionSnapshot.size())
+                                    .arg(currentSession.size())
+                                    .toUtf8()
+                                    .constData());
+                            return;
+                        }
 
-                MegaApi::log(MegaApi::LOG_LEVEL_INFO,
-                             QString::fromUtf8("Logout diagnostics: preferences cleanup finished. "
-                                               "logged=%1 sessionEmpty=%2")
-                                 .arg(preferences->logged())
-                                 .arg(preferences->getSession().isEmpty())
-                                 .toUtf8()
-                                 .constData());
+                        MegaApi::log(
+                            MegaApi::LOG_LEVEL_INFO,
+                            QString::fromUtf8("Logout diagnostics: deferred logout cleanup "
+                                              "running. logged=%1 sessionEmpty=%2")
+                                .arg(preferences->logged())
+                                .arg(preferences->getSession().isEmpty())
+                                .toUtf8()
+                                .constData());
 
-                mLoginController->deleteLater();
-                mLoginController = nullptr;
-                DialogOpener::closeAllDialogs();
-                mGfxProvider.reset();
-                mUserMessageController.reset();
-                createUserMessageController();
-                infoDialog->deleteLater();
-                infoDialog = nullptr;
-                removeSyncsAndBackupsMenus();
-                if (mDiscountStateMachine)
-                {
-                    mDiscountStateMachine->deleteLater();
-                    mDiscountStateMachine = nullptr;
-                }
-                if (mDiscountPolicy)
-                {
-                    mDiscountPolicy->deleteLater();
-                    mDiscountPolicy = nullptr;
-                }
+                        if (preferences->logged())
+                        {
+                            MegaApi::log(MegaApi::LOG_LEVEL_INFO,
+                                         "Logout diagnostics: deferred cleanup branch -> "
+                                         "preferences->unlink().");
+                            clearUserAttributes();
+                            preferences->unlink();
+                            preferences->setFirstStartDone();
+                        }
+                        else
+                        {
+                            MegaApi::log(MegaApi::LOG_LEVEL_INFO,
+                                         "Logout diagnostics: deferred cleanup branch -> "
+                                         "resetGlobalSettings().");
+                            preferences->resetGlobalSettings();
+                        }
 
-                emit requestAppState(AppState::INIT);
+                        MegaApi::log(
+                            MegaApi::LOG_LEVEL_INFO,
+                            QString::fromUtf8("Logout diagnostics: preferences cleanup finished. "
+                                              "logged=%1 sessionEmpty=%2")
+                                .arg(preferences->logged())
+                                .arg(preferences->getSession().isEmpty())
+                                .toUtf8()
+                                .constData());
 
-                start();
-                periodicTasks();
-                ThemeManager::instance()->init();
-            }
+                        mLoginController->deleteLater();
+                        mLoginController = nullptr;
+                        DialogOpener::closeAllDialogs();
+                        mGfxProvider.reset();
+                        mUserMessageController.reset();
+                        createUserMessageController();
+                        infoDialog->deleteLater();
+                        infoDialog = nullptr;
+                        removeSyncsAndBackupsMenus();
+                        if (mDiscountStateMachine)
+                        {
+                            mDiscountStateMachine->deleteLater();
+                            mDiscountStateMachine = nullptr;
+                        }
+                        if (mDiscountPolicy)
+                        {
+                            mDiscountPolicy->deleteLater();
+                            mDiscountPolicy = nullptr;
+                        }
+
+                        emit requestAppState(AppState::INIT);
+
+                        start();
+                        periodicTasks();
+                        ThemeManager::instance()->init();
+                    }
+                });
         });
-    });
 }
 
 StatsEventHandler* MegaApplication::getStatsEventHandler() const
@@ -1761,7 +1864,7 @@ void MegaApplication::processUploadQueue(MegaHandle nodeHandle, QWidget* caller)
 
     auto uploads = CheckDuplicatedNodes::checkUploads(mUploadQueue, node);
 
-    if (uploads->hasNoConflicts())
+    if (uploads->isConflictFree())
     {
         onUploadsCheckedAndReady(std::move(uploads));
     }
@@ -3492,7 +3595,7 @@ void MegaApplication::showErrorMessage(QString message, QString title)
     MegaApi::log(MegaApi::LOG_LEVEL_ERROR, message.toUtf8().constData());
     if (mOsNotifications)
     {
-#ifdef __APPLE__
+#ifdef Q_OS_MACOS
         if (infoDialog && infoDialog->isVisible())
         {
             infoDialog->hide();
@@ -4213,7 +4316,7 @@ void MegaApplication::openDeviceCentre()
     }
 #endif
 
-    QMLComponent::showDialog<DeviceCentre>();
+    QMLComponent::showDialog<DeviceCentre>(nullptr);
 }
 
 void MegaApplication::importLinks(AppStatsEvents::EventType event)
@@ -6461,6 +6564,10 @@ void MegaApplication::onEvent(MegaApi*, MegaEvent* event)
 
         updateUsedStorage();
         refreshStorageUIs();
+        // Refresh the per-root breakdown (Cloud Drive / Backups / Rubbish / Versions)
+        // from local NodeCounters instead of forcing a network `uq`. The breakdown
+        // commit invokes refreshStorageUIs() again once values are in.
+        AccountDetailsManager::instance()->refreshStorageBreakdownLocal();
     }
     else if (event->getType() == MegaEvent::EVENT_BUSINESS_STATUS)
     {
@@ -7025,6 +7132,7 @@ void MegaApplication::onNodesUpdate(MegaApi* , MegaNodeList *nodes)
     MegaApi::log(MegaApi::LOG_LEVEL_INFO, QString::fromUtf8("%1 updated files/folders").arg(nodes->size()).toUtf8().constData());
 
     //Check all modified nodes
+    bool parentChanged = false;
     QString localPath;
     for (int i = 0; i < nodes->size(); i++)
     {
@@ -7032,12 +7140,23 @@ void MegaApplication::onNodesUpdate(MegaApi* , MegaNodeList *nodes)
         MegaNode *node = nodes->get(i);
         if (node->getChanges() & MegaNode::CHANGE_TYPE_PARENT)
         {
+            parentChanged = true;
             emit nodeMoved(node->getHandle());
         }
         if (node->getChanges() & MegaNode::CHANGE_TYPE_ATTRIBUTES)
         {
             emit nodeAttributesChanged(node->getHandle());
         }
+    }
+
+    if (parentChanged)
+    {
+        // Moving nodes between roots (e.g. to/from Rubbish, Backups <-> Cloud Drive)
+        // redistributes storage without changing the total, so EVENT_STORAGE_SUM_CHANGED
+        // does not fire and the per-root breakdown would stay stale until the next full
+        // account-details fetch. Recompute it explicitly: this is debounced and reads from
+        // local NodeCounters, so it costs no network `uq` request.
+        AccountDetailsManager::instance()->refreshStorageBreakdownLocal();
     }
 }
 
@@ -7221,6 +7340,7 @@ void MegaApplication::startCrashReportingDialog()
             QPointer<CrashReportDialog> crashDialog = new CrashReportDialog();
             crashDialog->setAttribute(Qt::WA_DeleteOnClose);
             crashDialog->setParent(crashDialog->parentWidget(), crashDialog->windowFlags());
+            crashDialog->move(DialogOpener::initialDialogPosition(crashDialog->geometry().size()));
             TokenParserWidgetManager::instance()->applyCurrentTheme(crashDialog);
             TokenParserWidgetManager::instance()->registerWidgetForTheming(crashDialog);
 

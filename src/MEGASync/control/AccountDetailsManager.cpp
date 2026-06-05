@@ -107,6 +107,14 @@ void AccountDetailsManager::init(mega::MegaApi* megaApi)
                         updateUserStats(Flag::ALL, true, USERSTATS_PRO_EXPIRED);
                     }
                 });
+
+        // Coalesce bursts of EVENT_STORAGE_SUM_CHANGED into a single local refresh.
+        mStorageBreakdownDebounce.setSingleShot(true);
+        mStorageBreakdownDebounce.setInterval(2000);
+        connect(&mStorageBreakdownDebounce,
+                &QTimer::timeout,
+                this,
+                &AccountDetailsManager::runStorageBreakdownLocal);
     }
 }
 
@@ -118,6 +126,11 @@ void AccountDetailsManager::onRequestFinish(mega::MegaRequest* request,
         case mega::MegaRequest::TYPE_ACCOUNT_DETAILS:
         {
             handleAccountDetailsReply(request, error);
+            break;
+        }
+        case mega::MegaRequest::TYPE_FOLDER_INFO:
+        {
+            handleFolderInfoReply(request, error);
             break;
         }
         default:
@@ -397,6 +410,132 @@ void AccountDetailsManager::processInShares(
     mPreferences->setInShareStorage(inShareSize);
     mPreferences->setInShareFiles(inShareFiles);
     mPreferences->setInShareFolders(inShareFolders);
+}
+
+void AccountDetailsManager::refreshStorageBreakdownLocal()
+{
+    if (mPendingBreakdown.inFlight || mStorageBreakdownDebounce.isActive())
+    {
+        return;
+    }
+    mStorageBreakdownDebounce.start();
+}
+
+void AccountDetailsManager::runStorageBreakdownLocal()
+{
+    if (!mMegaApi || MegaSyncApp->finished() || mPendingBreakdown.inFlight)
+    {
+        return;
+    }
+
+    auto rootNode = MegaSyncApp->getRootNode();
+    auto vaultNode = MegaSyncApp->getVaultNode();
+    auto rubbishNode = MegaSyncApp->getRubbishNode();
+    if (!rootNode || !vaultNode || !rubbishNode)
+    {
+        return;
+    }
+
+    mPendingBreakdown = PendingBreakdown();
+    mPendingBreakdown.inFlight = true;
+    mPendingBreakdown.rootHandle = rootNode->getHandle();
+    mPendingBreakdown.vaultHandle = vaultNode->getHandle();
+    mPendingBreakdown.rubbishHandle = rubbishNode->getHandle();
+
+    mMegaApi->getFolderInfo(rootNode.get(), mDelegateListener.get());
+    mMegaApi->getFolderInfo(vaultNode.get(), mDelegateListener.get());
+    mMegaApi->getFolderInfo(rubbishNode.get(), mDelegateListener.get());
+}
+
+void AccountDetailsManager::handleFolderInfoReply(mega::MegaRequest* request,
+                                                  mega::MegaError* error)
+{
+    if (!request || !mPendingBreakdown.inFlight)
+    {
+        return;
+    }
+    if (error && error->getErrorCode() != mega::MegaError::API_OK)
+    {
+        // Abort this round; the next EVENT_STORAGE_SUM_CHANGED will retry.
+        mPendingBreakdown = PendingBreakdown();
+        return;
+    }
+
+    mega::MegaFolderInfo* info = request->getMegaFolderInfo();
+    if (!info)
+    {
+        return;
+    }
+
+    const mega::MegaHandle handle = request->getNodeHandle();
+    const long long currentSize = info->getCurrentSize();
+    const long long versionsSize = info->getVersionsSize();
+
+    if (handle == mPendingBreakdown.rootHandle)
+    {
+        mPendingBreakdown.rootCurrent = currentSize;
+        mPendingBreakdown.rootVersions = versionsSize;
+        mPendingBreakdown.rootDone = true;
+    }
+    else if (handle == mPendingBreakdown.vaultHandle)
+    {
+        mPendingBreakdown.vaultCurrent = currentSize;
+        mPendingBreakdown.vaultVersions = versionsSize;
+        mPendingBreakdown.vaultDone = true;
+    }
+    else if (handle == mPendingBreakdown.rubbishHandle)
+    {
+        mPendingBreakdown.rubbishCurrent = currentSize;
+        mPendingBreakdown.rubbishVersions = versionsSize;
+        mPendingBreakdown.rubbishDone = true;
+    }
+    else
+    {
+        // Not one of our outstanding handles — ignore (could be a TYPE_FOLDER_INFO
+        // issued by some other caller).
+        return;
+    }
+
+    if (mPendingBreakdown.rootDone && mPendingBreakdown.vaultDone && mPendingBreakdown.rubbishDone)
+    {
+        commitStorageBreakdownLocal();
+    }
+}
+
+void AccountDetailsManager::commitStorageBreakdownLocal()
+{
+    const long long cloudDriveStorage = mPendingBreakdown.rootCurrent;
+    const long long vaultStorage = mPendingBreakdown.vaultCurrent;
+    const long long rubbishStorage = mPendingBreakdown.rubbishCurrent;
+    const long long versionsStorage = mPendingBreakdown.rootVersions +
+                                      mPendingBreakdown.vaultVersions +
+                                      mPendingBreakdown.rubbishVersions;
+
+    mPendingBreakdown = PendingBreakdown();
+
+    // A move within the same root (e.g. reorganising inside Cloud Drive) leaves every
+    // per-root total unchanged. Detect that here and skip the commit/notify so such moves
+    // don't churn the storage UIs; only moves that actually shift bytes between roots
+    // (Cloud Drive / Backups / Rubbish) get through.
+    const bool changed = mPreferences->cloudDriveStorage() != cloudDriveStorage ||
+                         mPreferences->vaultStorage() != vaultStorage ||
+                         mPreferences->rubbishStorage() != rubbishStorage ||
+                         mPreferences->versionsStorage() != versionsStorage;
+
+    if (!changed)
+    {
+        return;
+    }
+
+    mPreferences->setCloudDriveStorage(cloudDriveStorage);
+    mPreferences->setVaultStorage(vaultStorage);
+    mPreferences->setRubbishStorage(rubbishStorage);
+    mPreferences->setVersionsStorage(versionsStorage);
+
+    if (!MegaSyncApp->finished())
+    {
+        emit storageBreakdownLocalUpdated();
+    }
 }
 
 void AccountDetailsManager::checkInflightUserStats(Flags& flags)

@@ -224,9 +224,10 @@ QString DateTimeFormatter::createTimeString()
     auto time = mDatetime.time();
     if (lang == QLocale::Arabic)
     {
-        bool isPm = (time.hour() > 12);
+        const int hour = time.hour();
+        const bool isPm = (hour >= 12);
         QString ampmText = isPm ? QString::fromUtf8("مساءً") : QString::fromUtf8("صباحًا");
-        int hours = isPm ? time.hour() - 12 : time.hour();
+        const int hours = (hour % 12 == 0) ? 12 : (hour % 12);
         return QString::fromUtf8("%1:%2%3").arg(hours).arg(createMinuteString(time.minute()),
                                                            ampmText);
     }
@@ -282,7 +283,7 @@ QString DateTimeFormatter::createTimeString()
     }
     else if (lang == QLocale::Vietnamese)
     {
-        time.toString(QString::fromUtf8("h:mmap"));
+        return time.toString(QString::fromUtf8("h:mmap"));
     }
 
     // One of Chinese, Dutch, German, Indonesian, Italian,

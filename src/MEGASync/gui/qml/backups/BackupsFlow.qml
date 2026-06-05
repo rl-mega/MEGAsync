@@ -14,13 +14,17 @@ Item {
     readonly property string selectBackup: "selectBackup"
     readonly property string confirmBackup: "confirmBackup"
 
-    // Added to avoid qml warning.
-    function setInitialFocusPosition() {}
-
     signal backupFlowMoveToFinal(bool success)
     signal backupFlowMoveToBack
 
+    // Added to avoid qml warning.
+    function setInitialFocusPosition() {}
+
+    implicitHeight: view.currentItem.implicitHeight
+    height: implicitHeight
+
     state: root.selectBackup
+
     states: [
         State {
             name: root.selectBackup
@@ -39,7 +43,14 @@ Item {
     StackViewBase {
         id: view
 
-        anchors.fill: parent
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: parent.top
+        }
+
+        implicitHeight: currentItem.implicitHeight
+
         onCurrentItemChanged: {
             currentItem.setInitialFocusPosition();
         }
